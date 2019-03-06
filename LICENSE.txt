@@ -1,4 +1,4 @@
-The bot is based of DiscordBotBase by foxbot: https://github.com/foxbot/DiscordBotBase The license for this base is as follows. 
+The bot is based off of DiscordBotBase by foxbot: https://github.com/foxbot/DiscordBotBase The license for this base is as follows. 
 
 ISC License (ISC)
 Copyright 2017, Christopher F. <foxbot@protonmail.com>
