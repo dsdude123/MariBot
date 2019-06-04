@@ -25,9 +25,10 @@ namespace StarBot.Modules
             output += "**radio kexp** - Plays KEXP (Seattle).\n";
             output += "**radio kxsu** - Plays KXSU (SeattleU)\n";
             output += "**radio uwave** - Plays UWave radio (UW Bothell).\n";
-            output += "**radio kisw** - Plays UWave radio (UW Bothell).\n";
-            output += "**radio kndd** - Plays 99.9 The Rock (KISW Seattle).\n";
+            output += "**radio kisw** - Plays 99.9 The Rock (KISW Seattle).\n";
+            output += "**radio kndd** - Plays 100.7 The End (KNDD Seattle).\n";
             output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
+            output += "**radio kube** - Plays KUBE 93.3 (Seattle).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb);
@@ -142,6 +143,20 @@ namespace StarBot.Modules
             }
             var audioClient = await channel.ConnectAsync();
             await SendAsync(audioClient, "https://19493.live.streamtheworld.com/KQMVFMAAC.aac", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+        [Command("kube", RunMode = RunMode.Async)]
+        public async Task kube()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "https://c1.prod.playlists.ihrhls.com/2577/playlist.m3u8", Context.Guild.Id.ToString());
             audioClient.StopAsync();
         }
 
