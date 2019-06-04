@@ -18,13 +18,16 @@ namespace StarBot.Modules
         [Command("help")]
         public Task help()
         {
-            var output = "**Help file for webcam commands**\n\n";
+            var output = "**Help file for radio commands**\n\n";
             output += "All commands are performed in the voice channel you are currently in. Use **audio stop** to stop the audio.\n\n";
             output += "**radio noaa_spokane** - Plays NOAA Weather Radio for the Spokane area.\n";
             output += "**radio knhc** - Plays C89.5 (KNHC Seattle).\n";
             output += "**radio kexp** - Plays KEXP (Seattle).\n";
             output += "**radio kxsu** - Plays KXSU (SeattleU)\n";
             output += "**radio uwave** - Plays UWave radio (UW Bothell).\n";
+            output += "**radio kisw** - Plays UWave radio (UW Bothell).\n";
+            output += "**radio kndd** - Plays 99.9 The Rock (KISW Seattle).\n";
+            output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb);
@@ -97,6 +100,48 @@ namespace StarBot.Modules
             }
             var audioClient = await channel.ConnectAsync();
             await SendAsync(audioClient, "https://live.uwave.fm:8443/listen-128.mp3", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+        [Command("kisw", RunMode = RunMode.Async)]
+        public async Task kisw()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "https://19813.live.streamtheworld.com/KISWFMAAC.aac", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+        [Command("kndd", RunMode = RunMode.Async)]
+        public async Task kndd()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "https://18313.live.streamtheworld.com/KNDDFMAAC.aac", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+        [Command("kqmv", RunMode = RunMode.Async)]
+        public async Task kqmv()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "https://19493.live.streamtheworld.com/KQMVFMAAC.aac", Context.Guild.Id.ToString());
             audioClient.StopAsync();
         }
 
