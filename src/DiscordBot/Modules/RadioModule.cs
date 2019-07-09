@@ -29,6 +29,7 @@ namespace StarBot.Modules
             output += "**radio kndd** - Plays 100.7 The End (KNDD Seattle).\n";
             output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
             output += "**radio kube** - Plays KUBE 93.3 (Seattle).\n";
+            output += "**radio kswd** - Plays 94.1 The sound (KSWD Seattle).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb);
@@ -160,6 +161,20 @@ namespace StarBot.Modules
             audioClient.StopAsync();
         }
 
+        [Command("kswd", RunMode = RunMode.Async)]
+        public async Task kswd()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, " https://17933.live.streamtheworld.com/KSWDFMAAC.aac", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
         [Command("stop", RunMode = RunMode.Async)]
         public async Task stop()
         {
@@ -186,7 +201,7 @@ namespace StarBot.Modules
             }
             audioClient.StopAsync();
         }
-
+       
         private async Task SendAsync(IAudioClient client, string path, string guild)
         {
             // Create FFmpeg using the previous example
