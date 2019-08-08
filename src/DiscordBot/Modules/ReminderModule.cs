@@ -92,7 +92,7 @@ namespace StarBot.Modules
             else
             {
                 myStore = JsonConvert.DeserializeObject<RemindersStore>(
-                    Environment.CurrentDirectory + "\\cache\\reminders.json");
+                    System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\reminders.json"));
             }
 
             ReminderObject newr = new ReminderObject();

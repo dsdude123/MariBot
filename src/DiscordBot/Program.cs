@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +10,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using StarBot.Modules;
 using StarBot.Services;
 using UrbanDictionnet;
 
@@ -26,15 +28,30 @@ namespace DiscordBot
         {
             _client = new DiscordSocketClient();
             _config = BuildConfig();
+            _client.Disconnected += ResetBot;
 
             var services = ConfigureServices();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
 
-            await _client.LoginAsync(TokenType.Bot, _config["token"]);
+            try
+            {
+                await _client.LoginAsync(TokenType.Bot, _config["token"]);
+            }
+            catch (HttpRequestException e)
+            {
+                ResetBot(e);
+            }
+
             await _client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        public async Task ResetBot(Exception ex)
+        {
+            System.Diagnostics.Process.Start(Assembly.GetExecutingAssembly().Location);
+            Environment.Exit(59);           
         }
 
         private IServiceProvider ConfigureServices()
