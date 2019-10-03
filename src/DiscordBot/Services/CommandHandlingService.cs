@@ -36,7 +36,7 @@ namespace DiscordBot.Services
             //if (message.Source != MessageSource.User) return;
 
             int argPos = 0;
-            if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix("z ",ref argPos))) return;
+            if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program._config["prefix"] + " ",ref argPos))) return;
 
             var context = new SocketCommandContext(_discord, message);
             var result = await _commands.ExecuteAsync(context, argPos, _provider);

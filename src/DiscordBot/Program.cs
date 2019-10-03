@@ -22,7 +22,7 @@ namespace DiscordBot
             => new Program().MainAsync().GetAwaiter().GetResult();
 
         public static DiscordSocketClient _client;
-        private IConfiguration _config;
+        public static IConfiguration _config;
 
         public async Task MainAsync()
         {
