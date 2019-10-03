@@ -33,6 +33,15 @@ namespace DiscordBot
             var services = ConfigureServices();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+           
+            if(!File.Exists("SharpTalkGenerator.exe"))
+            {
+                Console.WriteLine("SharpTalkGenerator is missing. The executable file for SharpTalk generator should be located in the same folder as StarBot. StarBot will now exit.");
+                Console.WriteLine("Download SharpTalkGenerator at: https://github.com/dsdude123/SharpTalkGenerator/releases/latest");
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+                Environment.Exit(2);
+            }
 
             try
             {

@@ -38,13 +38,7 @@
     <None Update="ffprobe.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="FonixTalk.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="ftalk_us.dic">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="ftalk_us.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="libsodium.dll">
@@ -61,9 +55,6 @@
     </None>
     <None Update="opus.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TTSGen.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="youtube-dl.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

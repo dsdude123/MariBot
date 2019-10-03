@@ -105,7 +105,7 @@ namespace DiscordBot.Modules
         {
             return Process.Start(new ProcessStartInfo
             {
-                FileName = "ttsgen",
+                FileName = "SharpTalkGenerator",
                 Arguments = $"{text}",
                 UseShellExecute = false,
                 RedirectStandardOutput = false,
