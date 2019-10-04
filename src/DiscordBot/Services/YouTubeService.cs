@@ -1,34 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-//using VideoLibrary;
-//using Google.Apis.YouTube;
 
 namespace StarBot.Services
 {
     public class YouTubeService
-    {
-        //public Video Video{ get; set; }
-        //public Google.Apis.YouTube.v3.YouTubeService YouTubeService { get; set; }
-
-        //public Task<Stream> GetVideoAudio(string URL)
-        //{
-        //    var youtube = YouTube.Default;
-        //    Video = youtube.GetVideo(URL);
-        //    YouTubeService = new Google.Apis.YouTube.v3.YouTubeService();
-        //    YouTubeService.Videos.List()
-        //    if (YouTubeService.)
-                
-
-        //}
-
+    { 
         public List<int> getDuration(string url)
         {
             List<int> result = new List<int>();
-            Process yt = Execute("--get-duration " + "\"" + url + "\"");
+            Process yt = Execute("--get-duration --default-search ytsearch " + "\"" + url + "\"");
             yt.WaitForExit();
             String output = yt.StandardOutput.ReadToEnd();
             string[] split = output.Split(':');
@@ -47,7 +28,7 @@ namespace StarBot.Services
 
         public string getID(string url)
         {
-            Process yt = Execute("--get-id " + "\"" + url + "\"");
+            Process yt = Execute("--get-id --default-search ytsearch " + "\"" + url + "\"");
             yt.WaitForExit();
             String result = yt.StandardOutput.ReadToEnd();
             return result;
@@ -55,7 +36,7 @@ namespace StarBot.Services
 
         public string getName(string url)
         {
-            Process yt = Execute("--get-title " + "\"" + url + "\"");
+            Process yt = Execute("--get-title --default-search ytsearch " + "\"" + url + "\"");
             yt.WaitForExit();
             String result = yt.StandardOutput.ReadToEnd();
             return result;
@@ -65,7 +46,7 @@ namespace StarBot.Services
         {
             try
             {
-                Process yt = Execute($"--no-playlist --output \"\\cache\\{guild}\\{id}.yt\" -f best --extract-audio --audio-format mp3 " + "\"" + url + "\"");
+                Process yt = Execute($"--no-playlist --default-search ytsearch --output \"\\cache\\{id}.mp3\" -f best --extract-audio --audio-format mp3 " + "\"" + url + "\"");
                 yt.WaitForExit();
                 return true;
             } catch (Exception e)

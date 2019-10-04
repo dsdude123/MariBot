@@ -1,51 +1,89 @@
 ﻿using Discord.Commands;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using StarBot.Services;
 using System.Diagnostics;
 using Discord.Audio;
 using Discord;
 using System.IO;
-using System.Security.Authentication.ExtendedProtection.Configuration;
 using Newtonsoft.Json;
 using StarBot.Models;
+using System.Timers;
 
 namespace StarBot.Modules
 {
     public class YouTubeModule : ModuleBase<SocketCommandContext>
     {
+        public static readonly int SAVE_INTERVAL_MINUTES = 30;
+
         public YouTubeService YouTubeService { get; set; }
         public static Dictionary<string, Queue<string>> queues = new Dictionary<string, Queue<string>>();
-        public static Dictionary<string, bool> audiolocks = new Dictionary<string, bool>();
+        public static Dictionary<string, bool> audioLocks = new Dictionary<string, bool>();
+        public static YouTubeStore videoDatabase;
+        public static Boolean datbaseChanged = false;
+        public static System.Timers.Timer saveTimer;
+        public static Boolean firstStartup = true;
+
+        public YouTubeModule()
+        {
+            if (firstStartup)
+            {
+                if (!Directory.Exists(Environment.CurrentDirectory + "\\cache"))
+                {
+                    Directory.CreateDirectory(Environment.CurrentDirectory + "\\cache");
+                    videoDatabase = new YouTubeStore();
+                    videoDatabase.cache = new Dictionary<string, YouTubeObject>();
+                }
+                else
+                {
+                    if (System.IO.File.Exists(Environment.CurrentDirectory + "\\cache\\ytstore.json"))
+                    {
+                        videoDatabase = JsonConvert.DeserializeObject<YouTubeStore>(
+                            System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\store.json"));
+                    }
+                    else
+                    {
+                        videoDatabase = new YouTubeStore();
+                        videoDatabase.cache = new Dictionary<string, YouTubeObject>();
+                    }
+                }
+
+                saveTimer = new System.Timers.Timer(SAVE_INTERVAL_MINUTES * 60 * 1000);
+                saveTimer.Elapsed += saveDatabase;
+                saveTimer.AutoReset = true;
+                saveTimer.Enabled = true;
+                firstStartup = false;
+            }
+        }
 
         [Command("yt-d", RunMode = RunMode.Async)]
-        public Task ytd([Remainder] string url)
+        public Task GetVideoDuration([Remainder] string videoUrl)
         {
             try
             {
-                List<int> duration = YouTubeService.getDuration(url);
-                string respond = "";
+                List<int> duration = YouTubeService.getDuration(videoUrl);
+                string response = "";
                 for (int i = 0; i < duration.Count; i++)
                 {
-                    respond = respond + duration[i];
+                    response = response + duration[i];
                     if (i + 1 < duration.Count)
                     {
-                        respond = respond + ":";
+                        response = response + ":";
                     }
                 }
-                return ReplyAsync(respond);
-            } catch (Exception e)
+                return ReplyAsync(response);
+            }
+            catch (Exception e)
             {
                 return ReplyAsync(e.Message);
             }
         }
 
         [Command("yt", RunMode = RunMode.Async)]
-        public async Task yt([Remainder] string url)
+        public async Task PlayYoutubeVideo([Remainder] string videoUrl)
         {
+
             var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
             if (channel == null)
             {
@@ -53,174 +91,95 @@ namespace StarBot.Modules
                 return;
             }
 
-            if (url.Equals("skip")) // redirection for skip command
+            if (videoUrl.Equals("skip")) // redirection for skip command
             {
-                await ytskip();
+                await SkipVideo();
                 return;
             }
 
             // get guild and video id
             var guild = Context.Guild.Id.ToString();
-            string videoid = YouTubeService.getID(url);
+            string videoid = YouTubeService.getID(videoUrl);
             videoid = videoid.Remove(videoid.Length - 1);
 
-
-            // get youtube video store
-            bool saveAtEnd = false;
-            YouTubeStore myStore;
-            if (System.IO.File.Exists(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json"))
+            if (!Directory.Exists(Environment.CurrentDirectory + "\\cache\\" + guild))
             {
-                myStore = JsonConvert.DeserializeObject<YouTubeStore>(
-                    System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json"));
-            }
-            else
-            {
-                myStore = new YouTubeStore();
-                myStore.cache = new Dictionary<string, YouTubeObject>();
-                saveAtEnd = true;
+                Directory.CreateDirectory(Environment.CurrentDirectory + "\\cache\\" + guild);
             }
 
-            YouTubeObject selectedVideo;
-
-            if (queues.ContainsKey(guild)) // check if a queue has already been made for this session
+            if (!queues.ContainsKey(guild)) // check if a queue has already been made for this session
             {
-                List<int> duration;
-                string name;
-                if (myStore.cache.ContainsKey(videoid)) // check if our video store has the video so we can save time
-                {
-                    name = myStore.cache[videoid].name;
-                    duration = myStore.cache[videoid].duration;
-                }
-                else // not in video store
-                {
-                    name = YouTubeService.getName(url).TrimEnd('\n');
-                    duration = YouTubeService.getDuration(url);
-                    YouTubeObject newVideo = new YouTubeObject();
-                    newVideo.name = name;
-                    newVideo.duration = duration;
-                    myStore.cache.Add(videoid,newVideo);
-                    saveAtEnd = true;
-                }
-                
-                if (duration.Count > 2)
-                {
-                    ReplyAsync("Videos longer than 7 minutes are prohibited!");
-                    if (saveAtEnd)
-                    {
-                        System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json",JsonConvert.SerializeObject(myStore));
-                    }
-                    return;
-                }
-
-                if (duration.Count == 2)
-                {
-                    if (duration[0] > 7 && duration[1] > 0)
-                    {
-                        ReplyAsync("Videos longer than 7 minutes are prohibited!");
-                        if (saveAtEnd)
-                        {
-                            System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json", JsonConvert.SerializeObject(myStore));
-                        }
-                        return;
-                    }
-                }
-                queues[guild].Enqueue(url);
-                ReplyAsync("Added `" + name + "` to queue!");
-            } else
-            {
-                List<int> duration;
-                string name;
-                if (myStore.cache.ContainsKey(videoid))
-                {
-                    name = myStore.cache[videoid].name;
-                    duration = myStore.cache[videoid].duration;
-                }
-                else
-                {
-                    name = YouTubeService.getName(url).TrimEnd('\n');
-                    duration = YouTubeService.getDuration(url);
-                    YouTubeObject newVideo = new YouTubeObject();
-                    newVideo.name = name;
-                    newVideo.duration = duration;
-                    myStore.cache.Add(videoid, newVideo);
-                    saveAtEnd = true;
-                }
                 queues[guild] = new Queue<string>();
+            }
+
+            List<int> duration;
+            string name;
+            if (videoDatabase.cache.ContainsKey(videoid)) // check if our video store has the video so we can save time
+            {
+                name = videoDatabase.cache[videoid].name;
+                duration = videoDatabase.cache[videoid].duration;
+            }
+            else // not in video store
+            {
+                name = YouTubeService.getName(videoUrl).TrimEnd('\n');
+                duration = YouTubeService.getDuration(videoUrl);
+                YouTubeObject newVideo = new YouTubeObject();
+                newVideo.name = name;
+                newVideo.duration = duration;
+                videoDatabase.cache.Add(videoid, newVideo);
+                datbaseChanged = true;
+            }
+            if (duration.Count > 1)
+            {
+
                 if (duration.Count > 2)
                 {
                     ReplyAsync("Videos longer than 7 minutes are prohibited!");
-                    if (saveAtEnd)
-                    {
-                        System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json", JsonConvert.SerializeObject(myStore));
-                    }
-                    return;
                 }
+
                 if (duration[0] > 7 && duration[1] > 0)
                 {
                     ReplyAsync("Videos longer than 7 minutes are prohibited!");
-                    if (saveAtEnd)
-                    {
-                        System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json", JsonConvert.SerializeObject(myStore));
-                    }
-                    return;
                 }
-                queues[guild].Enqueue(url);
-                ReplyAsync("Added `" + name + "` to queue!");
             }
-            if (audiolocks.ContainsKey(guild)) // check if we are actively playing a video
+
+            queues[guild].Enqueue(videoUrl);
+            ReplyAsync("Added `" + name + "` to queue!");
+
+            if (audioLocks.ContainsKey(guild) && audioLocks[guild].Equals(true)) // check if we are actively playing a video
             {
-                if (audiolocks[guild].Equals(true))
-                {
-                    if (saveAtEnd)
-                    {
-                        System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json", JsonConvert.SerializeObject(myStore));
-                    }
-                    return;
-                }
-                else
-                {
-                    audiolocks[guild] = true;
-                }
-            } else
-            {
-                audiolocks[guild] = true;
+                return;
             }
+
+            audioLocks[guild] = true;
 
             try
             {
-                if (saveAtEnd)
-                {
-                    System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\" + guild + "\\store.json", JsonConvert.SerializeObject(myStore));
-                }
                 var audioClient = await channel.ConnectAsync();
                 while (queues[guild].Count > 0)
                 {
-                    myStore = JsonConvert.DeserializeObject<YouTubeStore>(
-                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\" + guild +
-                                                   "\\store.json"));
-                    var i = queues[guild].Dequeue();
-                    videoid = YouTubeService.getID(i).TrimEnd('\n');
-                    var cachestatus = setupCache(Context.Guild.Id.ToString());
-                    if (!File.Exists(Environment.CurrentDirectory + "\\cache\\" + guild + "\\" + videoid + ".mp3"))
+                    var nextVideoUrl = queues[guild].Dequeue();
+                    videoid = YouTubeService.getID(nextVideoUrl).TrimEnd('\n');
+                    if (!File.Exists(Environment.CurrentDirectory + "\\cache\\" + videoid + ".mp3"))
                     {
-                        var status = YouTubeService.getVideo(i, videoid, guild);
+                        var status = YouTubeService.getVideo(nextVideoUrl, videoid, guild);
                     }
-                    await ReplyAsync("Now playing: `" + myStore.cache[videoid].name + "`");
-                    await SendAsync(audioClient, Environment.CurrentDirectory + "\\cache\\" + guild + "\\" + videoid + ".mp3");
+                    await ReplyAsync("Now playing: `" + videoDatabase.cache[videoid].name + "`");
+                    await PlayAudio(audioClient, Environment.CurrentDirectory + "\\cache\\" + videoid + ".mp3");
                 }
-                audiolocks[guild] = false;
+                audioLocks[guild] = false;
                 audioClient.StopAsync();
             }
             catch (Exception e)
             {
-                audiolocks[guild] = false;
+                audioLocks[guild] = false;
                 await ReplyAsync(e.Message);
             }
 
         }
 
         [Command("ytskip", RunMode = RunMode.Async)]
-        public async Task ytskip()
+        public async Task SkipVideo()
         {
             var guild = Context.Guild.Id.ToString();
             try
@@ -232,47 +191,44 @@ namespace StarBot.Modules
                     return;
                 }
                 var audioClient = await channel.ConnectAsync();
-                audiolocks[guild] = true;
+                audioLocks[guild] = true;
                 while (queues[guild].Count > 0)
                 {
-                    YouTubeStore myStore = JsonConvert.DeserializeObject<YouTubeStore>(
-                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\" + guild +
-                                                   "\\store.json"));
-                    var i = queues[guild].Dequeue();
-                    var id = YouTubeService.getID(i);
-                    id = id.Remove(id.Length - 1);
-                    var cachestatus = setupCache(Context.Guild.Id.ToString());
-                    if (!File.Exists(Environment.CurrentDirectory + "\\cache\\" + guild + "\\" + id + ".mp3"))
+                    var nextVideoUrl = queues[guild].Dequeue();
+                    var videoId = YouTubeService.getID(nextVideoUrl);
+                    videoId = videoId.TrimEnd('\n');
+                    if (!File.Exists(Environment.CurrentDirectory + "\\cache\\" + videoId + ".mp3"))
                     {
-                        var status = YouTubeService.getVideo(i, id, guild);
+                        var status = YouTubeService.getVideo(nextVideoUrl, videoId, guild);
                     }
-                    YouTubeObject selectedVideo = myStore.cache[id];
+                    YouTubeObject selectedVideo = videoDatabase.cache[videoId];
                     await ReplyAsync("Now playing: `" + selectedVideo.name + "`");
-                    await SendAsync(audioClient, Environment.CurrentDirectory + "\\cache\\" + guild + "\\" + id + ".mp3");
+                    await PlayAudio(audioClient, Environment.CurrentDirectory + "\\cache\\" + videoId + ".mp3");
                 }
-                audiolocks[guild] = false;
+                audioLocks[guild] = false;
                 audioClient.StopAsync();
             }
             catch (Exception e)
             {
-                audiolocks[guild] = false;
+                audioLocks[guild] = false;
                 await ReplyAsync(e.Message);
             }
         }
 
-        private bool setupCache(string guild)
+        private void saveDatabase(Object source, ElapsedEventArgs e)
         {
-            if(!Directory.Exists(Environment.CurrentDirectory + "\\cache\\" + guild))
+
+            if (datbaseChanged)
             {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\cache\\" + guild);
+                System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\ytstore.json", JsonConvert.SerializeObject(videoDatabase));
+                datbaseChanged = false;
             }
-            return true;
         }
 
-        private async Task SendAsync(IAudioClient client, string path)
+        private async Task PlayAudio(IAudioClient client, string path)
         {
             // Create FFmpeg using the previous example
-            using (var ffmpeg = CreateStream(path))
+            using (var ffmpeg = CreateAudioSource(path))
             using (var output = ffmpeg.StandardOutput.BaseStream)
             using (var discord = client.CreatePCMStream(AudioApplication.Mixed))
             {
@@ -281,7 +237,7 @@ namespace StarBot.Modules
             }
         }
 
-        private Process CreateStream(string path)
+        private Process CreateAudioSource(string path)
         {
             return Process.Start(new ProcessStartInfo
             {
