@@ -1,0 +1,54 @@
+{
+  "cameras": [
+    {
+      "command": "redsquare",
+      "description": "Red Square, University of Washington",
+      "url": "http://www.washington.edu/cambots/camera1_l.jpg"
+    },
+    {
+      "command": "uwb",
+      "description": "South Garage Camera, Univeristy of Washington Bothell",
+      "url": "http://69.91.192.220/netcam.jpg"
+    },
+    {
+      "command": "seatac",
+      "description": "Sea-Tac International Airport",
+      "url": "https://cdn.tegna-media.com/king/weather/seatac.jpg"
+    },
+    {
+      "command": "waterfront",
+      "description": "Seattle waterfront",
+      "url": "https://cdn.tegna-media.com/king/weather/waterfront.jpg"
+    },
+    {
+      "command": "waterfront2",
+      "description": "Another Seattle waterfront camera",
+      "url": "https://cdn.tegna-media.com/king/weather/viaduct.jpg"
+    },
+    {
+      "command": "seattle",
+      "description": "KING 5 Roof Camera 1, Seattle",
+      "url": "https://cdn.tegna-media.com/king/weather/roofcam1nw500x281.jpg"
+    },
+    {
+      "command": "seattle2",
+      "description": "KING 5 Roof Camera 2, Seattle",
+      "url": "https://cdn.tegna-media.com/king/weather/roofcam2ne500x281.jpg"
+    },
+    {
+      "command": "bozeman",
+      "description": "Some random webcam in Bozeman, MT",
+      "url": "https://icons.wunderground.com/webcamramdisk/b/o/bozemanball/1/current.jpg"
+    },
+    {
+      "command": "ephrata",
+      "description": "SR 28 / SR 282 junction. Ephrata, WA",
+      "url": "https://images.wsdot.wa.gov/nc/028vc04659.jpg"
+    },
+    {
+      "command": "spokane",
+      "description": "I-90 @ Hamilton St. Spokane, WA",
+      "url": "https://images.wsdot.wa.gov/spokane/i90/CCTV004.jpg"
+    }
+  ]
+}

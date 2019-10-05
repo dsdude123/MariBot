@@ -13,6 +13,7 @@ using DiscordBot.Services;
 using StarBot.Modules;
 using StarBot.Services;
 using UrbanDictionnet;
+using System.Diagnostics;
 
 namespace DiscordBot
 {
@@ -51,6 +52,8 @@ namespace DiscordBot
             {
                 ResetBot(e);
             }
+
+            UpdateYouTubeDl();
 
             await _client.StartAsync();
 
@@ -95,6 +98,21 @@ namespace DiscordBot
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
+        }
+
+        private void UpdateYouTubeDl()
+        {
+            var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = "youtube-dl",
+                Arguments = $"-U",
+                UseShellExecute = false,
+                RedirectStandardOutput = false,
+            };
+
+            process.Start();
+            process.WaitForExit();
         }
     }
 }
