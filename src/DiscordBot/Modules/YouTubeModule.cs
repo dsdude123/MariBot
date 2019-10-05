@@ -40,7 +40,7 @@ namespace StarBot.Modules
                     if (System.IO.File.Exists(Environment.CurrentDirectory + "\\cache\\ytstore.json"))
                     {
                         videoDatabase = JsonConvert.DeserializeObject<YouTubeStore>(
-                            System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\store.json"));
+                            System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\cache\\ytstore.json"));
                     }
                     else
                     {
@@ -101,11 +101,6 @@ namespace StarBot.Modules
             var guild = Context.Guild.Id.ToString();
             string videoid = YouTubeService.getID(videoUrl);
             videoid = videoid.Remove(videoid.Length - 1);
-
-            if (!Directory.Exists(Environment.CurrentDirectory + "\\cache\\" + guild))
-            {
-                Directory.CreateDirectory(Environment.CurrentDirectory + "\\cache\\" + guild);
-            }
 
             if (!queues.ContainsKey(guild)) // check if a queue has already been made for this session
             {
