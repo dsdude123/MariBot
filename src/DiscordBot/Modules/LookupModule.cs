@@ -45,7 +45,7 @@ namespace StarBot.Modules
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             eb.Color = Color.Green;
-            return Context.Channel.SendMessageAsync("", false, eb);
+            return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("urbanrand")]
@@ -65,7 +65,7 @@ namespace StarBot.Modules
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             eb.Color = Color.Green;
-            return Context.Channel.SendMessageAsync("", false, eb);
+            return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("urbantop")]
@@ -94,7 +94,7 @@ namespace StarBot.Modules
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             eb.Color = Color.Green;
-            return Context.Channel.SendMessageAsync("", false, eb);
+            return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("wiki")]
@@ -128,7 +128,7 @@ namespace StarBot.Modules
             }
 
             state.Dispose();
-            return Context.Channel.SendMessageAsync("", false, eb);
+            return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("wikisearch")]
@@ -146,7 +146,7 @@ namespace StarBot.Modules
             eb.WithDescription(output);
             eb.Color = Color.Blue;
             state.Dispose();
-            return Context.Channel.SendMessageAsync("", false, eb);
+            return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         private String trimToLength(String text, int maxLength)

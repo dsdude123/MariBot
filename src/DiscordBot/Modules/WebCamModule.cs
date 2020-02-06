@@ -42,7 +42,7 @@ namespace StarBot.Modules
 
                 var eb = new EmbedBuilder();
                 eb.WithDescription(output);
-                await ReplyAsync("", false, eb);
+                await ReplyAsync("", false, eb.Build());
                 System.Threading.Thread.Sleep(1000);
             }
         }
