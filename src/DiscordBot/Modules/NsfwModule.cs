@@ -24,7 +24,8 @@ namespace StarBot.Modules
             List<string> images = rule34Service.GetRandomPage(tags).Result;
             if(images.Count < 1)
             {
-
+                await Context.Channel.SendMessageAsync("No results were found.");
+                return;
             }
             Random rand = new Random();
             int randomSelection = rand.Next(0, images.Count - 1);
