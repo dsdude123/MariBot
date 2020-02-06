@@ -48,7 +48,7 @@ namespace StarBot.Modules
                     var eb = new EmbedBuilder();
                     eb.WithDescription(output);
                     eb.Color = Color.Orange;
-                    ch.SendMessageAsync("", false, eb);
+                    ch.SendMessageAsync("", false, eb.Build());
                     myStore.reminders.Remove(v);
                 }
                 System.IO.File.WriteAllText(Environment.CurrentDirectory + "\\cache\\reminders.json",JsonConvert.SerializeObject(myStore));

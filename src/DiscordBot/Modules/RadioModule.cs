@@ -32,7 +32,7 @@ namespace StarBot.Modules
             output += "**radio kswd** - Plays 94.1 The sound (KSWD Seattle).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
-            return ReplyAsync("", false, eb);
+            return ReplyAsync("", false, eb.Build());
         }
 
         [Command("noaa_spokane", RunMode = RunMode.Async)]

@@ -39,7 +39,7 @@ namespace DiscordBot.Modules
             output += "**r34 <tags>** - NSFW. Returns a random image from Rule34.\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
-            return ReplyAsync("", false, eb);
+            return ReplyAsync("", false, eb.Build());
         }
 
         [Command("info")]

@@ -13,14 +13,10 @@ namespace StarBot.Modules
         public Rule34Service rule34Service { get; set; }
         public PictureService pictureService { get; set; }
 
+        [RequireNsfw]
         [Command("r34")]
         public async Task r34([Remainder] string tags)
         {
-            if(!Context.Channel.IsNsfw)
-            {
-                await Context.Channel.SendMessageAsync("You must be in an NSFW channel to run this command.");
-                return;
-            }
             List<string> images = rule34Service.GetRandomPage(tags).Result;
             if(images.Count < 1)
             {

@@ -29,7 +29,7 @@ namespace StarBot.Modules
             output += "**comic jakelikesonions** - Gets a random comic from Jake Likes Onions.\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
-            return ReplyAsync("", false, eb);
+            return ReplyAsync("", false, eb.Build());
         }
 
         [Command("cyanide")]
