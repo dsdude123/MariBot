@@ -28,6 +28,27 @@ namespace StarBot.Services
         public const string API_URL = "https://rule34.xxx/index.php?page=dapi&s=post&q=index";
         public const int RESULT_LIMIT = 100;
 
+        public async Task<List<String>> GetImageUrls(string tags, int pageNumber = 0, bool nsfw = true) {
+            string url = GenerateURL(tags, pageNumber, nsfw).Result;
+            XmlDocument response = GetAPIResponse(url).Result;
+            return GetImageUrls(response).Result;
+        }
+
+        public async Task<List<String>> GetRandomPage(string tags, bool nsfw = true)
+        {
+            string url = GenerateURL(tags, 0, nsfw).Result;
+            XmlDocument page = GetAPIResponse(url).Result;
+            int totalPosts = GetSearchTotalImages(page).Result;
+            if (totalPosts > 0)
+            {
+                int randomPage = GetRandomPageNumber(totalPosts, 100);
+                url = GenerateURL(tags, randomPage, nsfw).Result;
+                page = GetAPIResponse(url).Result;
+                return GetImageUrls(page).Result;
+            }
+            return new List<string>(); // Empty list
+        }
+
         public async Task<XmlDocument> GetAPIResponse(string request)
         {
             Stream xml = await GetDataAsync(request);
@@ -55,9 +76,22 @@ namespace StarBot.Services
             return generatedString;
         }
 
-        public async Task<int> GetTotalImages(XmlDocument response)
+        public async Task<int> GetSearchTotalImages(XmlDocument response)
         {
             return int.Parse(response["posts"].Attributes["count"].Value);
+        }
+
+        public int GetRandomPageNumber(int postCount, int pageSize)
+        {
+            double p = (double)postCount / (double)pageSize;
+            int totalPossiblePages = (int)Math.Ceiling(p);
+            Random rand = new Random();
+            int max = totalPossiblePages - 1;
+            if(max > 2000)
+            {
+                max = 2000; // API limit
+            }
+            return rand.Next(0, max);
         }
 
         public async Task<List<String>> GetImageUrls(XmlDocument response)

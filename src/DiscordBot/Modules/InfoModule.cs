@@ -36,6 +36,7 @@ namespace DiscordBot.Modules
             output += "**radar** - **EXPERIEMENTAL** Gets the current radar animation for the Pacific Northwest.\n";
             output +=
                 "**radio <text>** - Plays a specified radio station in the voice channel you currently are in. Use `radio help` for more info.\n";
+            output += "**r34 <tags>** - NSFW. Returns a random image from Rule34.\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb);
