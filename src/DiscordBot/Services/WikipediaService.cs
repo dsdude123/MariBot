@@ -19,9 +19,19 @@ namespace StarBot.Services
         {
             WikipediaNET.Wikipedia wiki = new Wikipedia();
             WikipediaNET.Objects.QueryResult results = wiki.Search(search);
-            if (results == null || results.Search == null || results.Search.Count == 0)
+            WikipediaObject returnval = new WikipediaObject();
+
+            if (!hasResults(results))
             {
-                throw new Exception("Could not find an article similar to that name.");
+                if (results.SearchInfo.Suggestion != null)
+                {
+                    results = wiki.Search(results.SearchInfo.Suggestion);
+                }
+                else
+                {
+                    returnval.title = "Wikipedia returned no results for query: " + search;
+                    return returnval;
+                }
             }
 
             string toGet = "";
@@ -42,9 +52,15 @@ namespace StarBot.Services
                 throw new Exception("An error occured loading the page.");
             }
 
-            WikipediaObject returnval = new WikipediaObject();
             returnval.title = toGet;
             returnval.text = sections[0].Content;
+
+            List<ImageWiki> images = Wikipedia.GetImagesURL(toGet);
+            images = removeProhibitedResults(images);
+            if(hasImageResults(images))
+            {
+                returnval.imageURL = images[0].URL;
+            }
             return returnval;
         }
 
@@ -76,10 +92,51 @@ namespace StarBot.Services
             return returnval;
         }
 
+        private bool hasResults(WikipediaNET.Objects.QueryResult results)
+        {
+            if (results == null || results.Search == null || results.Search.Count == 0)
+            {
+                return false;
+            } else if (results.Search.Count == 1)
+            {
+                if(results.Search[0].Title == null && results.Search[0].RedirectTitle == null)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool hasImageResults(List<ImageWiki> images)
+        {
+            if(images == null || images.Count < 1 || images[0].URL == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private List<ImageWiki> removeProhibitedResults(List<ImageWiki> images)
+        {
+            List<ImageWiki> newImages = new List<ImageWiki>();
+            foreach(ImageWiki i in images)
+            {
+                if(i != null && i.URL != null)
+                {
+                    string url = i.URL;
+                    if(url.ToLower().EndsWith(".png") || url.ToLower().EndsWith(".gif") || url.ToLower().EndsWith(".jpeg") || url.ToLower().EndsWith(".jpg") || url.ToLower().EndsWith(".bmp"))
+                    {
+                        newImages.Add(i);
+                    }
+                }
+            }
+            return newImages;
+        }
         public class WikipediaObject
         {
             public string title;
             public string text;
+            public string imageURL;
         }
 
     }
