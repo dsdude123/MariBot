@@ -8,6 +8,7 @@ using Discord;
 using Discord.Commands;
 using StarBot.Services;
 using UrbanDictionnet;
+using static StarBot.Services.WikipediaService;
 
 namespace StarBot.Modules
 {
@@ -100,13 +101,32 @@ namespace StarBot.Modules
         public Task wikipedia([Remainder] string topic)
         {
             var state = Context.Channel.EnterTypingState();
-            var result = WikipediaService.GetWikipediaPage(topic).Result;
+            WikipediaObject result;
+
+            try
+            {
+                result = WikipediaService.GetWikipediaPage(topic).Result;
+            } catch (Exception e)
+            {
+                state.Dispose();
+                return Context.Channel.SendMessageAsync(e.Message);
+            }
+
             string output = "";
             output += "**" + result.title + "**\n\n";
             output += result.text;
+
+            output = trimToLength(output, 2048);
+
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             eb.Color = Color.Blue;
+
+            if (result.imageURL != null)
+            {
+                eb.ImageUrl = result.imageURL;
+            }
+
             state.Dispose();
             return Context.Channel.SendMessageAsync("", false, eb);
         }
@@ -127,6 +147,23 @@ namespace StarBot.Modules
             eb.Color = Color.Blue;
             state.Dispose();
             return Context.Channel.SendMessageAsync("", false, eb);
+        }
+
+        private String trimToLength(String text, int maxLength)
+        {
+            if(maxLength < 0)
+            {
+                throw new ArgumentException("Invalid argument maxLength");
+            }
+
+            if(maxLength > text.Length)
+            {
+                return text;
+            }
+
+            int totalToRemove = text.Length - maxLength;
+
+            return text.Remove(maxLength, totalToRemove);
         }
     }
 }
