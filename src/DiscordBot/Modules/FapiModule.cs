@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace StarBot.Modules
@@ -15,19 +16,16 @@ namespace StarBot.Modules
     {
         public FapiService service { get; set; }
 
-        [Command("e2p")]
-        public async Task Edges2Porn([Remainder] string url)
+        [Command("e2e")]
+        public async Task Edges2Emojis(string url = null)
         {
-            if (url.Equals(null))
+            try
             {
-                var messages = Context.Channel.GetMessagesAsync(100, Discord.CacheMode.AllowDownload).FlattenAsync().Result.ToArray();
-                messages.OrderBy(message => message.Timestamp);
-                url = getNewestImageUrl(messages);
-            }
-
-            if(!isSupportedImage(url))
+                url = getImageUrl(Context, url);
+            } 
+            catch (NotSupportedException e)
             {
-                await Context.Channel.SendMessageAsync("Invalid image specified or no image within 100 posts detected.");
+                await Context.Channel.SendMessageAsync(e.Message);
                 return;
             }
 
@@ -36,10 +34,57 @@ namespace StarBot.Modules
             images.Add(url);
             body.images = images;
 
-            HttpContent request = service.BuildImageRequest(body);
-            var response = service.ExecuteImageRequest("edges2porn", request).Result;
+            var response = service.ExecuteImageRequest("edges2emojis", body).Result;
+            response.Seek(0, System.IO.SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(response, "e2e.png");
+        }
+
+        [RequireNsfw]
+        [Command("e2p")]
+        public async Task Edges2Porn(string url = null)
+        {
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+
+            var response = service.ExecuteImageRequest("edges2porn", body).Result;
             response.Seek(0, System.IO.SeekOrigin.Begin);
             await Context.Channel.SendFileAsync(response, "e2p.png");
+        }
+
+        [RequireNsfw]
+        [Command("e2pg")]
+        public async Task Edges2PornGif(string url = null)
+        {
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+
+            var response = service.ExecuteImageRequest("edges2porn_gif", body).Result;
+            response.Seek(0, System.IO.SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(response, "e2p.gif");
         }
 
         private string getNewestImageUrl(IMessage[] messages)
@@ -88,6 +133,37 @@ namespace StarBot.Modules
                 }
             }
             return null;
+        }
+
+        private string getImageUrl(SocketCommandContext context, string url)
+        {
+            if (url == null)
+            {
+                var messages = context.Channel.GetMessagesAsync(100, Discord.CacheMode.AllowDownload).FlattenAsync().Result.ToArray();
+                messages.OrderBy(message => message.Timestamp);
+                url = getNewestImageUrl(messages);
+            }
+
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(url))
+            {
+                string userId = url.Replace("<@!", "").Replace(">", "");
+                foreach (var user in context.Guild.Users.ToArray())
+                {
+                    if (user.Id.ToString().Equals(userId))
+                    {
+                        url = user.GetAvatarUrl().Split('?')[0];
+                    }
+                }
+            }
+
+
+            if (!isSupportedImage(url))
+            {
+                throw new NotSupportedException("Invalid image specified or no image within 100 posts detected.");
+            }
+
+            return url;
         }
 
         private bool isSupportedImage(string url)

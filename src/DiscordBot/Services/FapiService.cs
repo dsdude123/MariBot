@@ -30,37 +30,26 @@ namespace StarBot.Services
             return ENDPOINT + function;
         }
 
-        public HttpContent BuildImageRequest(FapiRequest body)
-        {
-            return BuildRequest(body, "image/png");
-        }
-
-        public HttpContent BuildTextRequest(FapiRequest body)
-        {
-            return BuildRequest(body, "text/plain");
-        }
-
-        public HttpContent BuildRequest(FapiRequest body, string contentType)
+        public async Task<Stream> ExecuteImageRequest(string function, FapiRequest body)
         {
             string json = JsonConvert.SerializeObject(body);
             HttpContent request = new StringContent(json);
-            request.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
-            request.Headers.Add("Authorization", API_TOKEN);
-            return request;
-        }
-
-        public async Task<Stream> ExecuteImageRequest(string function, HttpContent body)
-        {
+            request.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpClient httpClient = new HttpClient();
-            HttpResponseMessage response = httpClient.PostAsync(BuildUrl(function), body).Result;
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", API_TOKEN);
+            HttpResponseMessage response = httpClient.PostAsync(BuildUrl(function), request).Result;
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStreamAsync().Result;
         }
 
-        public async Task<String> ExecuteTextRequest(string function, HttpContent body)
+        public async Task<String> ExecuteTextRequest(string function, FapiRequest body)
         {
+            string json = JsonConvert.SerializeObject(body);
+            HttpContent request = new StringContent(json);
+            request.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpClient httpClient = new HttpClient();
-            HttpResponseMessage response = httpClient.PostAsync(BuildUrl(function), body).Result;
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", API_TOKEN);
+            HttpResponseMessage response = httpClient.PostAsync(BuildUrl(function), request).Result;
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
