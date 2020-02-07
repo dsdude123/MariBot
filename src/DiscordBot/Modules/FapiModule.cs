@@ -16,6 +16,29 @@ namespace StarBot.Modules
     {
         public FapiService service { get; set; }
 
+        [Command("bernie")]
+        public async Task Bernie(string url = null)
+        {
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+
+            var response = service.ExecuteImageRequest("bernie", body).Result;
+            response.Seek(0, System.IO.SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(response, "bernie.png");
+        }
+
         [Command("cmm")]
         public async Task ChangeMyMind([Remainder] string text)
         {
