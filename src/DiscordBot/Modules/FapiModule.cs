@@ -16,6 +16,18 @@ namespace StarBot.Modules
     {
         public FapiService service { get; set; }
 
+        [Command("cmm")]
+        public async Task ChangeMyMind([Remainder] string text)
+        {
+            FapiRequest body = new FapiRequest();
+            body.args = new Arguments();
+            body.args.text = text;
+
+            var response = service.ExecuteImageRequest("cmm", body).Result;
+            response.Seek(0, System.IO.SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(response, "cmm.png");
+        }
+
         [Command("e2e")]
         public async Task Edges2Emojis(string url = null)
         {
