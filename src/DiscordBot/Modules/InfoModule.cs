@@ -47,23 +47,14 @@ namespace DiscordBot.Modules
             => ReplyAsync(
                 $"Hello, I am a bot called {Context.Client.CurrentUser.Username} written in Discord.Net 1.0\n");
 
-        [Command("tts")]
-        public Task tts([Remainder]string text)
+        [Command("tts", RunMode = RunMode.Async)]
+        public async Task tts([Remainder]string text)
         {
-            CreateTTS(text);
-            var sender = Context.Message.Author.Id;
-            var user = Context.Client.CurrentUser;
-            return ReplyAsync($"{user.Mention} executetts {sender}");
-        }
-
-        [Command("executetts",RunMode = RunMode.Async)]
-        private async Task executeTTS([Remainder] string org)
-        {
-            
-            var channel = (Context.Guild.GetUser(ulong.Parse(org)))?.VoiceChannel;
+            CreateTTS(text).WaitForExit();
+            var channel = (Context.Guild.GetUser(Context.Message.Author.Id))?.VoiceChannel;
             if (channel == null)
             {
-                await ReplyAsync("You must be in a voice channel to use this command!");
+                await Context.Channel.SendFileAsync(Environment.CurrentDirectory + "\\tts.wav");
                 return;
             }
             var audioClient = await channel.ConnectAsync();
