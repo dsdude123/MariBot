@@ -14,7 +14,7 @@ namespace StarBot.Modules
     public class RadioModule : ModuleBase<SocketCommandContext>
     {
 
-        public static Dictionary<Process,string> activeradios = new Dictionary<Process, string>();
+        public static Dictionary<Process, string> activeradios = new Dictionary<Process, string>();
         [Command("help")]
         public Task help()
         {
@@ -30,6 +30,7 @@ namespace StarBot.Modules
             output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
             output += "**radio kube** - Plays KUBE 93.3 (Seattle).\n";
             output += "**radio kswd** - Plays 94.1 The sound (KSWD Seattle).\n";
+            output += "**radio trij** - Plays Triple J (Australia).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb.Build());
@@ -46,6 +47,20 @@ namespace StarBot.Modules
             }
             var audioClient = await channel.ConnectAsync();
             await SendAsync(audioClient, "http://wxradio.grimtech.net:8000/KE7NWL/Spokane.mp3", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+        [Command("trij", RunMode = RunMode.Async)]
+        public async Task trij()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "http://live-radio01.mediahubaustralia.com/2TJW/mp3/", Context.Guild.Id.ToString());
             audioClient.StopAsync();
         }
 
@@ -190,8 +205,8 @@ namespace StarBot.Modules
             {
                 if (radio.Value.Equals(Context.Guild.Id.ToString()))
                 {
-                   radio.Key.Kill();
-                   toRemove.Add(radio.Key);
+                    radio.Key.Kill();
+                    toRemove.Add(radio.Key);
                 }
             }
 
@@ -201,15 +216,15 @@ namespace StarBot.Modules
             }
             audioClient.StopAsync();
         }
-       
+
         private async Task SendAsync(IAudioClient client, string path, string guild)
         {
             // Create FFmpeg using the previous example
             var ffmpeg = CreateStream(path);
-            activeradios.Add(ffmpeg,guild);
+            activeradios.Add(ffmpeg, guild);
             using (ffmpeg)
             using (var output = ffmpeg.StandardOutput.BaseStream)
-            using (var discord = client.CreatePCMStream(AudioApplication.Music,24000,10000))
+            using (var discord = client.CreatePCMStream(AudioApplication.Music, 24000, 10000))
             {
                 try { await output.CopyToAsync(discord); }
                 finally { await discord.FlushAsync(); }
