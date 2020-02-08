@@ -64,8 +64,6 @@ namespace StarBot.Modules
             audioClient.StopAsync();
         }
 
-
-
         [Command("knhc", RunMode = RunMode.Async)]
         public async Task knhc()
         {
