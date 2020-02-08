@@ -30,6 +30,7 @@ namespace StarBot.Modules
             output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
             output += "**radio kube** - Plays KUBE 93.3 (Seattle).\n";
             output += "**radio kswd** - Plays 94.1 The sound (KSWD Seattle).\n";
+            output += "**radio trij** - Plays Triple J (Australia).\n";
             var eb = new EmbedBuilder();
             eb.WithDescription(output);
             return ReplyAsync("", false, eb.Build());
@@ -48,6 +49,22 @@ namespace StarBot.Modules
             await SendAsync(audioClient, "http://wxradio.grimtech.net:8000/KE7NWL/Spokane.mp3", Context.Guild.Id.ToString());
             audioClient.StopAsync();
         }
+
+        [Command("trij", RunMode = RunMode.Async)]
+        public async Task trij()
+        {
+            var channel = (Context.Message.Author as IGuildUser)?.VoiceChannel;
+            if(channel == null)
+            {
+                await ReplyAsync("You must be in a voice channel to use this command!");
+                return;
+            }
+            var audioClient = await channel.ConnectAsync();
+            await SendAsync(audioClient, "http://live-radio01.mediahubaustralia.com/2TJW/mp3/", Context.Guild.Id.ToString());
+            audioClient.StopAsync();
+        }
+
+
 
         [Command("knhc", RunMode = RunMode.Async)]
         public async Task knhc()
