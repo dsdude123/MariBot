@@ -50,7 +50,14 @@ namespace DiscordBot.Modules
         [Command("tts", RunMode = RunMode.Async)]
         public async Task tts([Remainder]string text)
         {
-            CreateTTS(text).WaitForExit();
+            try
+            {
+                CreateTTS(text).WaitForExit();
+            } catch (FileNotFoundException e)
+            {
+                await Context.Channel.SendMessageAsync("SharpTalk is not installed.");
+                return;
+            }
             var channel = (Context.Guild.GetUser(Context.Message.Author.Id))?.VoiceChannel;
             if (channel == null)
             {
@@ -95,6 +102,10 @@ namespace DiscordBot.Modules
 
         private Process CreateTTS(string text)
         {
+            if(!DiscordBot.Program.isSharpTalkPresent)
+            {
+                throw new FileNotFoundException("SharpTalk is not installed.");
+            }
             return Process.Start(new ProcessStartInfo
             {
                 FileName = "SharpTalkGenerator",
