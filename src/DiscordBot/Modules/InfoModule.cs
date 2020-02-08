@@ -55,7 +55,7 @@ namespace DiscordBot.Modules
                 CreateTTS(text).WaitForExit();
             } catch (FileNotFoundException e)
             {
-                await Context.Channel.SendMessageAsync("SharpTalk is not installed.");
+                await Context.Channel.SendMessageAsync("SharpTalkGenerator is not installed.");
                 return;
             }
             var channel = (Context.Guild.GetUser(Context.Message.Author.Id))?.VoiceChannel;
