@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using StarBot.Models;
+using MariBot.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StarBot.Services
+namespace MariBot.Services
 {
     /*
      * Service for fAPI 
