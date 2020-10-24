@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace StarBot.Services
+namespace MariBot.Services
 {
     public class YouTubeService
     { 

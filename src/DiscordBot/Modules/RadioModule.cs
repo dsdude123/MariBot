@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     [Group("radio")]
     public class RadioModule : ModuleBase<SocketCommandContext>

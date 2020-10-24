@@ -7,7 +7,7 @@ using MediawikiSharp_API;
 using WikipediaNET;
 
 
-namespace StarBot.Services
+namespace MariBot.Services
 {
     public class WikipediaService
     {

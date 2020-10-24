@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UrbanDictionnet;
 
-namespace StarBot.Services
+namespace MariBot.Services
 {
     public class UrbanDictionaryService
     {

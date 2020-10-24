@@ -1,12 +1,12 @@
 ﻿using Discord.Commands;
-using StarBot.Services;
+using MariBot.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     public class NsfwModule : ModuleBase<SocketCommandContext>
     {

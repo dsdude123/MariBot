@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
-using StarBot.Models;
+using MariBot.Models;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     [Group("game")]
     public class GameModule : ModuleBase<SocketCommandContext>

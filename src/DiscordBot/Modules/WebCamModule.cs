@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
-using StarBot.Models;
-using StarBot.Services;
+using MariBot.Models;
+using MariBot.Services;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     [Group("webcam")]
     public class WebCamModule : ModuleBase<SocketCommandContext>

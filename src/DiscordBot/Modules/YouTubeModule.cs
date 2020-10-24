@@ -2,16 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using StarBot.Services;
+using MariBot.Services;
 using System.Diagnostics;
 using Discord.Audio;
 using Discord;
 using System.IO;
 using Newtonsoft.Json;
-using StarBot.Models;
+using MariBot.Models;
 using System.Timers;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     public class YouTubeModule : ModuleBase<SocketCommandContext>
     {

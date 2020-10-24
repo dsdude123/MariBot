@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using HtmlAgilityPack;
 
-namespace StarBot.Services
+namespace MariBot.Services
 {
     /*
      * Why the hell am I writing this?

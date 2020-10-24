@@ -10,8 +10,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
-using StarBot.Modules;
-using StarBot.Services;
+using MariBot.Modules;
+using MariBot.Services;
 using UrbanDictionnet;
 using System.Diagnostics;
 
@@ -38,7 +38,7 @@ namespace DiscordBot
            
             if(!(isSharpTalkPresent = File.Exists("SharpTalkGenerator.exe")))
             {
-                Console.WriteLine("SharpTalkGenerator is missing. The executable file for SharpTalk generator should be located in the same folder as StarBot. TTS functionality will be unavalible.");
+                Console.WriteLine("SharpTalkGenerator is missing. The executable file for SharpTalk generator should be located in the same folder as MariBot. TTS functionality will be unavalible.");
                 Console.WriteLine("Download SharpTalkGenerator at: https://github.com/dsdude123/SharpTalkGenerator/releases/latest");
             }
 

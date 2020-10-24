@@ -8,10 +8,10 @@ using Discord;
 using Discord.Commands;
 using DiscordBot;
 using Newtonsoft.Json;
-using StarBot.Models;
+using MariBot.Models;
 
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     public class ReminderModule : ModuleBase<SocketCommandContext>
     {

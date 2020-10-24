@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using StarBot.Services;
+using MariBot.Services;
 using UrbanDictionnet;
-using static StarBot.Services.WikipediaService;
+using static MariBot.Services.WikipediaService;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     /*
      * Collection of commands for looking up things like definitions.

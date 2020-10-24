@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 
-namespace StarBot.Models
+namespace MariBot.Models
 {
     public class RemindersStore
     {

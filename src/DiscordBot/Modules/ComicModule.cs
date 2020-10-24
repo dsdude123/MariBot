@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using StarBot.Services;
+using MariBot.Services;
 using HtmlAgilityPack;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     [Group("comic")]
     public class ComicModule : ModuleBase<SocketCommandContext>

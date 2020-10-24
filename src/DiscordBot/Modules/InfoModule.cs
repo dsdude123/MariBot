@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
-using StarBot.Modules;
-using StarBot.Services;
+using MariBot.Modules;
+using MariBot.Services;
 
 namespace DiscordBot.Modules
 {

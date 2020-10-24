@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace StarBot.Modules
+namespace MariBot.Modules
 {
     public class RandomModule : ModuleBase<SocketCommandContext>
     {
