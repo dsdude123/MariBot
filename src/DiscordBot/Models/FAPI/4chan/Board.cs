@@ -11,6 +11,5 @@ namespace MariBot.Models.FAPI._4chan
         public String name { get; set; }
         public String title { get; set; }
         public String description { get; set; }
-
     }
 }

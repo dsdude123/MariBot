@@ -325,7 +325,6 @@ namespace MariBot.Modules
             {
                 await Context.Channel.SendMessageAsync("No image results found.", false);
             }
-
         }
 
         [Command("edges", RunMode = RunMode.Async)]
@@ -1641,7 +1640,6 @@ namespace MariBot.Modules
                     }
                 }
             }
-
 
             if (!isSupportedImage(url))
             {

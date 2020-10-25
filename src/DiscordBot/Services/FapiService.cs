@@ -45,7 +45,6 @@ namespace MariBot.Services
 
         public async Task<Stream> ExecuteImageRequest(string function, String path, FapiRequest body)
         {
-
             String url;
             if (path != null && path.Length > 0)
             {
