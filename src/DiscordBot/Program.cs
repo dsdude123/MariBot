@@ -87,6 +87,7 @@ namespace DiscordBot
                 .AddSingleton<WikipediaService>()
                 .AddSingleton<MediawikiSharp_API.Mediawiki>()
                 .AddSingleton<YouTubeService>()
+                .AddSingleton<FapiService>()
                 .BuildServiceProvider();
         }
 

@@ -14,6 +14,7 @@ namespace MariBot.Modules
         public PictureService pictureService { get; set; }
 
         [RequireNsfw]
+        [ProhibitBlacklistedServers]
         [Command("r34")]
         public async Task r34([Remainder] string tags)
         {
