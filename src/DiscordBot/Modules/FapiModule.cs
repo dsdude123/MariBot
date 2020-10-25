@@ -1,10 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
-using MariBot.Models;
+using MariBot.Models.FAPI;
+using MariBot.Models.FAPI._4chan;
+using MariBot.Models.FAPI.DuckDuckGo;
 using MariBot.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,756 +20,1358 @@ namespace MariBot.Modules
     {
         public FapiService service { get; set; }
 
-        //[Command("4chan")]
-        public Task fourchan()
+        [RequireNsfw]
+        [ProhibitBlacklistedServers]
+        [Command("4chan", RunMode = RunMode.Async)]
+        public async Task fourchan(string path = null)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            try
+            {
+                Models.FAPI._4chan.ApiResponse response = null;
+                try
+                {
+                    var rawResponse = service.ExecutePathRequest("4chan", path).Result;
+                    response = JsonConvert.DeserializeObject<Models.FAPI._4chan.ApiResponse>(rawResponse);
+                }
+                catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+                {
+                    HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                    if (caught.statusCode.Equals(429))
+                    {
+                        await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+
+                DateTimeOffset threadTime = DateTimeOffset.FromUnixTimeMilliseconds(response.thread.time);
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.WithTitle("/" + response.board.name + "/ - " + response.board.title);
+                embedBuilder.WithAuthor(response.thread.id.ToString());
+                embedBuilder.WithTimestamp(threadTime);
+                embedBuilder.WithColor(Color.LightOrange);
+                embedBuilder.WithUrl("https://boards.4chan.org/" + response.board.name + "/thread/" + response.thread.id);
+
+                String threadText = "";
+                String thumbnailUrl = null;
+                foreach(Post post in response.posts)
+                {
+                    if (post.file != null && post.file.Length > 0 && thumbnailUrl == null)
+                    {
+                        thumbnailUrl = post.file; // Get first image as the thumbnail
+                    }
+                    String postText = build4ChanPostString(post);
+                    if ((threadText + postText).Length <= 2048)
+                    {
+                        threadText += postText;
+                    }
+                }
+
+                embedBuilder.WithDescription(threadText);
+                if (thumbnailUrl != null) embedBuilder.WithThumbnailUrl(thumbnailUrl);
+
+                await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
+            } catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync("Failed to get thread from 4chan. " +
+                    "If you specified a board or thread, make sure it is in the `board` or `board/thread` format " +
+                    "replacing `board` with the letters of the board (i.e. `vp` ) and `thread` with the number of the thread (i.e. `123456`).");
+            }
         }
 
         [Command("9gag", RunMode = RunMode.Async)]
-        public async Task ninegag(string url = null)
+        public async Task ninegag([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "9gag", url);
         }
 
         [Command("adidas", RunMode = RunMode.Async)]
-        public async Task Adidas(string url = null)
+        public async Task Adidas([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "adidas", url);
         }
 
         [Command("adw", RunMode = RunMode.Async)]
-        public async Task ADW(string url = null)
+        public async Task ADW([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "adw", url);
         }
 
         [Command("ajit", RunMode = RunMode.Async)]
-        public async Task Ajit(string url = null)
+        public async Task Ajit([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "ajit", url);
         }
 
         [Command("america", RunMode = RunMode.Async)]
-        public async Task America(string url = null)
+        public async Task America([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "america", url);
         }
 
         [Command("analysis", RunMode = RunMode.Async)]
-        public async Task Analysis(string url = null)
+        public async Task Analysis([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "analysis", url);
         }
 
         [Command("austin", RunMode = RunMode.Async)]
-        public async Task Austin(string url = null)
+        public async Task Austin([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "austin", url);
         }
 
         [Command("autism", RunMode = RunMode.Async)]
-        public async Task Autism(string url = null)
+        public async Task Autism([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "autism", url);
         }
 
         [Command("bandicam", RunMode = RunMode.Async)]
-        public async Task Bandicam(string url = null)
+        public async Task Bandicam([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "bandicam", url);
         }
 
         [Command("bernie", RunMode = RunMode.Async)]
-        public async Task Bernie(string url = null)
+        public async Task Bernie([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "bernie", url);
         }
 
         [Command("binoculars", RunMode = RunMode.Async)]
-        public async Task Binoculars(string url = null)
+        public async Task Binoculars([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "binoculars", url);
         }
 
         [Command("blackify", RunMode = RunMode.Async)]
-        public async Task Blackify(string url = null)
+        public async Task Blackify([Remainder] string url = null)
         {
             try
             {
                 await simpleImageRequest(Context, "blackify", url);
             }
-            catch (AggregateException e)
+            catch (AggregateException e) when (e.InnerException is HttpStatusCodeException)
             {
-                if (e.InnerException.Message.Equals("Response status code does not indicate success: 400 (Bad Request)."))
+                HttpStatusCodeException caught = (HttpStatusCodeException)e.InnerException;
+                if (caught.statusCode.Equals(400))
                 {
                     await Context.Channel.SendMessageAsync("400 Bad Request. fAPI may have not been able to detect a face in the picture");
                 }
-                throw e;
             }
         }
 
         [Command("blackpanther", RunMode = RunMode.Async)]
-        public async Task BlackPanther(string url = null)
+        public async Task BlackPanther([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "blackpanther", url);
         }
 
         [Command("bobross", RunMode = RunMode.Async)]
-        public async Task BobRoss(string url = null)
+        public async Task BobRoss([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "bobross", url);
         }
 
-        //[Command("buzzfeed", RunMode = RunMode.Async)]
-        public async Task BuzzFeed(string url = null)
+        [Command("buzzfeed", RunMode = RunMode.Async)]
+        public async Task BuzzFeed([Remainder] string text = null)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "buzzfeed", text);
         }
 
         [Command("cmm", RunMode = RunMode.Async)]
         public async Task ChangeMyMind([Remainder] string text)
         {
-            FapiRequest body = new FapiRequest();
-            body.args = new Arguments();
-            body.args.text = text;
-
-            var response = service.ExecuteImageRequest("cmm", body).Result;
-            response.Seek(0, System.IO.SeekOrigin.Begin);
-            await Context.Channel.SendFileAsync(response, "cmm.png");
+            await simpleImageFromTextRequest(Context, "cmm", text);
         }
 
         [Command("composite", RunMode = RunMode.Async)]
-        public async Task Composite(string url = null)
+        public async Task Composite([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "composite", url);
         }
 
         [Command("condom", RunMode = RunMode.Async)]
-        public async Task Condom(string url = null)
+        public async Task Condom([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "condom", url);
         }
 
-        //[Command("consent", RunMode = RunMode.Async)]
-        public async Task Consent()
+        [Command("consent", RunMode = RunMode.Async)]
+        public async Task Consent([Remainder] string text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "consent", text, text);
         }
 
         [Command("coolguy", RunMode = RunMode.Async)]
-        public async Task Coolguy(string url = null)
+        public async Task Coolguy([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "coolguy", url);
         }
 
-        //[Command("days", RunMode = RunMode.Async)]
-        public async Task Days()
+        [Command("days", RunMode = RunMode.Async)]
+        public async Task Days([Remainder] string text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "days", text);
         }
 
-        //[Command("deepfry", RunMode = RunMode.Async)]
-        public async Task Deepfry()
+        [Command("deepfry", RunMode = RunMode.Async)]
+        public async Task Deepfry(int amount = 100)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Validate amount
+            await imageRequestWithArguments(Context, "deepfry", amount.ToString());
         }
 
         [Command("depression", RunMode = RunMode.Async)]
-        public async Task Depression(string url = null)
+        public async Task Depression([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "depression", url);
         }
 
         [Command("disabled", RunMode = RunMode.Async)]
-        public async Task Disabled(string url = null)
+        public async Task Disabled([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "disabled", url);
         }
 
         [Command("dork", RunMode = RunMode.Async)]
-        public async Task Dork(string url = null)
+        public async Task Dork([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "dork", url);
         }
 
-        //[Command("duckduckgo", RunMode = RunMode.Async)]
-        public async Task DuckDuckGo()
+        [Command("duckduckgo", RunMode = RunMode.Async)]
+        public async Task DuckDuckGo([Remainder] string text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            FapiRequest request = new FapiRequest();
+            Arguments arguments = new Arguments();
+            arguments.text = text;
+            request.args = arguments;
+
+            Models.FAPI.DuckDuckGo.ApiResponse response = null;
+            try
+            {
+                var rawResponse = service.ExecuteTextRequest("duckduckgo", request).Result;
+                response = JsonConvert.DeserializeObject<Models.FAPI.DuckDuckGo.ApiResponse>(rawResponse);
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.WithTitle("Results for: " + text);
+            embedBuilder.WithColor(Color.Orange);
+
+            String completeText = "";
+            foreach (Result result in response.results)
+            {
+                String resultText = buildDuckDuckGoResultString(result);
+                if ((completeText + resultText).Length <= 2048)
+                {
+                    completeText += resultText;
+                }
+            }
+
+            embedBuilder.WithDescription(completeText);
+
+            await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
-        //[Command("duckduckgoimages", RunMode = RunMode.Async)]
-        public async Task DuckDuckGoImages()
+        [Command("duckduckgoimages", RunMode = RunMode.Async)]
+        public async Task DuckDuckGoImages([Remainder] string text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            FapiRequest request = new FapiRequest();
+            Arguments arguments = new Arguments();
+            arguments.text = text;
+            request.args = arguments;
+            String rawResponse = null;
+            try
+            {
+                rawResponse = service.ExecuteTextRequest("duckduckgoimages", request).Result;
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+            rawResponse = "{ images:" + rawResponse + "}"; // JSON response is malformed, fix it
+            Models.FAPI.DuckDuckGo.ApiResponse response = JsonConvert.DeserializeObject<Models.FAPI.DuckDuckGo.ApiResponse>(rawResponse);
+
+            if (response.images != null && response.images.Length > 0)
+            {
+                Random random = new Random();
+                int imageToPick = random.Next(0, response.images.Length);
+                await Context.Channel.SendMessageAsync(response.images[imageToPick], false);
+            } else
+            {
+                await Context.Channel.SendMessageAsync("No image results found.", false);
+            }
+
         }
 
         [Command("edges", RunMode = RunMode.Async)]
-        public async Task Edges(string url = null)
+        public async Task Edges([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "edges", url);
         }
 
         [Command("e2e", RunMode = RunMode.Async)]
-        public async Task Edges2Emojis(string url = null)
+        public async Task Edges2Emojis([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "edges2emojis", url);
         }
 
         [RequireNsfw]
         [Command("e2p", RunMode = RunMode.Async)]
-        public async Task Edges2Porn(string url = null)
+        public async Task Edges2Porn([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "edges2porn", url);
         }
 
         [RequireNsfw]
         [Command("e2pg", RunMode = RunMode.Async)]
-        public async Task Edges2PornGif(string url = null)
+        public async Task Edges2PornGif([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "edges2porn_gif", url);
         }
 
-        //[Command("emojify", RunMode = RunMode.Async)]
-        public async Task Emojify()
+        [Command("emojify", RunMode = RunMode.Async)]
+        public async Task Emojify(String foregroundEmoji, String backgroundEmoji, bool vertical, [Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            // API documentation specifies an image argument but not clear use why as the returned result is just the text argument as emoji
+
+            //String url = null;
+            //try
+            //{
+            //    url = getImageUrl(Context, url);
+            //}
+            //catch (NotSupportedException e)
+            //{
+            //    await Context.Channel.SendMessageAsync(e.Message);
+            //    return;
+            //}
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            //List<string> images = new List<string>();
+            //images.Add(url);
+            //body.images = images;
+
+            arguments.text = text;
+            arguments.foreground = foregroundEmoji;
+            arguments.background = backgroundEmoji;
+            arguments.vertical = vertical;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteTextRequest("emojify", body).Result;
+                await Context.Channel.SendMessageAsync(response);
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("emojimosaic", RunMode = RunMode.Async)]
-        public async Task EmojiMosaic()
+        [Command("emojimosaic", RunMode = RunMode.Async)]
+        public async Task EmojiMosaic(int gridSize = 32)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Add validation to make sure value of grid size is within accepted range
+            await imageRequestWithArguments(Context, "emojimosaic", gridSize.ToString());
         }
 
-        //[Command("eval", RunMode = RunMode.Async)]
-        public async Task Eval()
+        [Command("EvalMagik", RunMode = RunMode.Async)]
+        public async Task EvalMagik([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
-        }
-
-        //[Command("EvalMagik", RunMode = RunMode.Async)]
-        public async Task EvalMagik()
-        {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "evalmagik", text);
         }
 
         [Command("excuse", RunMode = RunMode.Async)]
-        public async Task Excuse(string url = null)
+        public async Task Excuse([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "excuse", url);
         }
 
-        //[Command("eyes", RunMode = RunMode.Async)]
-        public async Task Eyes()
+        [Command("eyes", RunMode = RunMode.Async)]
+        public async Task Eyes(String eyeType)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Add validation to make sure value of text is within accepted range
+            //The eye overlay to use (one of big, black, blood, blue, googly, green, horror, 
+            //illuminati, money, normal, pink, red, small, spinner, spongebob, white, yellow, lucille)
+            await imageRequestWithArguments(Context, "eyes", eyeType);
         }
 
-        //[Command("faceapp", RunMode = RunMode.Async)]
-        public async Task FaceApp()
+        // As of the time of implementation (10/25/2020), the API endpoint for this doesn't seem to be working.
+        [Command("faceapp", RunMode = RunMode.Async)]
+        public async Task FaceApp(String text = null)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            try
+            {
+                if (text == null)
+                {
+                    String url = null;
+                    try
+                    {
+                        url = getImageUrl(Context, url);
+                    }
+                    catch (NotSupportedException e)
+                    {
+                        await Context.Channel.SendMessageAsync(e.Message);
+                        return;
+                    }
+
+                    FapiRequest body = new FapiRequest();
+                    List<string> images = new List<string>();
+                    images.Add(url);
+                    body.images = images;
+
+                    var response = service.ExecuteTextRequest("faceapp", body).Result;
+                    await Context.Channel.SendMessageAsync(response);
+                }
+                else
+                {
+                    String url = null;
+                    try
+                    {
+                        url = getImageUrl(Context, url);
+                    }
+                    catch (NotSupportedException e)
+                    {
+                        await Context.Channel.SendMessageAsync(e.Message);
+                        return;
+                    }
+
+                    FapiRequest body = new FapiRequest();
+                    List<string> images = new List<string>();
+                    images.Add(url);
+                    body.images = images;
+
+                    var response = service.ExecuteImageRequest("faceapp", text, body).Result;
+                    response.Seek(0, System.IO.SeekOrigin.Begin);
+                    await Context.Channel.SendFileAsync(response, "faceapp.png");
+                }
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("facedetection", RunMode = RunMode.Async)]
-        public async Task FaceDetection(string url = null)
+        public async Task FaceDetection([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "detect_faces", url);
         }
 
-        //[Command("facemagik", RunMode = RunMode.Async)]
-        public async Task FaceMagik()
+        [Command("facemagik", RunMode = RunMode.Async)]
+        public async Task FaceMagik(String text = "magik", int option = 0)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
-        }
+                String url = null;
+                try
+                {
+                    url = getImageUrl(Context, url);
+                }
+                catch (NotSupportedException e)
+                {
+                    await Context.Channel.SendMessageAsync(e.Message);
+                    return;
+                }
 
-        //[Command("faceoverlay", RunMode = RunMode.Async)]
-        public async Task FaceOverlay()
+                FapiRequest body = new FapiRequest();
+                List<string> images = new List<string>();
+                images.Add(url);
+                body.images = images;
+                Arguments arguments = new Arguments();
+                arguments.text = text;
+                arguments.option = option;
+
+                try
+                {
+                    var response = service.ExecuteImageRequest("facemagik", body).Result;
+                    response.Seek(0, System.IO.SeekOrigin.Begin);
+                    await Context.Channel.SendFileAsync(response, "facemagik.png");
+                }
+                catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+                {
+                    HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                    if (caught.statusCode.Equals(429))
+                    {
+                        await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+            }
+
+        [Command("faceoverlay", RunMode = RunMode.Async)]
+        public async Task FaceOverlay(String firstImageUrl, String secondImageUrl)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(firstImageUrl))
+            {
+                string userId = firstImageUrl.Replace("<@!", "").Replace(">", "");
+                foreach (var user in Context.Guild.Users.ToArray())
+                {
+                    if (user.Id.ToString().Equals(userId))
+                    {
+                        firstImageUrl = user.GetAvatarUrl().Split('?')[0];
+                    }
+                }
+            }
+            if (userIdCheck.IsMatch(secondImageUrl))
+            {
+                string userId = secondImageUrl.Replace("<@!", "").Replace(">", "");
+                foreach (var user in Context.Guild.Users.ToArray())
+                {
+                    if (user.Id.ToString().Equals(userId))
+                    {
+                        secondImageUrl = user.GetAvatarUrl().Split('?')[0];
+                    }
+                }
+            }
+
+            FapiRequest body = new FapiRequest();
+            List<string> images = new List<string>();
+            images.Add(firstImageUrl);
+            images.Add(secondImageUrl);
+            body.images = images;
+
+            if ( !isSupportedImage(firstImageUrl) || !isSupportedImage(secondImageUrl))
+            {
+                throw new NotSupportedException("Provided image URLs are not supported or not images.");
+            }
+
+            try
+            {
+                var response = service.ExecuteImageRequest("faceoverlay", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "faceoverlay.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("faceswap", RunMode = RunMode.Async)]
-        public async Task FaceSwap(string url = null)
+        public async Task FaceSwap([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "faceswap", url);
         }
 
         [Command("gaben", RunMode = RunMode.Async)]
-        public async Task Gaben(string url = null)
+        public async Task Gaben([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "gaben", url);
         }
 
         [Command("gay", RunMode = RunMode.Async)]
-        public async Task Gay(string url = null)
+        public async Task Gay([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "gay", url);
         }
 
-        //[Command("glitch", RunMode = RunMode.Async)]
-        public async Task Glitch()
+        [Command("glitch", RunMode = RunMode.Async)]
+        public async Task Glitch(int iterations = 10, int amount = 5)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.iterations = iterations;
+            arguments.amount = amount;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("glitch", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "glitch.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("glow", RunMode = RunMode.Async)]
-        public async Task Glow()
+        [Command("glow", RunMode = RunMode.Async)]
+        public async Task Glow(int amount = 12)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "glow", amount.ToString());
         }
 
         [Command("god", RunMode = RunMode.Async)]
-        public async Task God(string url = null)
+        public async Task God([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "god", url);
         }
 
         [Command("goldstar", RunMode = RunMode.Async)]
-        public async Task Goldstar(string url = null)
+        public async Task Goldstar([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "goldstar", url);
         }
 
-        //[Command("grill", RunMode = RunMode.Async)]
-        public async Task Grill()
+        [Command("grill", RunMode = RunMode.Async)]
+        public async Task Grill([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "grill", text);
         }
 
-        //[Command("hacker", RunMode = RunMode.Async)]
-        public async Task Hacker()
+        [Command("hacker", RunMode = RunMode.Async)]
+        public async Task Hacker(int template, [Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.text = text;
+            arguments.template = template;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("hacker", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "hacker.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("hawking", RunMode = RunMode.Async)]
-        public async Task Hawking(string url = null)
+        public async Task Hawking([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "hawking", url);
         }
 
         [Command("hypercam", RunMode = RunMode.Async)]
-        public async Task HyperCam(string url = null)
+        public async Task HyperCam([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "hypercam", url);
         }
 
         [Command("idubbbz", RunMode = RunMode.Async)]
-        public async Task IDubbbz(string url = null)
+        public async Task IDubbbz([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "idubbbz", url);
         }
 
         [Command("ifunny", RunMode = RunMode.Async)]
-        public async Task IFunny(string url = null)
+        public async Task IFunny([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "ifunny", url);
         }
 
-        //[Command("imagetagparser", RunMode = RunMode.Async)]
-        public async Task ImageTagParser()
+        [Command("imagetagparser", RunMode = RunMode.Async)]
+        public async Task ImageTagParser([Remainder] String tagContent)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "imagetagparser", tagContent);
         }
 
         [Command("isis", RunMode = RunMode.Async)]
-        public async Task ISIS(string url = null)
+        public async Task ISIS([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "isis", url);
         }
 
         [Command("israel", RunMode = RunMode.Async)]
-        public async Task Israel(string url = null)
+        public async Task Israel([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "israel", url);
         }
 
         [Command("jack", RunMode = RunMode.Async)]
-        public async Task Jack(string url = null)
+        public async Task Jack([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "jack", url);
         }
 
         [Command("jackoff", RunMode = RunMode.Async)]
-        public async Task Jackoff(string url = null)
+        public async Task Jackoff([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "jackoff", url);
         }
 
         [Command("jesus", RunMode = RunMode.Async)]
-        public async Task Jesus(string url = null)
+        public async Task Jesus([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "jesus", url);
         }
 
         [Command("keemstar", RunMode = RunMode.Async)]
-        public async Task Keemstar(string url = null)
+        public async Task Keemstar([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "keemstar", url);
         }
 
         [Command("keemstar2", RunMode = RunMode.Async)]
-        public async Task Keemstar2(string url = null)
+        public async Task Keemstar2([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "keemstar2", url);
         }
 
         [Command("kekistan", RunMode = RunMode.Async)]
-        public async Task Kekistan(string url = null)
+        public async Task Kekistan([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "kekistan", url);
         }
 
         [Command("kirby", RunMode = RunMode.Async)]
-        public async Task Kirby(string url = null)
+        public async Task Kirby([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "kirby", url);
         }
 
         [Command("linus", RunMode = RunMode.Async)]
-        public async Task Linus(string url = null)
+        public async Task Linus([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "linus", url);
         }
 
         [Command("logan", RunMode = RunMode.Async)]
-        public async Task Logan(string url = null)
+        public async Task Logan([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "logan", url);
         }
 
-        //[Command("logout", RunMode = RunMode.Async)]
-        public async Task Logout()
+        [Command("logout", RunMode = RunMode.Async)]
+        public async Task Logout([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "logout", text);
         }
 
-        //[Command("magikscript", RunMode = RunMode.Async)]
+        [Command("magikscript", RunMode = RunMode.Async)]
         public async Task MagikScript()
         {
             throw new NotImplementedException();
             // TODO: Implement function
         }
 
-        //[Command("memorial", RunMode = RunMode.Async)]
-        public async Task Memorial()
+        [Command("memorial", RunMode = RunMode.Async)]
+        public async Task Memorial([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "memorial", text);
         }
 
         [Command("miranda", RunMode = RunMode.Async)]
-        public async Task Miranda(string url = null)
+        public async Task Miranda([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "miranda", url);
         }
 
         [Command("mistake", RunMode = RunMode.Async)]
-        public async Task Mistake(string url = null)
+        public async Task Mistake([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "mistake", url);
         }
 
         [Command("nooseguy", RunMode = RunMode.Async)]
-        public async Task Nooseguy(string url = null)
+        public async Task Nooseguy([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "nooseguy", url);
         }
 
         [Command("northkorea", RunMode = RunMode.Async)]
-        public async Task NorthKorea(string url = null)
+        public async Task NorthKorea([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "northkorea", url);
         }
 
         [Command("oldguy", RunMode = RunMode.Async)]
-        public async Task OldGuy(string url = null)
+        public async Task OldGuy([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "oldguy", url);
         }
 
         [Command("owo", RunMode = RunMode.Async)]
-        public async Task OwO(string url = null)
+        public async Task OwO([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "owo", url);
         }
 
         [Command("perfection", RunMode = RunMode.Async)]
-        public async Task Perfection(string url = null)
+        public async Task Perfection([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "perfection", url);
         }
 
         [Command("pistol", RunMode = RunMode.Async)]
-        public async Task Pistol(string url = null)
+        public async Task Pistol([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "pistol", url);
         }
 
-        //[Command("pixelate", RunMode = RunMode.Async)]
-        public async Task Pixelate()
+        [Command("pixelate", RunMode = RunMode.Async)]
+        public async Task Pixelate(int amount = 20)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.amount = amount;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("pixelate", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "pixelate.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("pne", RunMode = RunMode.Async)]
-        public async Task PNE()
+        [Command("pne", RunMode = RunMode.Async)]
+        public async Task PNE(int option = 0)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.option = option;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("pne", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "pne.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("pornhub", RunMode = RunMode.Async)]
-        public async Task PornHub()
+        [Command("pornhub", RunMode = RunMode.Async)]
+        public async Task PornHub([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "pornhub", text);
         }
 
         [Command("portal", RunMode = RunMode.Async)]
-        public async Task Portal(string url = null)
+        public async Task Portal([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "portal", url);
         }
 
-        //[Command("presidential", RunMode = RunMode.Async)]
-        public async Task Presidential()
+        [Command("presidential", RunMode = RunMode.Async)]
+        public async Task Presidential([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "presidential", text);
         }
 
-        //[Command("proxy", RunMode = RunMode.Async)]
+        [Command("proxy", RunMode = RunMode.Async)]
         public async Task Proxy()
         {
             throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Investigate how this works and implement function
         }
 
-        //[Command("quote", RunMode = RunMode.Async)]
+        [Command("quote", RunMode = RunMode.Async)]
         public async Task Quote()
         {
             throw new NotImplementedException();
             // TODO: Implement function
         }
 
-        //[Command("racecard", RunMode = RunMode.Async)]
-        public async Task Racecard()
+        [Command("racecard", RunMode = RunMode.Async)]
+        public async Task Racecard([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "racecard", text);
         }
 
-        //[Command("realfact", RunMode = RunMode.Async)]
-        public async Task Realfact()
+        [Command("realfact", RunMode = RunMode.Async)]
+        public async Task Realfact([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "realfact", text);
         }
 
-        //[Command("recaptcha", RunMode = RunMode.Async)]
-        public async Task ReCaptcha()
+        [Command("recaptcha", RunMode = RunMode.Async)]
+        public async Task ReCaptcha([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "recaptcha", text);
         }
 
-        //[Command("reminder", RunMode = RunMode.Async)]
-        public async Task Reminder()
+        [Command("reminder", RunMode = RunMode.Async)]
+        public async Task Reminder([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "reminder", text);
         }
 
         [Command("resize", RunMode = RunMode.Async)]
-        public async Task Resize(string url = null)
+        public async Task Resize([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "resize", url);
         }
 
         [Command("respects", RunMode = RunMode.Async)]
-        public async Task Respects(string url = null)
+        public async Task Respects([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "respects", url);
         }
 
-        //[Command("retro", RunMode = RunMode.Async)]
-        public async Task Retro()
+        [Command("retro", RunMode = RunMode.Async)]
+        public async Task Retro([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "retro", text);
         }
 
-        //[Command("rextester", RunMode = RunMode.Async)]
-        public async Task RexTester()
+        [Command("rextester", RunMode = RunMode.Async)]
+        public async Task RexTester(String language, [Remainder] String code)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            arguments.text = code;
+            arguments.language = language;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteTextRequest("rextester", body).Result;
+                await Context.Channel.SendMessageAsync(response);
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("rtx", RunMode = RunMode.Async)]
-        public async Task RTX(string url = null)
+        [Command("rtx", RunMode = RunMode.Async)]
+        public async Task RTX(String firstImageUrl, String secondImageUrl)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function (needs 2 images)
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(firstImageUrl))
+            {
+                string userId = firstImageUrl.Replace("<@!", "").Replace(">", "");
+                foreach (var user in Context.Guild.Users.ToArray())
+                {
+                    if (user.Id.ToString().Equals(userId))
+                    {
+                        firstImageUrl = user.GetAvatarUrl().Split('?')[0];
+                    }
+                }
+            }
+            if (userIdCheck.IsMatch(secondImageUrl))
+            {
+                string userId = secondImageUrl.Replace("<@!", "").Replace(">", "");
+                foreach (var user in Context.Guild.Users.ToArray())
+                {
+                    if (user.Id.ToString().Equals(userId))
+                    {
+                        secondImageUrl = user.GetAvatarUrl().Split('?')[0];
+                    }
+                }
+            }
+
+            FapiRequest body = new FapiRequest();
+            List<string> images = new List<string>();
+            images.Add(firstImageUrl);
+            images.Add(secondImageUrl);
+            body.images = images;
+
+            if (!isSupportedImage(firstImageUrl) || !isSupportedImage(secondImageUrl))
+            {
+                throw new NotSupportedException("Provided image URLs are not supported or not images.");
+            }
+
+            try
+            {
+                var response = service.ExecuteImageRequest("rtx", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "rtx.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("russia", RunMode = RunMode.Async)]
-        public async Task Russia(string url = null)
+        public async Task Russia([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "russia", url);
         }
 
-        //[Command("screenshot", RunMode = RunMode.Async)]
-        public async Task Screenshot()
+        [ProhibitBlacklistedServers]
+        [Command("screenshot", RunMode = RunMode.Async)]
+        public async Task Screenshot(String url, int wait = 0)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            arguments.text = url;
+            arguments.wait = wait;
+            arguments.allowNSFW = Context.Guild.GetTextChannel(Context.Message.Channel.Id).IsNsfw;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("screenshot", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "screenshot.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("shit", RunMode = RunMode.Async)]
-        public async Task Shit(string url = null)
+        public async Task Shit([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "shit", url);
         }
 
-        //[Command("shooting", RunMode = RunMode.Async)]
-        public async Task Shooting()
+        [Command("shooting", RunMode = RunMode.Async)]
+        public async Task Shooting([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "shooting", text);
         }
 
         [Command("shotgun", RunMode = RunMode.Async)]
-        public async Task Shotgun(string url = null)
+        public async Task Shotgun([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "shotgun", url);
         }
 
-        //[Command("simpsonsdisabled", RunMode = RunMode.Async)]
-        public async Task SimpsonsDisabled()
+        [Command("simpsonsdisabled", RunMode = RunMode.Async)]
+        public async Task SimpsonsDisabled([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "simpsondisabled", text);
         }
 
         [Command("smg", RunMode = RunMode.Async)]
-        public async Task SMG(string url = null)
+        public async Task SMG([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "smg", url);
         }
 
-        //[Command("snapchat", RunMode = RunMode.Async)]
-        public async Task Snapchat()
+        [Command("snapchat", RunMode = RunMode.Async)]
+        public async Task Snapchat(String filter, bool snow = false)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Add validation for filter
+
+            if (DateTime.Now.Month.Equals(12) && filter.Equals("christmas")) snow = true;
+
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.text = filter;
+            arguments.snow = snow;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("snapchat", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "snapchat.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("sonic", RunMode = RunMode.Async)]
-        public async Task Sonic()
+        [Command("sonic", RunMode = RunMode.Async)]
+        public async Task Sonic([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "sonic", text);
         }
 
         [Command("spain", RunMode = RunMode.Async)]
-        public async Task Spain(string url = null)
+        public async Task Spain([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "spain", url);
         }
 
         [Command("starman", RunMode = RunMode.Async)]
-        public async Task Starman(string url = null)
+        public async Task Starman([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "starman", url);
         }
 
-        //[Command("stats", RunMode = RunMode.Async)]
-        public async Task Stats()
+        [Command("steamplaying", RunMode = RunMode.Async)]
+        public async Task SteamPlaying([Remainder] String game)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
-        }
+            try
+            {
+                FapiRequest body = new FapiRequest();
+                Arguments arguments = new Arguments();
+                arguments.text = game;
+                body.args = arguments;
 
-        //[Command("steamplaying", RunMode = RunMode.Async)]
-        public async Task SteamPlaying()
-        {
-            throw new NotImplementedException();
-            // TODO: Implement function
+                var response = service.ExecuteTextRequest("steamplaying", body).Result;
+                await Context.Channel.SendMessageAsync(response);
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("stock", RunMode = RunMode.Async)]
-        public async Task Stock(string url = null)
+        public async Task Stock([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "stock", url);
         }
 
         [Command("supreme", RunMode = RunMode.Async)]
-        public async Task Supreme(string url = null)
+        public async Task Supreme([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "supreme", url);
         }
 
-        //[Command("thinking", RunMode = RunMode.Async)]
-        public async Task Thinking()
+        [Command("thinking", RunMode = RunMode.Async)]
+        public async Task Thinking(int level = 100)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            String url = null;
+            try
+            {
+                url = getImageUrl(Context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.level = level;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest("thinking", body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(response, "thinking.png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
-        //[Command("thonkify", RunMode = RunMode.Async)]
-        public async Task Thonkify()
+        [Command("thonkify", RunMode = RunMode.Async)]
+        public async Task Thonkify([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "thonkify", text);
         }
 
         [Command("trans", RunMode = RunMode.Async)]
-        public async Task Trans(string url = null)
+        public async Task Trans([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "trans", url);
         }
 
         [Command("trump", RunMode = RunMode.Async)]
-        public async Task Trump(string url = null)
+        public async Task Trump([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "trump", url);
         }
 
         [Command("ugly", RunMode = RunMode.Async)]
-        public async Task Ugly(string url = null)
+        public async Task Ugly([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "ugly", url);
         }
 
         [Command("uk", RunMode = RunMode.Async)]
-        public async Task UK(string url = null)
+        public async Task UK([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "uk", url);
         }
@@ -774,72 +1380,90 @@ namespace MariBot.Modules
          * urbandictionary not supported
          */
 
-        //[Command("urlify", RunMode = RunMode.Async)]
-        public async Task URLify()
+        [Command("urlify", RunMode = RunMode.Async)]
+        public async Task URLify([Remainder] String url)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            try
+            {
+                FapiRequest body = new FapiRequest();
+                Arguments arguments = new Arguments();
+                arguments.text = url;
+                body.args = arguments;
+
+                var response = service.ExecuteTextRequest("urlify", body).Result;
+                await Context.Channel.SendMessageAsync(response);
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         [Command("ussr", RunMode = RunMode.Async)]
-        public async Task USSR(string url = null)
+        public async Task USSR([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "ussr", url);
         }
 
         [Command("vending", RunMode = RunMode.Async)]
-        public async Task Vending(string url = null)
+        public async Task Vending([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "vending", url);
         }
 
-        //[Command("watchmojo", RunMode = RunMode.Async)]
-        public async Task WatchMojo()
+        [Command("watchmojo", RunMode = RunMode.Async)]
+        public async Task WatchMojo([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await imageRequestWithArguments(Context, "watchmojo", text);
         }
 
         [Command("wheeze", RunMode = RunMode.Async)]
-        public async Task Wheeze(string url = null)
+        public async Task Wheeze([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "wheeze", url);
         }
 
-        //[Command("wikihow", RunMode = RunMode.Async)]
+        [Command("wikihow", RunMode = RunMode.Async)]
         public async Task WikiHow()
         {
             throw new NotImplementedException();
-            // TODO: Implement function
+            // TODO: Investigate how this works and implement function
         }
 
-        //[Command("wonka", RunMode = RunMode.Async)]
-        public async Task Wonka()
+        [Command("wonka", RunMode = RunMode.Async)]
+        public async Task Wonka([Remainder] String text)
         {
-            throw new NotImplementedException();
-            // TODO: Implement function
+            await simpleImageFromTextRequest(Context, "wonka", text);
         }
 
         [Command("wth", RunMode = RunMode.Async)]
-        public async Task WTH(string url = null)
+        public async Task WTH([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "wth", url);
         }
 
         [Command("yusuke", RunMode = RunMode.Async)]
-        public async Task Yusuke(string url = null)
+        public async Task Yusuke([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "yusuke", url);
         }
 
         [Command("zoom", RunMode = RunMode.Async)]
-        public async Task Zoom(string url = null)
+        public async Task Zoom([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "zoom", url);
         }
 
         [Command("zuckerberg", RunMode = RunMode.Async)]
-        public async Task Zuckerberg(string url = null)
+        public async Task Zuckerberg([Remainder] string url = null)
         {
             await simpleImageRequest(Context, "zuckerberg", url);
         }
@@ -911,9 +1535,89 @@ namespace MariBot.Modules
             images.Add(url);
             body.images = images;
 
-            var response = service.ExecuteImageRequest(command, body).Result;
-            response.Seek(0, System.IO.SeekOrigin.Begin);
-            await context.Channel.SendFileAsync(response, command + ".png");
+            try
+            {
+                var response = service.ExecuteImageRequest(command, body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await context.Channel.SendFileAsync(response, command + ".png");
+            } catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        private async Task simpleImageFromTextRequest(SocketCommandContext context, string command, string text)
+        {
+            FapiRequest body = new FapiRequest();
+            body.args = new Arguments();
+            body.args.text = text;
+
+            try
+            {
+                var response = service.ExecuteImageRequest(command, body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await context.Channel.SendFileAsync(response, command + ".png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+        }
+  
+        private async Task imageRequestWithArguments(SocketCommandContext context, string command, string text = null, string url = null)
+        {
+            try
+            {
+                url = getImageUrl(context, url);
+            }
+            catch (NotSupportedException e)
+            {
+                await context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            FapiRequest body = new FapiRequest();
+            Arguments arguments = new Arguments();
+            List<string> images = new List<string>();
+            images.Add(url);
+            body.images = images;
+            arguments.text = text;
+            body.args = arguments;
+
+            try
+            {
+                var response = service.ExecuteImageRequest(command, body).Result;
+                response.Seek(0, System.IO.SeekOrigin.Begin);
+                await context.Channel.SendFileAsync(response, command + ".png");
+            }
+            catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+            {
+                HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+                if (caught.statusCode.Equals(429))
+                {
+                    await context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
         }
 
         private string getImageUrl(SocketCommandContext context, string url)
@@ -954,6 +1658,29 @@ namespace MariBot.Modules
                 return true;
             }
             return false;
+        }
+
+        private String build4ChanPostString(Post post)
+        {
+            String result = "";
+
+            result += "**" + post.user + " at " + post.timeAsString + "**\n";
+            if (post.text != null && post.text.Length > 0) result += post.text + "\n";
+            if (post.file != null && post.file.Length > 0) result += post.file + "\n";
+            result += "\n";
+
+            return result;
+        }
+
+        private String buildDuckDuckGoResultString(Result searchResult)
+        {
+            String result = "";
+
+            result += "**" + searchResult.title + "**\n";
+            result += searchResult.link + "\n";
+            result += "\n";
+
+            return result;
         }
     }
 }
