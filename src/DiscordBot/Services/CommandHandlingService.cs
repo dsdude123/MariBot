@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using MariBot.Services;
 
 namespace DiscordBot.Services
 {
@@ -12,6 +14,7 @@ namespace DiscordBot.Services
         private readonly DiscordSocketClient _discord;
         private readonly CommandService _commands;
         private IServiceProvider _provider;
+        private StaticTextResponseService staticTextResponseService = new StaticTextResponseService();
 
         public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands)
         {
@@ -44,6 +47,34 @@ namespace DiscordBot.Services
             if (result.Error.HasValue && 
                 result.Error.Value != CommandError.UnknownCommand)
                 await context.Channel.SendMessageAsync(result.ToString());
+
+            if (result.Error.HasValue &&
+                result.Error.Value == CommandError.UnknownCommand)
+            {
+                string[] parts = message.Content.Split(' ');
+                if (parts.Length >= 2) {
+                    string textResponseLookup = parts[1];
+                    try
+                    {
+                        string response = StaticTextResponseService.getGlobalResponse(textResponseLookup);
+                        await context.Channel.SendMessageAsync(response);
+                        return;
+                    } catch (KeyNotFoundException ex)
+                    {
+                        // Do nothing
+                    }
+                    try
+                    {
+                        string response = staticTextResponseService.getResponse(context.Guild.Id,textResponseLookup);
+                        await context.Channel.SendMessageAsync(response);
+                        return;
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        // Do nothing
+                    }
+                }
+            }
         }
     }
 }
