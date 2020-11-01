@@ -136,6 +136,18 @@ This is the list of currently supported commands by MariBot. All commands should
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
 `r34 <tags>` - 🔞**NSFW**. Returns a random image from Rule34. Replace `<tags>` with your search tags. Use `_` instead of spaces in individual tags. Uses spaces to separate multiple tags.  
 
+### Static Text Response Commands
+These commands configure static text responses that the bot uses when a command cannot be found. There are two types of static text responses, global resposnses that apply across all servers the bot is in, and local responses that apply to a single server. The following commands configure these responses.  
+
+`statictext getall` - Get all the text responses configured for your server as a JSON file.
+`statictext getallglobal` - Get all the text responses configured globally.  
+`statictext addglobal <keyword> <text>` - 🔒 **Bot Owner Only** Add a global text response. Replace `<keyword>` with the word that will trigger the response and replace `<text>` with the response to send.  
+`statictext add <keyword> <text>` - Add a local text response. Replace `<keyword>` with the word that will trigger the response and replace `<text>` with the response to send.  
+`statictext updateglobal <keyword> <text>` - 🔒 **Bot Owner Only** Update a existing global text response. Replace `<keyword>` with the word that will trigger the response and replace `<text>` with the response to send.  
+`statictext update <keyword> <text>` - Update a existing local text response. Replace `<keyword>` with the word that will trigger the response and replace `<text>` with the response to send.  
+`statictext removeglobal <keyword>` - 🔒 **Bot Owner Only** Remove a global text response. Replace `<keyword>` with the triger word to be removed.  
+`statictext remove <keyword>` - Remove a local text response. Replace `<keyword>` with the triger word to be removed.  
+
 ### Urban Dictionary Commands
 `urban <text>` - Displays a random Urban Dictionary definition for the specified word. Replace `<text>` with your word.  
 `urbantop <text>` - Displays the top Urban Dictionary definition for the specified word. Replace `<text>` with your word.  
