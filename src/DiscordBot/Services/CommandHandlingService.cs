@@ -36,7 +36,7 @@ namespace DiscordBot.Services
         {
             // Ignore system messages and messages from bots
             if (!(rawMessage is SocketUserMessage message)) return;
-            //if (message.Source != MessageSource.User) return;
+            if (message.Source != MessageSource.User) return;
 
             int argPos = 0;
             if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program._config["prefix"] + " ",ref argPos))) return;
