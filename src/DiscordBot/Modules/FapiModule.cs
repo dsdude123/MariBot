@@ -601,7 +601,9 @@ namespace MariBot.Modules
         [Command("faceswap", RunMode = RunMode.Async)]
         public async Task FaceSwap([Remainder] string url = null)
         {
-            await simpleImageRequest(Context, "faceswap", url);
+            // TODO: Implementation here is incorrect
+            throw new NotImplementedException();
+            //await simpleImageRequest(Context, "faceswap", url);
         }
 
         [Command("gaben", RunMode = RunMode.Async)]
@@ -880,7 +882,9 @@ namespace MariBot.Modules
         [Command("perfection", RunMode = RunMode.Async)]
         public async Task Perfection([Remainder] string url = null)
         {
-            await simpleImageRequest(Context, "perfection", url);
+            // TODO: Implementation here is incorrect
+            throw new NotImplementedException();
+            //await simpleImageRequest(Context, "perfection", url);
         }
 
         [Command("pistol", RunMode = RunMode.Async)]
@@ -1023,7 +1027,7 @@ namespace MariBot.Modules
             await simpleImageFromTextRequest(Context, "recaptcha", text);
         }
 
-        [Command("reminder", RunMode = RunMode.Async)]
+        [Command("fapi_reminder", RunMode = RunMode.Async)]
         public async Task Reminder([Remainder] String text)
         {
             await imageRequestWithArguments(Context, "reminder", text);
