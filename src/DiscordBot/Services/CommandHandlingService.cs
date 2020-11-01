@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -54,6 +55,11 @@ namespace DiscordBot.Services
                 string[] parts = message.Content.Split(' ');
                 if (parts.Length >= 2) {
                     string textResponseLookup = parts[1];
+                    Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+                    if(userIdCheck.IsMatch(textResponseLookup))
+                    {
+                        textResponseLookup = textResponseLookup.Replace("!", string.Empty);
+                    }
                     try
                     {
                         string response = StaticTextResponseService.getGlobalResponse(textResponseLookup);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MariBot.Services
@@ -36,6 +37,11 @@ namespace MariBot.Services
 
         public static void addGlobalResponse(string key, string text)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             if (globalResponseList == null) loadGlobalResponseList();
 
             if (globalResponseList.ContainsKey(key))
@@ -50,6 +56,11 @@ namespace MariBot.Services
 
         public static void updateGlobalResponse(string key, string text)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             if (globalResponseList == null) loadGlobalResponseList();
 
             if (globalResponseList.ContainsKey(key))
@@ -65,6 +76,11 @@ namespace MariBot.Services
 
         public static void removeGlobalResponse(string key)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             if (globalResponseList == null) loadGlobalResponseList();
 
             if (globalResponseList.ContainsKey(key))
@@ -102,6 +118,11 @@ namespace MariBot.Services
 
         public void addResponse(ulong guild, string key, string text)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
@@ -122,6 +143,11 @@ namespace MariBot.Services
 
         public void updateResponse(ulong guild, string key, string text)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
@@ -138,6 +164,11 @@ namespace MariBot.Services
 
         public void removeResponse(ulong guild, string key)
         {
+            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+            if (userIdCheck.IsMatch(key))
+            {
+                key = key.Replace("!", string.Empty);
+            }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
