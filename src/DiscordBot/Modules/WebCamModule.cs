@@ -18,33 +18,9 @@ namespace MariBot.Modules
         public PictureService PictureService { get; set; }
 
         [Command("help")]
-        public async Task help()
+        public Task help()
         {
-            WebcamStore webcams = JsonConvert.DeserializeObject<WebcamStore>(File.ReadAllText(Environment.CurrentDirectory + "\\webcams.json"));
-            while (webcams.cameras.Count > 0)
-            {
-                var output = "**Webcam Listing**\n\n Use webcam + camera name to select. Example: z webcam seattle\n\n";
-                List<Webcam> toRemove = new List<Webcam>();
-                foreach(Webcam i in webcams.cameras)
-                {
-                    String newText = "**" + i.command + "** - " + i.description + "\n";
-                    if ((output + newText).Length >= 2000)
-                    {
-                        break;
-                    }
-                    output += newText;
-                    toRemove.Add(i);
-                }
-                foreach(Webcam i in toRemove)
-                {
-                    webcams.cameras.Remove(i);
-                }
-
-                var eb = new EmbedBuilder();
-                eb.WithDescription(output);
-                await ReplyAsync("", false, eb.Build());
-                System.Threading.Thread.Sleep(1000);
-            }
+            return ReplyAsync("https://dsdude123.github.io/MariBot/webcams.html");
         }
 
         [Command]

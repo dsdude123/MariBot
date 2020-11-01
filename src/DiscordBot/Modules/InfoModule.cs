@@ -17,29 +17,7 @@ namespace DiscordBot.Modules
         [Command("help")]
         public Task help()
         {
-            var output = "**Help file for common commands**\n\n";
-            output += "**info** - Displays info text.\n";
-            output +=
-                "**tts <text>** - Speaks a string in the voice channel you currently are in using DecTalk. Replace <text> with your string.\n";
-            output += "**comic <text>** - Displays a specified comic. Use `comic help` for more info.\n";
-            output += "**webcam <text>** - Displays a specified webcam. Use `webcam help` for more info.\n";
-            output +=
-                "**urban <text>** - Displays a random Urban Dictionary definition for the specified word. Replace <text> with your word.\n";
-            output +=
-                "**urbantop <text>** - Displays the top Urban Dictionary definition for the specified word. Replace <text> with your word.\n";
-            output += "**urbanrand** - Gets a random word on Urban Dictionary and displays its definition.\n";
-            output +=
-                "**wiki <text>** - Gets the specified Wikipedia article and displays the first section. The first result from a search will be used. Replace <text> with article name or search term.\n";
-            output +=
-                "**wikisearch <text>** - Performs a search on Wikipedia and returns the result. Replace <text> with your search term.\n";
-            output += "**flipcoin** - Flips a coin.\n";
-            output += "**radar** - **EXPERIEMENTAL** Gets the current radar animation for the Pacific Northwest.\n";
-            output +=
-                "**radio <text>** - Plays a specified radio station in the voice channel you currently are in. Use `radio help` for more info.\n";
-            output += "**r34 <tags>** - NSFW. Returns a random image from Rule34.\n";
-            var eb = new EmbedBuilder();
-            eb.WithDescription(output);
-            return ReplyAsync("", false, eb.Build());
+            return ReplyAsync("https://dsdude123.github.io/MariBot/commands.html");
         }
 
         [Command("info")]

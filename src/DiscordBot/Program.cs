@@ -14,6 +14,7 @@ using MariBot.Modules;
 using MariBot.Services;
 using UrbanDictionnet;
 using System.Diagnostics;
+using System.Threading;
 
 namespace DiscordBot
 {
@@ -60,6 +61,8 @@ namespace DiscordBot
 
         public async Task ResetBot(Exception ex)
         {
+            Console.WriteLine("Bot reset event has been triggered, resetting in 5 seconds: " + ex.Message);
+            Thread.Sleep(5000);
             System.Diagnostics.Process.Start(Assembly.GetExecutingAssembly().Location);
             Environment.Exit(59);           
         }

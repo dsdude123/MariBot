@@ -18,22 +18,7 @@ namespace MariBot.Modules
         [Command("help")]
         public Task help()
         {
-            var output = "**Help file for radio commands**\n\n";
-            output += "All commands are performed in the voice channel you are currently in. Use **audio stop** to stop the audio.\n\n";
-            output += "**radio noaa_spokane** - Plays NOAA Weather Radio for the Spokane area.\n";
-            output += "**radio knhc** - Plays C89.5 (KNHC Seattle).\n";
-            output += "**radio kexp** - Plays KEXP (Seattle).\n";
-            output += "**radio kxsu** - Plays KXSU (SeattleU)\n";
-            output += "**radio uwave** - Plays UWave radio (UW Bothell).\n";
-            output += "**radio kisw** - Plays 99.9 The Rock (KISW Seattle).\n";
-            output += "**radio kndd** - Plays 100.7 The End (KNDD Seattle).\n";
-            output += "**radio kqmv** - Plays MOViN 92.5 (KQMV Seattle).\n";
-            output += "**radio kube** - Plays KUBE 93.3 (Seattle).\n";
-            output += "**radio kswd** - Plays 94.1 The sound (KSWD Seattle).\n";
-            output += "**radio trij** - Plays Triple J (Australia).\n";
-            var eb = new EmbedBuilder();
-            eb.WithDescription(output);
-            return ReplyAsync("", false, eb.Build());
+            return ReplyAsync("https://dsdude123.github.io/MariBot/radio.html");
         }
 
         [Command("noaa_spokane", RunMode = RunMode.Async)]
