@@ -122,7 +122,6 @@ namespace MariBot.Services
 
         public void updateResponse(ulong guild, string key, string text)
         {
-
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
