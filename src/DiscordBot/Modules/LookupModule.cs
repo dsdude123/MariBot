@@ -112,19 +112,18 @@ namespace MariBot.Modules
                 return Context.Channel.SendMessageAsync(e.Message);
             }
 
-            string output = "";
-            output += "**" + result.title + "**\n\n";
-            output += result.text;
-
+            string output = result.text;
             output = trimToLength(output, 2048);
 
             var eb = new EmbedBuilder();
+            eb.WithTitle(result.title);
             eb.WithDescription(output);
-            eb.Color = Color.Blue;
+            eb.WithColor(Color.Blue);
+            eb.WithUrl(result.link);
 
             if (result.imageURL != null)
             {
-                eb.ImageUrl = result.imageURL;
+                eb.WithImageUrl(result.imageURL);
             }
 
             state.Dispose();
@@ -137,14 +136,14 @@ namespace MariBot.Modules
             var state = Context.Channel.EnterTypingState();
             var result = WikipediaService.GetWikipediaResults(topic).Result;
             string output = "";
-            output += "**Results for " + topic + " **\n\n";
             for (int i = 0; i < result.Count; i++)
             {
                 output += result[i] + "\n";
             }
             var eb = new EmbedBuilder();
+            eb.WithTitle("Results for " + topic);
             eb.WithDescription(output);
-            eb.Color = Color.Blue;
+            eb.WithColor(Color.Blue);
             state.Dispose();
             return Context.Channel.SendMessageAsync("", false, eb.Build());
         }

@@ -54,6 +54,7 @@ namespace MariBot.Services
 
             returnval.title = toGet;
             returnval.text = sections[0].Content;
+            returnval.link = "https://en.wikipedia.org/wiki/" + toGet.Replace(' ', '_');
 
             List<ImageWiki> images = Wikipedia.GetImagesURL(toGet);
             images = removeProhibitedResults(images);
@@ -137,6 +138,7 @@ namespace MariBot.Services
             public string title;
             public string text;
             public string imageURL;
+            public string link;
         }
 
     }
