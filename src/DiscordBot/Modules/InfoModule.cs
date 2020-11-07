@@ -54,6 +54,14 @@ namespace DiscordBot.Modules
             image.Seek(0, SeekOrigin.Begin);
             await Context.Channel.SendFileAsync(image, "radar.gif");
         }
+
+        [Command("latex")]
+        public async Task latex([Remainder] string latex)
+        {
+            var image = PictureService.GetLatexImage(latex).Result;
+            image.Seek(0, SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(image, "latex.png");
+        }
         
         private async Task SendAsync(IAudioClient client, string path)
         {
