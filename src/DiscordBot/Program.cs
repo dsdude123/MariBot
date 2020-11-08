@@ -83,7 +83,6 @@ namespace DiscordBot
                 .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
                 .AddSingleton<HttpService>()
-                .AddSingleton<Rule34Service>()
                 .AddSingleton<XmlDocument>()
                 .AddSingleton<UrbanDictionaryService>()
                 .AddSingleton<UrbanClient>()
@@ -92,6 +91,7 @@ namespace DiscordBot
                 .AddSingleton<YouTubeService>()
                 .AddSingleton<FapiService>()
                 .AddSingleton<StaticTextResponseService>()
+                .AddSingleton<BooruService>()
                 .BuildServiceProvider();
         }
 

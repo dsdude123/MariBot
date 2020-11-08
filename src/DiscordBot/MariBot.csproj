@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BooruSharp" Version="2.11.0" />
     <PackageReference Include="CSharpMath" Version="0.4.2" />
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
@@ -64,7 +65,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="youtube-dl.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
