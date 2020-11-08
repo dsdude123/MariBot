@@ -5,7 +5,9 @@ This is the list of currently supported commands by MariBot. All commands should
 ### Basic and Unsorted Commands 
 `info` - Displays bot information text.  
 `flipcoin` - Flips a coin.  
-`radar` - Gets the current radar animation for the Pacific Northwest.
+`latex <text>` - Render LaTeX. Replace `<text>` with your LaTeX. The bot also will automatically run this command when a message containing an equation surrounded by `$$` is detected.   
+`radar` - Gets the current radar animation for the Pacific Northwest.  
+`solve <equation>` - Try to solve an equation. Replace `<equation>` with your equation to be solved. Limited support. 
 
 ### Audio Commands
 `tts <text>` - Speaks a string in the voice channel you currently are in using DecTalk. Replace `<text>` with your string.  
