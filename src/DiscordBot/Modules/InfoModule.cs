@@ -54,6 +54,21 @@ namespace DiscordBot.Modules
             image.Seek(0, SeekOrigin.Begin);
             await Context.Channel.SendFileAsync(image, "radar.gif");
         }
+
+        [Command("latex")]
+        public async Task latex([Remainder] string latex)
+        {
+            var image = PictureService.GetLatexImage(latex).Result;
+            image.Seek(0, SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(image, "latex.png");
+        }
+
+        [Command("solve")]
+        public Task solve([Remainder] string equation)
+        {
+            org.mariuszgromada.math.mxparser.Expression expression = new org.mariuszgromada.math.mxparser.Expression(equation);
+            return Context.Channel.SendMessageAsync(expression.calculate().ToString());
+        }
         
         private async Task SendAsync(IAudioClient client, string path)
         {

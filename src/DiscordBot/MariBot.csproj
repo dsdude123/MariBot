@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CSharpMath" Version="0.4.2" />
+    <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
+    <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
@@ -18,6 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
     <PackageReference Include="PlaintextWikipedia" Version="1.0.0" />
+    <PackageReference Include="SkiaSharp.Views" Version="1.68.0" />
     <PackageReference Include="Urbandictionary" Version="1.5.0" />
     <PackageReference Include="VideoLibrary" Version="2.0.1" />
   </ItemGroup>
