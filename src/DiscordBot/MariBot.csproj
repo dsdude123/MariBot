@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
     <PackageReference Include="PlaintextWikipedia" Version="1.0.0" />
     <PackageReference Include="SkiaSharp.Views" Version="1.68.0" />
-    <PackageReference Include="Urbandictionary" Version="1.5.0" />
+    <PackageReference Include="Urbandictionary" Version="2.0.0" />
     <PackageReference Include="VideoLibrary" Version="2.0.1" />
     <PackageReference Include="WikipediaNET" Version="2.0.0" />
   </ItemGroup>
