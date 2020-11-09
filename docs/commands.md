@@ -13,6 +13,20 @@ This is the list of currently supported commands by MariBot. All commands should
 `tts <text>` - Speaks a string in the voice channel you currently are in using DecTalk. Replace `<text>` with your string.  
 `radio <text>` - Plays a specified radio station in the voice channel you currently are in. See [radio.md](radio.md) for list of default supported webcams.  
 
+### Booru Commands
+For each of these commands, replace `<tags>` with your search tags or leave blank. Use `_` instead of spaces in individual tags. Uses spaces to separate multiple tags. 
+
+`danbooru <tags>` - 🔞**NSFW**. Returns a random image from Danbooru Donmai.  
+`gelbooru <tags>` - 🔞**NSFW**. Returns a random image from Gelbooru.  
+`konachan <tags>` - 🔞**NSFW**. Returns a random image from Konachan.  
+`realbooru <tags>` - 🔞**NSFW**. Returns a random image from Realbooru.  
+`r34 <tags>` - 🔞**NSFW**. Returns a random image from Rule34.  
+`safebooru <tags>` - Returns a random image from Safebooru.  
+`sakugabooru <tags>` - Returns a random image from Sakugabooru.    
+`sankakucomplex <tags>` - 🔞**NSFW**. Returns a random image from Sankaku Complex.  
+`xbooru <tags>` - 🔞**NSFW**. Returns a random image from Xbooru.  
+`yandere <tags>` - 🔞**NSFW**. Returns a random image from yandre.re.  
+
 ### fAPI Commands
 ⏲ These commands are subject to daily rate limits defined by dreadful.tech. **These commands are powered by a third-party and are provided AS-IS**. The following fAPI endpoints are unsupported or undocumented: `faceapp faceswap imagetagparser magikscript perfection proxy quote urbandictionary wikihow`
 
@@ -136,7 +150,6 @@ This is the list of currently supported commands by MariBot. All commands should
 `comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics.  
 `webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
-`r34 <tags>` - 🔞**NSFW**. Returns a random image from Rule34. Replace `<tags>` with your search tags. Use `_` instead of spaces in individual tags. Uses spaces to separate multiple tags.  
 
 ### Static Text Response Commands
 These commands configure static text responses that the bot uses when a command cannot be found. There are two types of static text responses, global resposnses that apply across all servers the bot is in, and local responses that apply to a single server. The following commands configure these responses.  
