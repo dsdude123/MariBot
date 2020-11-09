@@ -25,6 +25,7 @@
     <PackageReference Include="SkiaSharp.Views" Version="1.68.0" />
     <PackageReference Include="Urbandictionary" Version="1.5.0" />
     <PackageReference Include="VideoLibrary" Version="2.0.1" />
+    <PackageReference Include="WikipediaNET" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,12 +72,6 @@
 
   <ItemGroup>
     <Folder Include="Content\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Wikipedia.NET">
-      <HintPath>Wikipedia.NET.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

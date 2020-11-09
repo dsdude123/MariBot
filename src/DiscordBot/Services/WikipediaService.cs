@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediawikiSharp_API;
-using WikipediaNET;
-
+using WikipediaNet;
+using WikipediaNet.Objects;
 
 namespace MariBot.Services
 {
@@ -17,8 +17,8 @@ namespace MariBot.Services
 
         public async Task<WikipediaObject> GetWikipediaPage(string search)
         {
-            WikipediaNET.Wikipedia wiki = new Wikipedia();
-            WikipediaNET.Objects.QueryResult results = wiki.Search(search);
+            Wikipedia wiki = new Wikipedia();
+            QueryResult results = wiki.Search(search);
             WikipediaObject returnval = new WikipediaObject();
 
             if (!hasResults(results))
@@ -67,8 +67,8 @@ namespace MariBot.Services
 
         public async Task<List<string>> GetWikipediaResults(string search)
         {
-            WikipediaNET.Wikipedia wiki = new Wikipedia();
-            WikipediaNET.Objects.QueryResult results = wiki.Search(search);
+            Wikipedia wiki = new Wikipedia();
+            QueryResult results = wiki.Search(search);
             if (results == null || results.Search == null || results.Search.Count == 0)
             {
                 throw new Exception("Could not find an article similar to that name.");
@@ -93,7 +93,7 @@ namespace MariBot.Services
             return returnval;
         }
 
-        private bool hasResults(WikipediaNET.Objects.QueryResult results)
+        private bool hasResults(QueryResult results)
         {
             if (results == null || results.Search == null || results.Search.Count == 0)
             {
