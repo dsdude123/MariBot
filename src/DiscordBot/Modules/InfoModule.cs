@@ -95,7 +95,7 @@ namespace DiscordBot.Modules
 
         private Process CreateTTS(string text)
         {
-            if(!DiscordBot.Program.isSharpTalkPresent)
+            if(!File.Exists("SharpTalkGenerator.exe"))
             {
                 throw new FileNotFoundException("SharpTalk is not installed.");
             }
