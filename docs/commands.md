@@ -150,6 +150,7 @@ For each of these commands, replace `<tags>` with your search tags or leave blan
 `comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics.  
 `webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
+`waifu` - Generates a waifu using Waifu Labs.  
 
 ### Static Text Response Commands
 These commands configure static text responses that the bot uses when a command cannot be found. There are two types of static text responses, global resposnses that apply across all servers the bot is in, and local responses that apply to a single server. The following commands configure these responses.  

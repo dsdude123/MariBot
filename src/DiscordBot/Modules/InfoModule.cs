@@ -69,6 +69,24 @@ namespace DiscordBot.Modules
             org.mariuszgromada.math.mxparser.Expression expression = new org.mariuszgromada.math.mxparser.Expression(equation);
             return Context.Channel.SendMessageAsync(expression.calculate().ToString());
         }
+
+        [Command("waifu")]
+        public async Task waifu()
+        {
+            string id = Guid.NewGuid().ToString();
+            string filePath = Environment.CurrentDirectory + $"\\cache\\{Context.Guild.Id}\\{id}.png";
+            Directory.CreateDirectory(Environment.CurrentDirectory + $"\\cache\\{Context.Guild.Id}");
+
+            Process waifulabs = CreateWaifu(filePath);
+            waifulabs.WaitForExit();
+            if(File.Exists(filePath))
+            {
+                await Context.Channel.SendFileAsync(filePath);
+            } else
+            {
+                await Context.Channel.SendMessageAsync("Failed to generate waifu.");
+            }
+        }
         
         private async Task SendAsync(IAudioClient client, string path)
         {
@@ -104,7 +122,22 @@ namespace DiscordBot.Modules
                 FileName = "SharpTalkGenerator",
                 Arguments = $"{text}",
                 UseShellExecute = false,
-                RedirectStandardOutput = false,
+                RedirectStandardOutput = true,
+            });
+        }
+
+        private Process CreateWaifu(string path)
+        {
+            if (!File.Exists("waifulabs.exe"))
+            {
+                throw new FileNotFoundException("WaifuLabs.NET is not installed.");
+            }
+            return Process.Start(new ProcessStartInfo
+            {
+                FileName = "waifulabs",
+                Arguments = $"{path}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
             });
         }
     }

@@ -27,6 +27,7 @@ namespace DiscordBot
             => new Program().MainAsync().GetAwaiter().GetResult();
 
         public static readonly string sharpTalkLink = "https://github.com/dsdude123/SharpTalkGenerator/releases/download/v1.0/SharpTalkGenerator.zip";
+        public static readonly string waifuLabsLink = "https://github.com/dsdude123/WaifuLabs.NET/releases/download/v1.0/waifulabs.exe";
 
         public static DiscordSocketClient _client;
         public static IConfiguration _config;
@@ -74,7 +75,7 @@ namespace DiscordBot
                     try
                     {
                         HttpClient waifulabsDownloadClient = new HttpClient();
-                        HttpResponseMessage responseMessage = waifulabsDownloadClient.GetAsync(sharpTalkLink).Result;
+                        HttpResponseMessage responseMessage = waifulabsDownloadClient.GetAsync(waifuLabsLink).Result;
                         responseMessage.EnsureSuccessStatusCode();
                         byte[] waifulabsExecutable = responseMessage.Content.ReadAsByteArrayAsync().Result;
                         File.WriteAllBytes("waifulabs.exe", waifulabsExecutable);
@@ -82,13 +83,13 @@ namespace DiscordBot
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("\nFailed to install SharpTalkGenerator. DecTalk TTS command will be unavailable.");
+                        Console.WriteLine("\nFailed to install WaifuLabs.NET. Waifu command will be unavailable.");
                     }
                 }
 
                 Console.Write("Updating youtube-dl...");
                 UpdateYouTubeDl();
-                Console.Write(" [OK]");
+                Console.WriteLine(" [OK]");
 
                 await _client.LoginAsync(TokenType.Bot, _config["token"]);
             }
