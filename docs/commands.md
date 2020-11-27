@@ -5,6 +5,7 @@ This is the list of currently supported commands by MariBot. All commands should
 ### Basic and Unsorted Commands 
 `info` - Displays bot information text.  
 `flipcoin` - Flips a coin.  
+`google <text>` - Performs a Google search. Replace `<text>` with your keywords to search.  
 `latex <text>` - Render LaTeX. Replace `<text>` with your LaTeX. The bot also will automatically run this command when a message containing an equation surrounded by `$$` is detected.   
 `radar` - Gets the current radar animation for the Pacific Northwest.  
 `solve <equation>` - Try to solve an equation. Replace `<equation>` with your equation to be solved. Limited support. 
@@ -148,9 +149,10 @@ For each of these commands, replace `<tags>` with your search tags or leave blan
 
 ### Image Commands
 `comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics.  
-`webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
+`image <text>` - Performs a Google image search and returns the first result. Replace `<text>` with your keywords to search.  
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
 `waifu` - Generates a waifu using Waifu Labs.  
+`webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
 
 ### Static Text Response Commands
 These commands configure static text responses that the bot uses when a command cannot be found. There are two types of static text responses, global resposnses that apply across all servers the bot is in, and local responses that apply to a single server. The following commands configure these responses.  

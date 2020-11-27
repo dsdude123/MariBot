@@ -136,6 +136,7 @@ namespace DiscordBot
                 .AddSingleton<FapiService>()
                 .AddSingleton<StaticTextResponseService>()
                 .AddSingleton<BooruService>()
+                .AddSingleton<GoogleService>()
                 .BuildServiceProvider();
         }
 

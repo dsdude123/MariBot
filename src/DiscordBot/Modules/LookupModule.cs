@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Google.Apis.Customsearch.v1.Data;
 using MariBot.Services;
 using UrbanDictionnet;
 using static MariBot.Services.WikipediaService;
@@ -17,6 +18,8 @@ namespace MariBot.Modules
      */
     public class LookupModule : ModuleBase<SocketCommandContext>
     {
+        public GoogleService GoogleService { get; set; }
+        public PictureService PictureService { get; set; }
         public UrbanDictionaryService UrbanDictionaryService { get; set; }
         public WikipediaService WikipediaService { get; set; }
 
@@ -148,6 +151,56 @@ namespace MariBot.Modules
             return Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
+        [Command("google", RunMode = RunMode.Async)]
+        public async Task google([Remainder] string keywords)
+        {
+            Search searchResults = GoogleService.Search(keywords).Result;
+            var eb = new EmbedBuilder();
+            if (searchResults.Items.Count < 1)
+            {
+                eb.WithTitle("Google Search");
+                eb.WithColor(Color.Red);
+                eb.WithDescription("No results were found.");
+            } else
+            {
+                eb.WithTitle("Google Search");
+                eb.WithColor(Color.Green);
+                string description = "";
+                foreach(Result result in searchResults.Items)
+                {
+                    string formattedResult = ConvertSearchToMessage(result);
+                    if((description + formattedResult).Length <= 2048)
+                    {
+                        description += formattedResult;
+                    }
+                }
+                eb.WithDescription(description);
+            }
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
+
+        [Command("image", RunMode = RunMode.Async)]
+        public async Task googleimage([Remainder] string keywords)
+        {
+            Search searchResults = GoogleService.Search(keywords, true).Result;
+            var eb = new EmbedBuilder();
+            if (searchResults.Items.Count < 1)
+            {
+                eb.WithTitle("Google Search");
+                eb.WithColor(Color.Red);
+                eb.WithDescription("No results were found.");
+            }
+            else
+            {
+                eb.WithTitle("Google Search");
+                eb.WithColor(Color.Green);
+                string description = "";
+                Result result = searchResults.Items[0];
+                eb.WithImageUrl(result.Link);
+            }
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
+
         private String trimToLength(String text, int maxLength)
         {
             if(maxLength < 0)
@@ -163,6 +216,11 @@ namespace MariBot.Modules
             int totalToRemove = text.Length - maxLength;
 
             return text.Remove(maxLength, totalToRemove);
+        }
+
+        private string ConvertSearchToMessage(Result result)
+        {
+            return "**" + result.Title + "**\n" + result.Link + "\n";
         }
     }
 }

@@ -1,5 +1,7 @@
 {
   "token": "set me",
   "prefix": "z",
-  "fapiapitoken":  "set me"
+  "fapiapitoken": "set me",
+  "googlecloudkey": "set me",
+  "googlecustomsearchid": "set me"
 }
