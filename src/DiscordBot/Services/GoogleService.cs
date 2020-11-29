@@ -1,5 +1,7 @@
 ﻿using Google.Apis.Customsearch.v1;
 using Google.Apis.Customsearch.v1.Data;
+using Google.Apis.Kgsearch.v1;
+using Google.Apis.Kgsearch.v1.Data;
 using Google.Apis.Services;
 using System;
 using System.Collections.Generic;
@@ -11,19 +13,28 @@ namespace MariBot.Services
 {
     public class GoogleService
     {
-        private CustomsearchService searchService;
+        private static readonly string ApiKey = DiscordBot.Program._config["googlecloudkey"];
+        private static readonly string ApplicationName = "MariBot";
+
+        private CustomsearchService SearchService;
+        private KgsearchService KnowledgeGraphService;
 
         public GoogleService()
         {
-            searchService = new CustomsearchService(new BaseClientService.Initializer
+            SearchService = new CustomsearchService(new BaseClientService.Initializer
             {
-                ApplicationName = "MariBot",
-                ApiKey = DiscordBot.Program._config["googlecloudkey"]
+                ApplicationName = ApplicationName,
+                ApiKey = ApiKey
+            });
+            KnowledgeGraphService = new KgsearchService(new BaseClientService.Initializer
+            {
+                ApplicationName = ApplicationName,
+                ApiKey = ApiKey
             });
         }
 
         public async Task<Search> Search(string keyword, bool imageSearch = false) {
-            CseResource.ListRequest searchRequest = new CseResource.ListRequest(searchService);
+            CseResource.ListRequest searchRequest = new CseResource.ListRequest(SearchService);
             searchRequest.Cx = DiscordBot.Program._config["googlecustomsearchid"];
             searchRequest.Q = keyword;
             searchRequest.Safe = CseResource.ListRequest.SafeEnum.Active;
@@ -32,6 +43,14 @@ namespace MariBot.Services
                 searchRequest.SearchType = CseResource.ListRequest.SearchTypeEnum.Image;
             }
 
+            return searchRequest.ExecuteAsync().Result;
+        }
+
+        public async Task<SearchResponse> KnowledgeGraph(string keyword)
+        {
+            EntitiesResource.SearchRequest searchRequest = new EntitiesResource.SearchRequest(KnowledgeGraphService);
+            searchRequest.Query = keyword;
+            searchRequest.Limit = 1;
             return searchRequest.ExecuteAsync().Result;
         }
 
