@@ -201,7 +201,15 @@ namespace MariBot.Modules
                 EntitySearchResult result = JsonConvert.DeserializeObject<EntitySearchResult>(searchResponse.ItemListElement[0].ToString());
                 eb.WithTitle(result.Result.Name);
                 eb.WithDescription(ConvertKnowledgeGraphEntityToMessage(result.Result));
-                eb.WithUrl(result.Result.DetailedDescription.Url);
+
+                if (result.Result.DetailedDescription != null)
+                {
+                    eb.WithUrl(result.Result.DetailedDescription.Url);
+                } else
+                {
+                    eb.WithUrl(result.Result.Url);
+                }
+
                 if(result.Result.Image != null)
                 eb.WithThumbnailUrl(result.Result.Image.ContentUrl);
             }
@@ -254,7 +262,13 @@ namespace MariBot.Modules
 
         private string ConvertKnowledgeGraphEntityToMessage(Entity entity)
         {
-            return "*" + entity.Description + "*\n\n" + entity.DetailedDescription.ArticleBody; 
+            if (entity.DetailedDescription != null)
+            {
+                return "*" + entity.Description + "*\n\n" + entity.DetailedDescription.ArticleBody;
+            } else
+            {
+                return "*" + entity.Description + "*";
+            }
         }
     }
 }
