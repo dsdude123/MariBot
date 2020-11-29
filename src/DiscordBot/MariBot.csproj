@@ -15,8 +15,10 @@
     <PackageReference Include="CSharpMath" Version="0.4.2" />
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="Google.Apis" Version="1.49.0" />
     <PackageReference Include="Google.Apis.CloudSearch.v1" Version="1.49.0.2126" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.49.0.2084" />
+    <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.49.0.2137" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />

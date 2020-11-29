@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Google.Apis.Customsearch.v1.Data;
+using Google.Apis.Kgsearch.v1.Data;
+using MariBot.Models.Google.KnowledgeGraph;
 using MariBot.Services;
+using Newtonsoft.Json;
 using UrbanDictionnet;
 using static MariBot.Services.WikipediaService;
 
@@ -179,6 +182,40 @@ namespace MariBot.Modules
             await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
 
+        [Command("kg", RunMode = RunMode.Async)]
+        public async Task knowledgegraph([Remainder] string keywords)
+        {
+            SearchResponse searchResponse = GoogleService.KnowledgeGraph(keywords).Result;
+            var eb = new EmbedBuilder();
+            if (searchResponse.ItemListElement.Count < 1)
+            {
+                eb.WithTitle("Google Knowledge Graph");
+                eb.WithColor(Color.Red);
+                eb.WithDescription("No result was found.");
+            }
+            else
+            {
+                eb.WithAuthor("Google Knowledge Graph");
+                eb.WithColor(Color.Green);
+
+                EntitySearchResult result = JsonConvert.DeserializeObject<EntitySearchResult>(searchResponse.ItemListElement[0].ToString());
+                eb.WithTitle(result.Result.Name);
+                eb.WithDescription(ConvertKnowledgeGraphEntityToMessage(result.Result));
+
+                if (result.Result.DetailedDescription != null)
+                {
+                    eb.WithUrl(result.Result.DetailedDescription.Url);
+                } else
+                {
+                    eb.WithUrl(result.Result.Url);
+                }
+
+                if(result.Result.Image != null)
+                eb.WithThumbnailUrl(result.Result.Image.ContentUrl);
+            }
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
+
         [Command("image", RunMode = RunMode.Async)]
         public async Task googleimage([Remainder] string keywords)
         {
@@ -221,6 +258,17 @@ namespace MariBot.Modules
         private string ConvertSearchToMessage(Result result)
         {
             return "**" + result.Title + "**\n" + result.Link + "\n";
+        }
+
+        private string ConvertKnowledgeGraphEntityToMessage(Entity entity)
+        {
+            if (entity.DetailedDescription != null)
+            {
+                return "*" + entity.Description + "*\n\n" + entity.DetailedDescription.ArticleBody;
+            } else
+            {
+                return "*" + entity.Description + "*";
+            }
         }
     }
 }

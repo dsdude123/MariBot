@@ -6,6 +6,7 @@ This is the list of currently supported commands by MariBot. All commands should
 `info` - Displays bot information text.  
 `flipcoin` - Flips a coin.  
 `google <text>` - Performs a Google search. Replace `<text>` with your keywords to search.  
+`kg <text>` - Performs a Google Knowledge Graph search. Replace `<text>` with your keywords to search.  
 `latex <text>` - Render LaTeX. Replace `<text>` with your LaTeX. The bot also will automatically run this command when a message containing an equation surrounded by `$$` is detected.   
 `radar` - Gets the current radar animation for the Pacific Northwest.  
 `solve <equation>` - Try to solve an equation. Replace `<equation>` with your equation to be solved. Limited support. 
