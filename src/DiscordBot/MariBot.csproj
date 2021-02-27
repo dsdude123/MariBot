@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="BooruSharp" Version="2.11.0" />
+    <PackageReference Include="ByteSize" Version="2.0.0" />
     <PackageReference Include="CSharpMath" Version="0.4.2" />
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
@@ -21,6 +22,7 @@
     <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.49.0.2137" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="7.23.2" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
@@ -40,6 +42,9 @@
 
   <ItemGroup>
     <None Update="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\biden.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\sonicsaystemplate.png">
