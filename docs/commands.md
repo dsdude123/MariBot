@@ -150,6 +150,7 @@ For each of these commands, replace `<tags>` with your search tags or leave blan
 
 ### Image Commands
 `comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics.  
+`biden <url>` - Displays an image in a display next to President Biden. Also supports GIFs. Replace `<url>` with an image URL, mention a user to use their avatar, or leave blank to use the last posted image in the channel.  
 `image <text>` - Performs a Google image search and returns the first result. Replace `<text>` with your keywords to search.  
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
 `waifu` - Generates a waifu using Waifu Labs.  
