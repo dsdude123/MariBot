@@ -41,21 +41,23 @@ namespace DiscordBot.Services
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
 
-            int latexQuickStart = 0;
             if (hasLatexMathQuotes(message.Content))
             {
-                string formattedLatex = formatLatexString(message.Content);
-                var pictureService = new PictureService(new System.Net.Http.HttpClient());
                 var latexContext = new SocketCommandContext(_discord, message);
+                var latexTypingState = latexContext.Channel.EnterTypingState();
+                string formattedLatex = formatLatexString(message.Content);
+                var pictureService = new PictureService(new System.Net.Http.HttpClient());                
                 var image = pictureService.GetLatexImage(formattedLatex).Result;
                 image.Seek(0, SeekOrigin.Begin);
                 await latexContext.Channel.SendFileAsync(image, "latex.png");
+                latexTypingState.Dispose();
             }
 
             int argPos = 0;
             if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program._config["prefix"] + " ",ref argPos))) return;
 
             var context = new SocketCommandContext(_discord, message);
+            var typingState = context.Channel.EnterTypingState();
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
 
             if (result.Error.HasValue && 
@@ -75,7 +77,7 @@ namespace DiscordBot.Services
                     }
                     try
                     {
-                        string response = StaticTextResponseService.getGlobalResponse(textResponseLookup);
+                        string response = StaticTextResponseService.getGlobalResponse(textResponseLookup);                        
                         await context.Channel.SendMessageAsync(response);
                         return;
                     } catch (KeyNotFoundException ex)
@@ -94,6 +96,8 @@ namespace DiscordBot.Services
                     }
                 }
             }
+
+            typingState.Dispose();
         }
 
         private bool hasLatexMathQuotes(String text)
