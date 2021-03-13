@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
+using ImageMagick;
 using MariBot.Modules;
 using MariBot.Services;
 
@@ -50,9 +51,25 @@ namespace DiscordBot.Modules
         [Command("radar")]
         public async Task radar()
         {
-            var image = PictureService.GetPictureAsync("http://images.intellicast.com/WxImages/RadarLoop/tiw_None_anim.gif").Result;
+            var image = PictureService.GetPictureAsync("https://s.w-x.co/staticmaps/wu/wxtype/county_loc/tiw/animate.png").Result;
             image.Seek(0, SeekOrigin.Begin);
-            await Context.Channel.SendFileAsync(image, "radar.gif");
+            MemoryStream outgoingImage = new MemoryStream();
+
+            using (var baseImage = new MagickImageCollection(image))
+            {
+                using (var outputCollection = new MagickImageCollection())
+                {
+                    bool usedBaseOnce = false;
+                    baseImage.Coalesce();
+                    foreach(var frame in baseImage)
+                    {
+                        outputCollection.Add(new MagickImage(frame));
+                    }
+                    outputCollection.Write(outgoingImage, MagickFormat.Gif);
+                } 
+            }
+            outgoingImage.Seek(0, SeekOrigin.Begin);
+            Context.Channel.SendFileAsync(outgoingImage, "radar.gif");
         }
 
         [Command("latex")]
