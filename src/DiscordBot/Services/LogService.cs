@@ -14,6 +14,7 @@ namespace DiscordBot.Services
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _discordLogger;
         private readonly ILogger _commandsLogger;
+        private readonly ILogger _initLogger;
 
         public LogService(DiscordSocketClient discord, CommandService commands, ILoggerFactory loggerFactory)
         {
@@ -23,6 +24,7 @@ namespace DiscordBot.Services
             _loggerFactory = ConfigureLogging(loggerFactory);
             _discordLogger = _loggerFactory.CreateLogger("discord");
             _commandsLogger = _loggerFactory.CreateLogger("commands");
+            _initLogger = _loggerFactory.CreateLogger("init");
 
             _discord.Log += LogDiscord;
             _commands.Log += LogCommand;
@@ -32,6 +34,17 @@ namespace DiscordBot.Services
         {
             factory.AddConsole();
             return factory;
+        }
+
+        public Task LogInit(LogMessage message)
+        {
+            _initLogger.Log(
+                LogLevelFromSeverity(message.Severity),
+                0,
+                message,
+                message.Exception,
+                (_1, _2) => message.ToString(prependTimestamp: false));
+            return Task.CompletedTask;
         }
 
         private Task LogDiscord(LogMessage message)
@@ -45,7 +58,7 @@ namespace DiscordBot.Services
             return Task.CompletedTask;
         }
 
-        private Task LogCommand(LogMessage message)
+        public Task LogCommand(LogMessage message)
         {
             // Return an error message for async commands
             if (message.Exception is CommandException command)

@@ -39,19 +39,24 @@ namespace DiscordBot
             _client.Disconnected += ResetBot;
 
             var services = ConfigureServices();
-            services.GetRequiredService<LogService>();
+            var logService = services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
 
             try
             {
-                Console.Write("Updating ffmpeg... ");
-                FFmpeg.SetExecutablesPath(".");
-                await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official);
-                Console.WriteLine("[OK]");
+                await logService.LogInit(new LogMessage(LogSeverity.Info, "Startup", "Updating ffmepg..."));
+                try
+                {
+                    FFmpeg.SetExecutablesPath(".");
+                    await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official);
+                } catch (Exception ex)
+                {
+                    await logService.LogInit(new LogMessage(LogSeverity.Error, "Startup", "Failed to update ffmpeg!", ex));
+                }
 
                 if (!File.Exists("SharpTalkGenerator.exe"))
                 {
-                    Console.Write("SharpTalkGenerator is missing. Installing...");
+                    await logService.LogInit(new LogMessage(LogSeverity.Warning, "Startup", "SharpTalkGenerator is missing. Installing..."));
                     try
                     {
                         HttpClient sharpTalkDownloadClient = new HttpClient();
@@ -61,17 +66,17 @@ namespace DiscordBot
                         File.WriteAllBytes("sharptalk.zip", sharpTalkPackage);
                         ZipFile.ExtractToDirectory("sharptalk.zip", Environment.CurrentDirectory);
                         File.Delete("sharptalk.zip");
-                        Console.WriteLine(" [OK]");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("\nFailed to install SharpTalkGenerator. DecTalk TTS command will be unavailable.");
+                        await logService.LogInit(new LogMessage(LogSeverity.Error, "Startup", "Failed to install SharpTalkGenerator! DecTalk TTS command will be unavailable.", ex));
                     }
                 }
 
                 if (!File.Exists("waifulabs.exe"))
                 {
-                    Console.Write("WaifuLabs.NET is missing. Installing...");
+                    await logService.LogInit(new LogMessage(LogSeverity.Warning, "Startup", "WaifuLabs.NET is missing. Installing..."));
+                    Console.Write("");
                     try
                     {
                         HttpClient waifulabsDownloadClient = new HttpClient();
@@ -79,17 +84,15 @@ namespace DiscordBot
                         responseMessage.EnsureSuccessStatusCode();
                         byte[] waifulabsExecutable = responseMessage.Content.ReadAsByteArrayAsync().Result;
                         File.WriteAllBytes("waifulabs.exe", waifulabsExecutable);
-                        Console.WriteLine(" [OK]");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("\nFailed to install WaifuLabs.NET. Waifu command will be unavailable.");
+                        await logService.LogInit(new LogMessage(LogSeverity.Error, "Startup", "Failed to install WaifuLabs.NET. Waifu command will be unavailable.", ex));
                     }
                 }
 
-                Console.Write("Updating youtube-dl...");
+                await logService.LogInit(new LogMessage(LogSeverity.Info, "Startup", "Updating youtube-dl..."));
                 UpdateYouTubeDl();
-                Console.WriteLine(" [OK]");
 
                 await _client.LoginAsync(TokenType.Bot, _config["token"]);
             }
