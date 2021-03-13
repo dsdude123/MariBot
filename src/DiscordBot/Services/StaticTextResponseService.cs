@@ -17,8 +17,13 @@ namespace MariBot.Services
         public static string getGlobalResponse(string key)
         {
             if (globalResponseList == null) loadGlobalResponseList();
-
-            return globalResponseList[key];
+            if (globalResponseList.ContainsKey(key))
+            {
+                return globalResponseList[key];
+            } else
+            {
+                return null;
+            }
         }
 
         public static Stream getAllGlobalResponses()
@@ -98,7 +103,13 @@ namespace MariBot.Services
         {
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
-            return serverResponses[key];
+            if (serverResponses.ContainsKey(key))
+            {
+                return serverResponses[key];
+            } else
+            {
+                return null;
+            }
         }
 
         public Stream getAllResponses(ulong guild)

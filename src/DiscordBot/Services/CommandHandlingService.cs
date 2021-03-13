@@ -60,9 +60,12 @@ namespace DiscordBot.Services
             var typingState = context.Channel.EnterTypingState();
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
 
-            if (result.Error.HasValue && 
+            if (result.Error.HasValue &&
                 result.Error.Value != CommandError.UnknownCommand)
+            {
                 await context.Channel.SendMessageAsync(result.ToString());
+                return;
+            }
 
             if (result.Error.HasValue &&
                 result.Error.Value == CommandError.UnknownCommand)
@@ -75,25 +78,12 @@ namespace DiscordBot.Services
                     {
                         textResponseLookup = textResponseLookup.Replace("!", string.Empty);
                     }
-                    try
-                    {
-                        string response = StaticTextResponseService.getGlobalResponse(textResponseLookup);                        
-                        await context.Channel.SendMessageAsync(response);
-                        return;
-                    } catch (KeyNotFoundException ex)
-                    {
-                        // Do nothing
-                    }
-                    try
-                    {
-                        string response = staticTextResponseService.getResponse(context.Guild.Id,textResponseLookup);
-                        await context.Channel.SendMessageAsync(response);
-                        return;
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        // Do nothing
-                    }
+
+                    string response = StaticTextResponseService.getGlobalResponse(textResponseLookup) 
+                        ?? staticTextResponseService.getResponse(context.Guild.Id, textResponseLookup);
+
+                    if(response != null)
+                    await context.Channel.SendMessageAsync(response);
                 }
             }
 
