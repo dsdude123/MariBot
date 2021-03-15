@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Remoting;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -12,6 +14,8 @@ using MariBot.Models.Google.KnowledgeGraph;
 using MariBot.Services;
 using Newtonsoft.Json;
 using UrbanDictionnet;
+using Wolfram.Alpha;
+using Wolfram.Alpha.Models;
 using static MariBot.Services.WikipediaService;
 
 namespace MariBot.Modules
@@ -25,6 +29,8 @@ namespace MariBot.Modules
         public PictureService PictureService { get; set; }
         public UrbanDictionaryService UrbanDictionaryService { get; set; }
         public WikipediaService WikipediaService { get; set; }
+
+        public WolframAlphaService WolframAlphaService = new WolframAlphaService(DiscordBot.Program._config["wolframAlphaAppId"]);
 
         [Command("urban")]
         public Task urban([Remainder] string word)
@@ -231,11 +237,93 @@ namespace MariBot.Modules
             {
                 eb.WithTitle("Google Search");
                 eb.WithColor(Color.Green);
-                string description = "";
                 Result result = searchResults.Items[0];
                 eb.WithImageUrl(result.Link);
             }
             await Context.Channel.SendMessageAsync(embed: eb.Build());
+        }
+
+        [Command("wa", RunMode = RunMode.Async)]
+        public async Task wolframAlphaSimple([Remainder] string query)
+        {
+            WolframAlphaRequest request = new WolframAlphaRequest(query);
+            request.Reinterpret = true;
+            QueryResult result = (await WolframAlphaService.Compute(request)).QueryResult;
+            Queue<string> messageQueue = new Queue<string>();
+            if(result.Success)
+            {
+                string outputBuffer = "";
+                foreach (var pod in result.Pods)
+                {
+                    string title = (pod.Title.Length > 0) ? ("**" + pod.Title + "**\n") : ""; 
+                    string newBuffer = outputBuffer + title;
+                    if (newBuffer.Length < 2000)
+                    {
+                        outputBuffer = newBuffer;
+                    }
+                    else
+                    {
+                        messageQueue.Enqueue(outputBuffer);
+                        outputBuffer = title;
+                    }
+                    foreach (var subPod in pod.SubPods)
+                    {
+                        title = (subPod.Title.Length > 0) ? ("**" + subPod.Title + "**\n") : "";
+
+                        if (subPod.Plaintext.Length > 0)
+                        {
+                            newBuffer = outputBuffer + title + subPod.Plaintext + "\n";
+
+                            if (newBuffer.Length < 2000)
+                            {
+                                outputBuffer = newBuffer;
+                            }
+                            else
+                            {
+                                messageQueue.Enqueue(outputBuffer);
+                                outputBuffer = title + subPod.Plaintext + "\n";
+                            }
+                        } else
+                        {
+                            newBuffer = outputBuffer + title;
+
+                            if (newBuffer.Length < 2000)
+                            {
+                                messageQueue.Enqueue(newBuffer);
+                                outputBuffer = "";
+                            }
+                            else
+                            {
+                                messageQueue.Enqueue(outputBuffer);
+                                outputBuffer = title + subPod.Plaintext + "\n";
+                                messageQueue.Enqueue(outputBuffer);
+                                outputBuffer = "";
+                            }
+                            messageQueue.Enqueue(subPod.Image.Src);
+                        }
+
+                    }
+                }
+                if(outputBuffer.Length > 0)
+                {
+                    messageQueue.Enqueue(outputBuffer);
+                }
+                if(messageQueue.Count > 0)
+                {
+                    while(messageQueue.Count > 0)
+                    {
+                        string message = messageQueue.Dequeue();
+                        if (message.Length > 0)
+                        {
+                            await Context.Channel.SendMessageAsync(message);
+                        }
+                        Thread.Sleep(1000);
+                    }
+                }
+            } else
+            {
+                Context.Channel.SendMessageAsync("Sorry there was an issue talking to Wolfram Alpha.");
+            }
         }
 
         private String trimToLength(String text, int maxLength)

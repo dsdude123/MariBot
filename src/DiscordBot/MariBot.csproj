@@ -37,6 +37,7 @@
     <PackageReference Include="Urbandictionary" Version="2.0.0" />
     <PackageReference Include="VideoLibrary" Version="2.0.1" />
     <PackageReference Include="WikipediaNET" Version="2.0.0" />
+    <PackageReference Include="Wolfram.Alpha" Version="1.0.7" />
     <PackageReference Include="Xabe.FFmpeg.Downloader" Version="4.3.1" />
   </ItemGroup>
 
