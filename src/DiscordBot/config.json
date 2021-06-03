@@ -1,8 +1,10 @@
 {
   "token": "set me",
   "prefix": "z",
-  "fapiapitoken": "set me",
   "googlecloudkey": "set me",
   "googlecustomsearchid": "set me",
-  "wolframAlphaAppId":  "set me"
+  "wolframAlphaAppId": "set me",
+  "supportedFonts": [
+    "Arial"
+  ]
 }

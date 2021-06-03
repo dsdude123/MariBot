@@ -1,6 +1,7 @@
 ﻿using ByteSizeLib;
 using Discord;
 using Discord.Commands;
+using ImageMagick;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,6 +54,20 @@ namespace MariBot.Modules
         public async Task ping()
         {          
             Context.Channel.SendMessageAsync("Pong! " + Context.Client.Latency + "ms");
+        }
+
+        [Command("opencl_status", RunMode = RunMode.Async)]
+        public async Task OpenCLStatus()
+        {
+            string report = $"```\nOpenCL Enabled: {OpenCL.IsEnabled}\n";
+
+            foreach (OpenCLDevice device in OpenCL.Devices)
+            {
+                report += $"{device.DeviceType}: {device.Name} | Enabled: {device.IsEnabled} | Score: {device.BenchmarkScore}\n";
+            }
+
+            report += "```";
+            Context.Channel.SendMessageAsync(report);
         }
     }
 }

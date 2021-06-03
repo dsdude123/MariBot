@@ -18,6 +18,7 @@ using System.Threading;
 using System.IO.Compression;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Downloader;
+using ImageMagick;
 
 namespace DiscordBot
 {
@@ -41,6 +42,21 @@ namespace DiscordBot
             var services = ConfigureServices();
             var logService = services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+
+            OpenCL.IsEnabled = true;
+
+            if(!OpenCL.IsEnabled)
+            {
+                await logService.LogInit(new LogMessage(LogSeverity.Warning, "OpenCL", "OpenCL is not enabled."));
+            } else
+            {
+                await logService.LogInit(new LogMessage(LogSeverity.Info, "OpenCL", "OpenCL is enabled."));
+                foreach(OpenCLDevice device in OpenCL.Devices)
+                {
+                    device.IsEnabled = true;
+                    await logService.LogInit(new LogMessage(LogSeverity.Info, "OpenCL", $"{device.DeviceType}: {device.Name} | Enabled: {device.IsEnabled} | Score: {device.BenchmarkScore}"));         
+                }
+            }
 
             try
             {

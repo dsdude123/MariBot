@@ -20,210 +20,131 @@ namespace MariBot.Modules
     {
         public FapiService service { get; set; }
 
-        [RequireNsfw]
-        [ProhibitBlacklistedServers]
-        [Command("4chan", RunMode = RunMode.Async)]
-        public async Task fourchan(string path = null)
-        {
-            try
-            {
-                Models.FAPI._4chan.ApiResponse response = null;
-                try
-                {
-                    var rawResponse = service.ExecutePathRequest("4chan", path).Result;
-                    response = JsonConvert.DeserializeObject<Models.FAPI._4chan.ApiResponse>(rawResponse);
-                }
-                catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
-                {
-                    HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
-                    if (caught.statusCode.Equals(429))
-                    {
-                        await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
-                    }
-                    else
-                    {
-                        throw ex;
-                    }
-                }
+        //[RequireNsfw]
+        //[ProhibitBlacklistedServers]
+        //[Command("4chan", RunMode = RunMode.Async)]
+        //public async Task fourchan(string path = null)
+        //{
+        //    try
+        //    {
+        //        Models.FAPI._4chan.ApiResponse response = null;
+        //        try
+        //        {
+        //            var rawResponse = service.ExecutePathRequest("4chan", path).Result;
+        //            response = JsonConvert.DeserializeObject<Models.FAPI._4chan.ApiResponse>(rawResponse);
+        //        }
+        //        catch (AggregateException ex) when (ex.InnerException is HttpStatusCodeException)
+        //        {
+        //            HttpStatusCodeException caught = (HttpStatusCodeException)ex.InnerException;
+        //            if (caught.statusCode.Equals(429))
+        //            {
+        //                await Context.Channel.SendMessageAsync("fAPI daily quota has been exceeded. Unable to run command.");
+        //            }
+        //            else
+        //            {
+        //                throw ex;
+        //            }
+        //        }
 
-                DateTimeOffset threadTime = DateTimeOffset.FromUnixTimeMilliseconds(response.thread.time);
-                EmbedBuilder embedBuilder = new EmbedBuilder();
-                embedBuilder.WithTitle("/" + response.board.name + "/ - " + response.board.title);
-                embedBuilder.WithAuthor(response.thread.id.ToString());
-                embedBuilder.WithTimestamp(threadTime);
-                embedBuilder.WithColor(Color.LightOrange);
-                embedBuilder.WithUrl("https://boards.4chan.org/" + response.board.name + "/thread/" + response.thread.id);
+        //        DateTimeOffset threadTime = DateTimeOffset.FromUnixTimeMilliseconds(response.thread.time);
+        //        EmbedBuilder embedBuilder = new EmbedBuilder();
+        //        embedBuilder.WithTitle("/" + response.board.name + "/ - " + response.board.title);
+        //        embedBuilder.WithAuthor(response.thread.id.ToString());
+        //        embedBuilder.WithTimestamp(threadTime);
+        //        embedBuilder.WithColor(Color.LightOrange);
+        //        embedBuilder.WithUrl("https://boards.4chan.org/" + response.board.name + "/thread/" + response.thread.id);
 
-                String threadText = "";
-                String thumbnailUrl = null;
-                foreach(Post post in response.posts)
-                {
-                    if (post.file != null && post.file.Length > 0 && thumbnailUrl == null)
-                    {
-                        thumbnailUrl = post.file; // Get first image as the thumbnail
-                    }
-                    String postText = build4ChanPostString(post);
-                    if ((threadText + postText).Length <= 2048)
-                    {
-                        threadText += postText;
-                    }
-                }
+        //        String threadText = "";
+        //        String thumbnailUrl = null;
+        //        foreach(Post post in response.posts)
+        //        {
+        //            if (post.file != null && post.file.Length > 0 && thumbnailUrl == null)
+        //            {
+        //                thumbnailUrl = post.file; // Get first image as the thumbnail
+        //            }
+        //            String postText = build4ChanPostString(post);
+        //            if ((threadText + postText).Length <= 2048)
+        //            {
+        //                threadText += postText;
+        //            }
+        //        }
 
-                embedBuilder.WithDescription(threadText);
-                if (thumbnailUrl != null) embedBuilder.WithThumbnailUrl(thumbnailUrl);
+        //        embedBuilder.WithDescription(threadText);
+        //        if (thumbnailUrl != null) embedBuilder.WithThumbnailUrl(thumbnailUrl);
 
-                await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
-            } catch (Exception ex)
-            {
-                await Context.Channel.SendMessageAsync("Failed to get thread from 4chan. " +
-                    "If you specified a board or thread, make sure it is in the `board` or `board/thread` format " +
-                    "replacing `board` with the letters of the board (i.e. `vp` ) and `thread` with the number of the thread (i.e. `123456`).");
-            }
-        }
+        //        await Context.Channel.SendMessageAsync("", false, embedBuilder.Build());
+        //    } catch (Exception ex)
+        //    {
+        //        await Context.Channel.SendMessageAsync("Failed to get thread from 4chan. " +
+        //            "If you specified a board or thread, make sure it is in the `board` or `board/thread` format " +
+        //            "replacing `board` with the letters of the board (i.e. `vp` ) and `thread` with the number of the thread (i.e. `123456`).");
+        //    }
+        //}
 
-        [Command("9gag", RunMode = RunMode.Async)]
-        public async Task ninegag([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "9gag", url);
-        }
+        //[Command("autism", RunMode = RunMode.Async)]
+        //public async Task Autism([Remainder] string url = null)
+        //{
+        //    await simpleImageRequest(Context, "autism", url);
+        //}
 
-        [Command("adidas", RunMode = RunMode.Async)]
-        public async Task Adidas([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "adidas", url);
-        }
+        //[Command("bandicam", RunMode = RunMode.Async)]
+        //public async Task Bandicam([Remainder] string url = null)
+        //{
+        //    await simpleImageRequest(Context, "bandicam", url);
+        //}
 
-        [Command("adw", RunMode = RunMode.Async)]
-        public async Task ADW([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "adw", url);
-        }
+        //[Command("blackify", RunMode = RunMode.Async)]
+        //public async Task Blackify([Remainder] string url = null)
+        //{
+        //    try
+        //    {
+        //        await simpleImageRequest(Context, "blackify", url);
+        //    }
+        //    catch (AggregateException e) when (e.InnerException is HttpStatusCodeException)
+        //    {
+        //        HttpStatusCodeException caught = (HttpStatusCodeException)e.InnerException;
+        //        if (caught.statusCode.Equals(400))
+        //        {
+        //            await Context.Channel.SendMessageAsync("400 Bad Request. fAPI may have not been able to detect a face in the picture");
+        //        }
+        //    }
+        //}
 
-        [Command("ajit", RunMode = RunMode.Async)]
-        public async Task Ajit([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "ajit", url);
-        }
+        //[Command("blackpanther", RunMode = RunMode.Async)]
+        //public async Task BlackPanther([Remainder] string url = null)
+        //{
+        //    await simpleImageRequest(Context, "blackpanther", url);
+        //}
 
-        [Command("america", RunMode = RunMode.Async)]
-        public async Task America([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "america", url);
-        }
+        //[Command("buzzfeed", RunMode = RunMode.Async)]
+        //public async Task BuzzFeed([Remainder] string text = null)
+        //{
+        //    await simpleImageFromTextRequest(Context, "buzzfeed", text);
+        //}
 
-        [Command("analysis", RunMode = RunMode.Async)]
-        public async Task Analysis([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "analysis", url);
-        }
+        //[Command("composite", RunMode = RunMode.Async)]
+        //public async Task Composite([Remainder] string url = null)
+        //{
+        //    await simpleImageRequest(Context, "composite", url);
+        //}
 
-        [Command("austin", RunMode = RunMode.Async)]
-        public async Task Austin([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "austin", url);
-        }
+        //[Command("consent", RunMode = RunMode.Async)]
+        //public async Task Consent([Remainder] string text)
+        //{
+        //    await imageRequestWithArguments(Context, "consent", text, text);
+        //}
 
-        [Command("autism", RunMode = RunMode.Async)]
-        public async Task Autism([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "autism", url);
-        }
+        //[Command("coolguy", RunMode = RunMode.Async)]
+        //public async Task Coolguy([Remainder] string url = null)
+        //{
+        //    await simpleImageRequest(Context, "coolguy", url);
+        //}
 
-        [Command("bandicam", RunMode = RunMode.Async)]
-        public async Task Bandicam([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "bandicam", url);
-        }
-
-        [Command("bernie", RunMode = RunMode.Async)]
-        public async Task Bernie([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "bernie", url);
-        }
-
-        [Command("binoculars", RunMode = RunMode.Async)]
-        public async Task Binoculars([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "binoculars", url);
-        }
-
-        [Command("blackify", RunMode = RunMode.Async)]
-        public async Task Blackify([Remainder] string url = null)
-        {
-            try
-            {
-                await simpleImageRequest(Context, "blackify", url);
-            }
-            catch (AggregateException e) when (e.InnerException is HttpStatusCodeException)
-            {
-                HttpStatusCodeException caught = (HttpStatusCodeException)e.InnerException;
-                if (caught.statusCode.Equals(400))
-                {
-                    await Context.Channel.SendMessageAsync("400 Bad Request. fAPI may have not been able to detect a face in the picture");
-                }
-            }
-        }
-
-        [Command("blackpanther", RunMode = RunMode.Async)]
-        public async Task BlackPanther([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "blackpanther", url);
-        }
-
-        [Command("bobross", RunMode = RunMode.Async)]
-        public async Task BobRoss([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "bobross", url);
-        }
-
-        [Command("buzzfeed", RunMode = RunMode.Async)]
-        public async Task BuzzFeed([Remainder] string text = null)
-        {
-            await simpleImageFromTextRequest(Context, "buzzfeed", text);
-        }
-
-        [Command("cmm", RunMode = RunMode.Async)]
-        public async Task ChangeMyMind([Remainder] string text)
-        {
-            await simpleImageFromTextRequest(Context, "cmm", text);
-        }
-
-        [Command("composite", RunMode = RunMode.Async)]
-        public async Task Composite([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "composite", url);
-        }
-
-        [Command("condom", RunMode = RunMode.Async)]
-        public async Task Condom([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "condom", url);
-        }
-
-        [Command("consent", RunMode = RunMode.Async)]
-        public async Task Consent([Remainder] string text)
-        {
-            await imageRequestWithArguments(Context, "consent", text, text);
-        }
-
-        [Command("coolguy", RunMode = RunMode.Async)]
-        public async Task Coolguy([Remainder] string url = null)
-        {
-            await simpleImageRequest(Context, "coolguy", url);
-        }
-
-        [Command("days", RunMode = RunMode.Async)]
-        public async Task Days([Remainder] string text)
-        {
-            await simpleImageFromTextRequest(Context, "days", text);
-        }
-
-        [Command("deepfry", RunMode = RunMode.Async)]
-        public async Task Deepfry(int amount = 100)
-        {
-            // TODO: Validate amount
-            await imageRequestWithArguments(Context, "deepfry", amount.ToString());
-        }
+        //[Command("days", RunMode = RunMode.Async)]
+        //public async Task Days([Remainder] string text)
+        //{
+        //    await simpleImageFromTextRequest(Context, "days", text);
+        //}
 
         [Command("depression", RunMode = RunMode.Async)]
         public async Task Depression([Remainder] string url = null)
