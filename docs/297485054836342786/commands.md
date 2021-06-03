@@ -2,6 +2,9 @@
 
 This is the list of currently supported commands by MariBot. All commands should start with the configured prefix followed by the command and any parameters. Example: `z info`  
 
+⚠Restricted Features  
+Some features of MariBot have been barred from use on the server you requested help from. They are not included in this list.
+
 ⚠Pardon the Dust  
 A large chunk of commands powered by fAPI were lost due to it's sudden deprecation. A number of the commands will be reimplemented at a later time.
 
@@ -18,25 +21,11 @@ A large chunk of commands powered by fAPI were lost due to it's sudden deprecati
 `tts <text>` - Speaks a string in the voice channel you currently are in using DecTalk. Replace `<text>` with your string.  
 `radio <text>` - Plays a specified radio station in the voice channel you currently are in. See [radio.md](radio.md) for list of default supported webcams.  
 
-### Booru Commands
-For each of these commands, replace `<tags>` with your search tags or leave blank. Use `_` instead of spaces in individual tags. Uses spaces to separate multiple tags. 
-
-`danbooru <tags>` - 🔞**NSFW**. Returns a random image from Danbooru Donmai.  
-`gelbooru <tags>` - 🔞**NSFW**. Returns a random image from Gelbooru.  
-`konachan <tags>` - 🔞**NSFW**. Returns a random image from Konachan.  
-`realbooru <tags>` - 🔞**NSFW**. Returns a random image from Realbooru.  
-`r34 <tags>` - 🔞**NSFW**. Returns a random image from Rule34.  
-`safebooru <tags>` - Returns a random image from Safebooru.  
-`sakugabooru <tags>` - Returns a random image from Sakugabooru.    
-`sankakucomplex <tags>` - 🔞**NSFW**. Returns a random image from Sankaku Complex.  
-`xbooru <tags>` - 🔞**NSFW**. Returns a random image from Xbooru.  
-`yandere <tags>` - 🔞**NSFW**. Returns a random image from yandre.re.  
-
 ### Image Commands
 For all commands with `<url>` parameter, replace it with an image URL, mention a user to use their avatar, or leave blank to use the last posted image in the channel.    
 
-`9gag <url>` - Apply 9gag filter to an image.
-`adidas <url>` - Apply Adidas filter to an image.
+`9gag <url>` - Apply 9gag filter to an image.  
+`adidas <url>` - Apply Adidas filter to an image.  
 `adw <url>` - Apply Admin Walk filter to an image.   
 `ajit <url>` - Apply Ajit Pai filter to an image.   
 `america <url>` - Apply America filter to an image.   
@@ -48,7 +37,7 @@ For all commands with `<url>` parameter, replace it with an image URL, mention a
 `bobross <url>` - Apply Bob Ross filter to an image.   
 `cmm <text>` - Creates a Change My Mind image. Replace `<text>` with any text.  
 `condom <url>` - Apply Condom filter to an image.   
-`comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics. 
+`comic <text>` - Displays a specified comic. Replace `<text>` with your choice. See comics.md for supported comics.   
 `deepfry <url>` - Deepfry an image.    
 `image <text>` - Performs a Google image search and returns the first result. Replace `<text>` with your keywords to search.  
 `nuke <url>` - Deepfry an image 10 times.   

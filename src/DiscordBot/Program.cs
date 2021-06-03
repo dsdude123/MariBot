@@ -152,7 +152,6 @@ namespace DiscordBot
                 .AddSingleton<WikipediaService>()
                 .AddSingleton<MediawikiSharp_API.Mediawiki>()
                 .AddSingleton<YouTubeService>()
-                .AddSingleton<FapiService>()
                 .AddSingleton<StaticTextResponseService>()
                 .AddSingleton<BooruService>()
                 .AddSingleton<GoogleService>()
