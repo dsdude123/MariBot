@@ -114,13 +114,13 @@ namespace DiscordBot.Modules
             }
         }
 
-        [Command("uwu")] // TODO: Add reaction trigger
-        public Task Uwuify([Remainder] string input = null)
+        [Command("uwu")]
+        public async Task UwuifyAsync([Remainder] string input = null)
         {
             if(input == null)
             {
-                input = Context.Channel.GetMessagesAsync(2, Discord.CacheMode.AllowDownload)
-                    .FlattenAsync().Result
+                input = (await Context.Channel.GetMessagesAsync(2, Discord.CacheMode.AllowDownload)
+                    .FlattenAsync())
                     .ToArray()
                     .OrderBy(message => message.Timestamp)
                     .First().Content;
@@ -132,7 +132,7 @@ namespace DiscordBot.Modules
             input = Regex.Replace(input, "N([AEIOU])", "NY$1");
             input = Regex.Replace(input, "ove", "uv");
 
-            return Context.Channel.SendMessageAsync(input);
+            await Context.Channel.SendMessageAsync(input);
         }
         
         private async Task SendAsync(IAudioClient client, string path)
