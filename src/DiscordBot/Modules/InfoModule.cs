@@ -19,7 +19,7 @@ namespace DiscordBot.Modules
         /// <summary>
         ///     The Biohazard symbol emoji.
         /// </summary>
-        private readonly static string BIOHAZARD = "\u2623";
+        private readonly static string BIOHAZARD = "☣️";
         private readonly static Emoji BiohazardEmoji = new Emoji(BIOHAZARD);
 
         public PictureService PictureService { get; set; }
