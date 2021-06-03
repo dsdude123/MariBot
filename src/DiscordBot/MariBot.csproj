@@ -11,18 +11,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\conne\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNative.dll" />
+    <Content Remove="C:\Users\conne\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnn.dll" />
+    <Content Remove="C:\Users\conne\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnAgeClassification.dll" />
+    <Content Remove="C:\Users\conne\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnGenderClassification.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BooruSharp" Version="2.11.0" />
     <PackageReference Include="ByteSize" Version="2.0.0" />
     <PackageReference Include="CSharpMath" Version="0.4.2" />
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="FaceRecognitionDotNet" Version="1.3.0.4" />
     <PackageReference Include="Google.Apis" Version="1.49.0" />
     <PackageReference Include="Google.Apis.CloudSearch.v1" Version="1.49.0.2126" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.49.0.2084" />
     <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.49.0.2137" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
-    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="7.23.2" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="7.15.4" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
@@ -45,11 +53,74 @@
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\9gag.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\adidas.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\adw.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\ajit.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\america.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\analysis.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\austin.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\bernie.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\biden.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\biden.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\binoculars.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\bobross.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\cmm.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\condom.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\sonicsaystemplate.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="DlibDotNetNativeDnn.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DlibDotNetNativeDnnAgeClassification.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DlibDotNetNativeDnnGenderClassification.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FaceModels\dlib_face_recognition_resnet_model_v1.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FaceModels\LICENSE.MD">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FaceModels\mmod_human_face_detector.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FaceModels\shape_predictor_5_face_landmarks.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FaceModels\shape_predictor_68_face_landmarks.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="ffplay.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -82,6 +153,10 @@
 
   <ItemGroup>
     <Folder Include="Content\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
   </ItemGroup>
 
 </Project>

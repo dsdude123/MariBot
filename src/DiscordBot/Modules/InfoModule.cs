@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
@@ -18,13 +20,20 @@ namespace DiscordBot.Modules
         [Command("help")]
         public Task help()
         {
-            return ReplyAsync("https://dsdude123.github.io/MariBot/commands.html");
+            if (Context.Guild.Id == 297485054836342786) // Server is prohibited from using some commands
+            {
+                return ReplyAsync("https://dsdude123.github.io/MariBot/297485054836342786/commands.html");
+            }
+            else
+            {
+                return ReplyAsync("https://dsdude123.github.io/MariBot/commands.html");
+            }
         }
 
         [Command("info")]
         public Task Info()
             => ReplyAsync(
-                $"Hello, I am a bot called {Context.Client.CurrentUser.Username} written in Discord.Net 1.0\n");
+                $"Hello, I am a bot called {Context.Client.CurrentUser.Username} written in Discord.Net 1.0\n"); // TODO: Fix version
 
         [Command("tts", RunMode = RunMode.Async)]
         public async Task tts([Remainder]string text)
@@ -103,6 +112,27 @@ namespace DiscordBot.Modules
             {
                 await Context.Channel.SendMessageAsync("Failed to generate waifu.");
             }
+        }
+
+        [Command("uwu")] // TODO: Add reaction trigger
+        public Task Uwuify([Remainder] string input = null)
+        {
+            if(input == null)
+            {
+                input = Context.Channel.GetMessagesAsync(2, Discord.CacheMode.AllowDownload)
+                    .FlattenAsync().Result
+                    .ToArray()
+                    .OrderBy(message => message.Timestamp)
+                    .First().Content;
+            }
+            input = Regex.Replace(input, "(?:r|l)", "w");
+            input = Regex.Replace(input, "(?:R|L)", "W");
+            input = Regex.Replace(input, "n([aeiou])", "ny$1");
+            input = Regex.Replace(input, "N([aeiou])", "Ny$1");
+            input = Regex.Replace(input, "N([AEIOU])", "NY$1");
+            input = Regex.Replace(input, "ove", "uv");
+
+            return Context.Channel.SendMessageAsync(input);
         }
         
         private async Task SendAsync(IAudioClient client, string path)
