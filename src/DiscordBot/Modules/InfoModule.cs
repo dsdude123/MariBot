@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
+using Discord.WebSocket;
 using ImageMagick;
 using MariBot.Modules;
 using MariBot.Services;
@@ -15,7 +16,19 @@ namespace DiscordBot.Modules
 {
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
+        /// <summary>
+        ///     The Biohazard symbol emoji.
+        /// </summary>
+        private readonly string BIOHAZARD = "\u2623";
+
         public PictureService PictureService { get; set; }
+
+        public DiscordSocketClient DiscordClient { get; set; }
+
+        public InfoModule()
+        {
+            DiscordClient.ReactionAdded += ReactionAddedHandlerAsync;
+        }
 
         [Command("help")]
         public Task help()
@@ -125,16 +138,22 @@ namespace DiscordBot.Modules
                     .OrderBy(message => message.Timestamp)
                     .First().Content;
             }
+            input = UwuifyText(input);
+            
+            await Context.Channel.SendMessageAsync(input);
+        }
+
+        private string UwuifyText(string input)
+        {
             input = Regex.Replace(input, "(?:r|l)", "w");
             input = Regex.Replace(input, "(?:R|L)", "W");
             input = Regex.Replace(input, "n([aeiou])", "ny$1");
             input = Regex.Replace(input, "N([aeiou])", "Ny$1");
             input = Regex.Replace(input, "N([AEIOU])", "NY$1");
             input = Regex.Replace(input, "ove", "uv");
-
-            await Context.Channel.SendMessageAsync(input);
+            return input;
         }
-        
+
         private async Task SendAsync(IAudioClient client, string path)
         {
             // Create FFmpeg using the previous example
@@ -186,6 +205,16 @@ namespace DiscordBot.Modules
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
             });
+        }
+
+        private async Task ReactionAddedHandlerAsync(Cacheable<IUserMessage, ulong> userMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            if (reaction.Emote.Name == BIOHAZARD)
+            {
+                var message = await userMessage.GetOrDownloadAsync();
+                var text = UwuifyText(message.Content);
+                await channel.SendMessageAsync(text);
+            }
         }
     }
 }
