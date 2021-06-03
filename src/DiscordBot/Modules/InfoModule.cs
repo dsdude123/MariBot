@@ -19,7 +19,8 @@ namespace DiscordBot.Modules
         /// <summary>
         ///     The Biohazard symbol emoji.
         /// </summary>
-        private readonly string BIOHAZARD = "\u2623";
+        private readonly static string BIOHAZARD = "\u2623";
+        private readonly static Emoji BiohazardEmoji = new Emoji(BIOHAZARD);
 
         public PictureService PictureService { get; set; }
 
@@ -212,8 +213,12 @@ namespace DiscordBot.Modules
             if (reaction.Emote.Name == BIOHAZARD)
             {
                 var message = await userMessage.GetOrDownloadAsync();
-                var text = UwuifyText(message.Content);
-                await channel.SendMessageAsync(text);
+                if (message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
+                {
+                    var text = UwuifyText(message.Content);
+                    await channel.SendMessageAsync(text);
+                    await message.AddReactionAsync(BiohazardEmoji);
+                }
             }
         }
     }
