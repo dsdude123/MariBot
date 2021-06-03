@@ -211,8 +211,7 @@ namespace DiscordBot.Modules
             if (reaction.Emote.Name == BIOHAZARD)
             {
                 var message = await userMessage.GetOrDownloadAsync();
-                var hasEmote = message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata);
-                if ((hasEmote && !reactionMetadata.IsMe) || !hasEmote)
+                if (message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
                 {
                     var text = UwuifyText(message.Content);
                     await channel.SendMessageAsync(text);
