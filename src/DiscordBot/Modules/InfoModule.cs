@@ -24,11 +24,9 @@ namespace DiscordBot.Modules
 
         public PictureService PictureService { get; set; }
 
-        public DiscordSocketClient DiscordClient { get; set; }
-
-        public InfoModule()
+        public InfoModule(DiscordSocketClient discordClient)
         {
-            DiscordClient.ReactionAdded += ReactionAddedHandlerAsync;
+            discordClient.ReactionAdded += ReactionAddedHandlerAsync;
         }
 
         [Command("help")]
