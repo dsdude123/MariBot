@@ -52,7 +52,7 @@ namespace MariBot.Modules
         {
             try
             {
-                url = PictureService.getImageUrl(Context, url);
+                url = PictureService.GetImageUrl(Context, url);
             }
             catch (NotSupportedException e)
             {

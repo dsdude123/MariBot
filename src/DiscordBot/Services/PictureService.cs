@@ -22,6 +22,8 @@ namespace MariBot.Services
     public class PictureService
     {
         private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif" };
+        Regex TenorDomain = new Regex("^.*\\.?tenor.com$");
+        Regex ImgurDomain = new Regex("^.*\\.?imgur.com$");
         private readonly HttpClient _http;
         private FaceRecognition finder = FaceRecognition.Create("./FaceModels");
         private Random random = new Random();
@@ -43,7 +45,7 @@ namespace MariBot.Services
             return painter.DrawAsStream(format: SKEncodedImageFormat.Png);
         }
 
-        public string getNewestImageUrl(IMessage[] messages)
+        public string GetNewestImageUrl(IMessage[] messages)
         {
             foreach (IMessage m in messages)
             {
@@ -51,29 +53,32 @@ namespace MariBot.Services
                 {
                     if (m.Attachments != null && m.Attachments.Count > 0)
                     {
-                        if (isSupportedImage(m.Attachments.First().Url))
+                        foreach(IAttachment attachment in m.Attachments)
                         {
-                            return m.Attachments.First().Url;
-                        }
+                            if (IsSupportedImage(attachment.Url))
+                            {
+                                return attachment.Url;
+                            }
+                        }                        
                     }
-                    if (m.Content != null)
+                    if (String.IsNullOrWhiteSpace(m.Content))
                     {
                         foreach (string s in m.Content.Split(' '))
                         {
-                            if (isSupportedImage(s))
+                            if (IsSupportedImage(s))
                             {
                                 try
                                 {
                                     Uri u = new Uri(s);
-                                    if (u.Host.ToLower().Equals("tenor.com"))
+                                    if (TenorDomain.IsMatch(u.Host.ToLower()))
                                     {
-                                        return getTenorGif(s);
+                                        return GetTenorGif(s);
                                     }
-                                    else if (u.Host.ToLower().Equals("imgur.com"))
+                                    else if (ImgurDomain.IsMatch(u.Host.ToLower()))
                                     {
-                                        return getImgurGif(s);
+                                        return GetImgurGif(s);
                                     }
-                                    return u.AbsolutePath;
+                                    return u.AbsoluteUri;
                                 }
                                 catch (Exception e)
                                 {
@@ -86,11 +91,11 @@ namespace MariBot.Services
                     {
                         foreach (Embed e in m.Embeds)
                         {
-                            if (e.Image != null)
+                            if (e.Image != null && IsSupportedImage(e.Image.Value.Url))
                             {
                                 return e.Image.Value.Url;
                             }
-                            if (e.Thumbnail != null)
+                            if (e.Thumbnail != null && IsSupportedImage(e.Thumbnail.Value.Url))
                             {
                                 return e.Thumbnail.Value.Url;
                             }
@@ -101,68 +106,86 @@ namespace MariBot.Services
             return null;
         }
 
-        public string getImageUrl(SocketCommandContext context, string url)
+        public string GetImageUrl(SocketCommandContext context, string url)
         {
-            if (url == null)
+            if (String.IsNullOrWhiteSpace(url))
             {
                 var messages = context.Channel.GetMessagesAsync(100, Discord.CacheMode.AllowDownload).FlattenAsync().Result.ToArray();
                 messages.OrderBy(message => message.Timestamp);
-                url = getNewestImageUrl(messages);
+                return GetNewestImageUrl(messages);
             }
-
-            Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(url))
+            else
             {
-                string userId = url.Replace("<@!", "").Replace(">", "");
-                foreach (var user in context.Guild.Users.ToArray())
+                Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+                if (userIdCheck.IsMatch(url))
                 {
-                    if (user.Id.ToString().Equals(userId))
+                    string userId = url.Replace("<@!", "").Replace(">", "");
+                    foreach (var user in context.Guild.Users.ToArray())
                     {
-                        url = user.GetAvatarUrl().Split('?')[0];
+                        if (user.Id.ToString().Equals(userId))
+                        {
+                            return new Uri(user.GetAvatarUrl()).AbsolutePath;
+                        }
                     }
                 }
-            }
 
-            if (!isSupportedImage(url))
-            {
-                throw new NotSupportedException("Invalid image specified or no image within 100 posts detected.");
-            }
 
-            Uri u = new Uri(url);
-            if (u.Host.ToLower().Equals("tenor.com"))
-            {
-                return getTenorGif(url);
+                if (!IsSupportedImage(url))
+                {
+                    throw new NotSupportedException("Invalid image specified or no image within 100 posts detected.");
+                }
+
+                Uri u = new Uri(url);
+                if (TenorDomain.IsMatch(u.Host.ToLower()))
+                {
+                    return GetTenorGif(url);
+                }
+                else if (ImgurDomain.IsMatch(u.Host.ToLower()))
+                {
+                    return GetImgurGif(url);
+                }
+                return url;
             }
-            else if (u.Host.ToLower().Equals("imgur.com"))
-            {
-                return getImgurGif(url);
-            }
-            return url;
         }
 
-        public string getTenorGif(string url)
+        public string GetTenorGif(string url)
         {
             HtmlWeb web = new HtmlWeb();
             web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
             HtmlDocument tenorBase = web.Load(url);
-            return tenorBase.DocumentNode.SelectSingleNode("//meta[@itemprop='contentUrl']").Attributes["content"].Value.ToString();
+            Uri contentUrl = new Uri(tenorBase.DocumentNode.SelectSingleNode("//meta[@itemprop='contentUrl']").Attributes["content"].Value.ToString());
+            if (supportedExtensions.Any(x => contentUrl.AbsolutePath.ToLower().EndsWith(x)))
+            {
+                return contentUrl.AbsoluteUri;
+            } else
+            {
+                throw new NotSupportedException("Tenor image has unsupported extension.");
+            }
         }
 
-        public string getImgurGif(string url)
+        public string GetImgurGif(string url)
         {
             HtmlWeb web = new HtmlWeb();
             web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
             HtmlDocument tenorBase = web.Load(url);
-            return tenorBase.DocumentNode.SelectSingleNode("//meta[@property='og:url']").Attributes["content"].Value.ToString();
+            Uri contentUrl = new Uri(tenorBase.DocumentNode.SelectSingleNode("//meta[@property='og:url']").Attributes["content"].Value.ToString());
+            if (supportedExtensions.Any(x => contentUrl.AbsolutePath.ToLower().EndsWith(x)))
+            {
+                return contentUrl.AbsoluteUri;
+            }
+            else
+            {
+                throw new NotSupportedException("Imgur image has unsupported extension.");
+            }
         }
 
-        public bool isSupportedImage(string url)
+        public bool IsSupportedImage(string url)
         {
 
             try
             {
                 Uri uri = new Uri(url);
-                if (uri.Host.Equals("tenor.com") || uri.Host.Contains(".tenor.com") || uri.Host.Equals("imgur.com") || uri.Host.Contains(".imgur.com"))
+                if (TenorDomain.IsMatch(uri.Host.ToLower()) || ImgurDomain.IsMatch(uri.Host.ToLower()))
                 {
                     return true;
                 }
@@ -194,7 +217,7 @@ namespace MariBot.Services
         {
             try
             {
-                url = getImageUrl(context, url);
+                url = GetImageUrl(context, url);
             }
             catch (NotSupportedException e)
             {
@@ -335,7 +358,7 @@ namespace MariBot.Services
             int minimumOverlayHeight = yCoords.Max();
             try
             {
-                url = getImageUrl(context, url);
+                url = GetImageUrl(context, url);
             }
             catch (NotSupportedException e)
             {
@@ -468,7 +491,7 @@ namespace MariBot.Services
         {
             try
             {
-                url = getImageUrl(context, url);
+                url = GetImageUrl(context, url);
             }
             catch (NotSupportedException e)
             {
@@ -634,7 +657,7 @@ namespace MariBot.Services
 
             try
             {
-                url = getImageUrl(context, url);
+                url = GetImageUrl(context, url);
             }
             catch (NotSupportedException e)
             {
