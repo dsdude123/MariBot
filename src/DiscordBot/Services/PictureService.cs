@@ -21,9 +21,10 @@ namespace MariBot.Services
 {
     public class PictureService
     {
-        private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif" };
-        Regex TenorDomain = new Regex("^.*\\.?tenor.com$");
-        Regex ImgurDomain = new Regex("^.*\\.?imgur.com$");
+        private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif", ".webp", ".apng"};
+        private static readonly string[] animatedExtensions = new string[] { ".gif", ".png", ".apng", ".webp" };
+        private static readonly string TenorDomain = "tenor.com";
+        private static readonly string ImgurDomain = "imgur.com";
         private readonly HttpClient _http;
         private FaceRecognition finder = FaceRecognition.Create("./FaceModels");
         private Random random = new Random();
@@ -70,11 +71,11 @@ namespace MariBot.Services
                                 try
                                 {
                                     Uri u = new Uri(s);
-                                    if (TenorDomain.IsMatch(u.Host.ToLower()))
+                                    if (u.Host.ToLower().Equals(TenorDomain))
                                     {
                                         return GetTenorGif(s);
                                     }
-                                    else if (ImgurDomain.IsMatch(u.Host.ToLower()))
+                                    else if (u.Host.ToLower().Equals(ImgurDomain))
                                     {
                                         return GetImgurGif(s);
                                     }
@@ -91,11 +92,31 @@ namespace MariBot.Services
                     {
                         foreach (Embed e in m.Embeds)
                         {
-                            if (e.Image != null && IsSupportedImage(e.Image.Value.Url))
+                            if (e.Url != null && IsSupportedImage(e.Url))
+                            {
+                                try
+                                {
+                                    Uri u = new Uri(e.Url);
+                                    if (u.Host.ToLower().Equals(TenorDomain))
+                                    {
+                                        return GetTenorGif(e.Url);
+                                    }
+                                    else if (u.Host.ToLower().Equals(ImgurDomain))
+                                    {
+                                        return GetImgurGif(e.Url);
+                                    }
+                                    return u.AbsoluteUri;
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Do nothing, not a valid URI
+                                }
+                            }
+                            else if (e.Image != null && IsSupportedImage(e.Image.Value.Url))
                             {
                                 return e.Image.Value.Url;
                             }
-                            if (e.Thumbnail != null && IsSupportedImage(e.Thumbnail.Value.Url))
+                            else if (e.Thumbnail != null && IsSupportedImage(e.Thumbnail.Value.Url))
                             {
                                 return e.Thumbnail.Value.Url;
                             }
@@ -136,11 +157,11 @@ namespace MariBot.Services
                 }
 
                 Uri u = new Uri(url);
-                if (TenorDomain.IsMatch(u.Host.ToLower()))
+                if (u.Host.ToLower().Equals(TenorDomain))
                 {
                     return GetTenorGif(url);
                 }
-                else if (ImgurDomain.IsMatch(u.Host.ToLower()))
+                else if (u.Host.ToLower().Equals(ImgurDomain))
                 {
                     return GetImgurGif(url);
                 }
@@ -185,7 +206,7 @@ namespace MariBot.Services
             try
             {
                 Uri uri = new Uri(url);
-                if (TenorDomain.IsMatch(uri.Host.ToLower()) || ImgurDomain.IsMatch(uri.Host.ToLower()))
+                if (uri.Host.ToLower().Equals(TenorDomain) || uri.Host.ToLower().Equals(ImgurDomain))
                 {
                     return true;
                 }
@@ -230,7 +251,7 @@ namespace MariBot.Services
 
             bool isAnimated = false;
             Uri uri = new Uri(url);
-            if (uri.AbsolutePath.EndsWith(".gif"))
+            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
             {
                 using (var overlayCollection = new MagickImageCollection(incomingImage))
                 {
@@ -371,7 +392,7 @@ namespace MariBot.Services
 
             bool isAnimated = false;
             Uri uri = new Uri(url);
-            if (uri.AbsolutePath.EndsWith(".gif"))
+            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
             {
                 using (var overlayCollection = new MagickImageCollection(incomingImage))
                 {
@@ -504,7 +525,7 @@ namespace MariBot.Services
 
             bool isAnimated = false;
             Uri uri = new Uri(url);
-            if (uri.AbsolutePath.EndsWith(".gif"))
+            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
             {
                 using (var overlayCollection = new MagickImageCollection(incomingImage))
                 {
@@ -670,7 +691,7 @@ namespace MariBot.Services
 
             bool isAnimated = false;
             Uri uri = new Uri(url);
-            if (uri.AbsolutePath.EndsWith(".gif"))
+            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
             {
                 using (var overlayCollection = new MagickImageCollection(incomingImage))
                 {
@@ -802,6 +823,7 @@ namespace MariBot.Services
             double facelessBoxPercentage = 0.5;
 
             MemoryStream memoryStream = new MemoryStream();
+            image.ColorSpace = ColorSpace.RGB;
             image.Write(memoryStream, MagickFormat.Png);
             memoryStream.Seek(0, SeekOrigin.Begin);
 
