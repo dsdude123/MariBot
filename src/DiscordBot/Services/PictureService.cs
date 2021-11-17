@@ -222,7 +222,7 @@ namespace MariBot.Services
             }
         }
 
-        public async Task<MemoryStream> getWebResource(string url)
+        public async Task<MemoryStream> GetWebResource(string url)
         {
             var request = HttpWebRequest.CreateHttp(url);
             request.Method = "GET";
@@ -246,7 +246,7 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = getWebResource(url).Result;
+            MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -387,7 +387,7 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = getWebResource(url).Result;
+            MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -520,7 +520,7 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = getWebResource(url).Result;
+            MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -686,7 +686,7 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = getWebResource(url).Result;
+            MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -827,6 +827,7 @@ namespace MariBot.Services
             image.Write(memoryStream, MagickFormat.Png);
             memoryStream.Seek(0, SeekOrigin.Begin);
 
+            // TODO: Exception handling, this is not caught by command handler
             System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(memoryStream);
             FaceRecognitionDotNet.Image imageToDetect = FaceRecognition.LoadImage(bitmap);
 

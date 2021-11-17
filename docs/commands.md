@@ -82,12 +82,6 @@ These commands configure static text responses that the bot uses when a command 
 ### Basic and Unsorted Commands 
 `reminder <text>&<datetime>` - Sets a reminder. Replace `<text>` with your reminder text and `<datetime>` with the date and/or time to remind you at. `<datetime>` must be in a standard format supported by .NET Framework.  
 
-### Game Commands
-Append all commands in this category with `game`. For example, `game <command>` where `<command>` is a command from this category.
-
-`balance` - Display your credit balance.  
-`daily` - Get a daily credit bonus.  
-
 ### YouTube Commands
 `yt <text>` - Plays audio from a YouTube video in the current voice channel you are connected to. Replace `<text>` with a valid YouTube URL or video name to search for.  
 `yt-d <text>` - Gets the duration of a video. Replace `<text>` with a valid YouTube URL or video name to search for.  

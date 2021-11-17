@@ -17,6 +17,7 @@ namespace MariBot.Modules
     public class ImageModule : ModuleBase<SocketCommandContext>
     {
         public PictureService PictureService { get; set; }
+        public Edges2HentaiService Edges2HentaiService { get; set; }
 
         [Command("sonicsays", RunMode = RunMode.Async)]
         public async Task sonicsays([Remainder] string text)
@@ -60,7 +61,7 @@ namespace MariBot.Modules
                 return;
             }
 
-            MemoryStream incomingImage = PictureService.getWebResource(url).Result;
+            MemoryStream incomingImage = PictureService.GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -264,6 +265,13 @@ namespace MariBot.Modules
             Context.Channel.SendMessageAsync("This is going to take quite some time. Hang tight and I'll ping you when I'm done.");
             PictureService.DeepfryImage(Context, url, 10);
             Context.Channel.SendMessageAsync(Context.Message.Author.Mention);
+        }
+
+        [DisallowSomeServers]
+        [Command("e2h", RunMode = RunMode.Async)]
+        public async Task Edges2Hentai(string url = null)
+        {
+            Edges2HentaiService.Edges2Hentai(Context, url);
         }
     }
 }

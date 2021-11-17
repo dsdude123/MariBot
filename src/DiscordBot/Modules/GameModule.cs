@@ -10,12 +10,12 @@ using MariBot.Models;
 
 namespace MariBot.Modules
 {
-    [Group("game")]
+    //[Group("game")]
     public class GameModule : ModuleBase<SocketCommandContext>
     {
         public static readonly ulong DAILY_BONUS = 20;
 
-        [Command("daily")]
+        //[Command("daily")]
         public Task daily()
         {
             var guild = Context.Guild.Id;
@@ -61,7 +61,7 @@ namespace MariBot.Modules
             }
         }
 
-        [Command("balance")]
+        //[Command("balance")]
         public Task balance()
         {
             var guild = Context.Guild.Id;

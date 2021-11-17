@@ -155,6 +155,7 @@ namespace DiscordBot
                 .AddSingleton<StaticTextResponseService>()
                 .AddSingleton<BooruService>()
                 .AddSingleton<GoogleService>()
+                .AddSingleton<Edges2HentaiService>()
                 .BuildServiceProvider();
         }
 
