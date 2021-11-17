@@ -21,7 +21,7 @@ namespace MariBot.Services
 {
     public class PictureService
     {
-        private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif", ".webp", ".apng"};
+        private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif", ".webp", ".apng" };
         private static readonly string[] animatedExtensions = new string[] { ".gif", ".png", ".apng", ".webp" };
         private static readonly string TenorDomain = "tenor.com";
         private static readonly string ImgurDomain = "imgur.com";
@@ -54,13 +54,13 @@ namespace MariBot.Services
                 {
                     if (m.Attachments != null && m.Attachments.Count > 0)
                     {
-                        foreach(IAttachment attachment in m.Attachments)
+                        foreach (IAttachment attachment in m.Attachments)
                         {
                             if (IsSupportedImage(attachment.Url))
                             {
                                 return attachment.Url;
                             }
-                        }                        
+                        }
                     }
                     if (String.IsNullOrWhiteSpace(m.Content))
                     {
@@ -178,7 +178,8 @@ namespace MariBot.Services
             if (supportedExtensions.Any(x => contentUrl.AbsolutePath.ToLower().EndsWith(x)))
             {
                 return contentUrl.AbsoluteUri;
-            } else
+            }
+            else
             {
                 throw new NotSupportedException("Tenor image has unsupported extension.");
             }
@@ -966,6 +967,21 @@ namespace MariBot.Services
                 }
             }
 
+        }
+
+        public async void ConvertJfifToJpeg(SocketCommandContext context, string url)
+        {
+            MemoryStream incomingImage = GetWebResource(url).Result;
+            incomingImage.Seek(0, SeekOrigin.Begin);
+
+            MemoryStream outgoingImage = new MemoryStream();
+
+            using (var baseImage = new MagickImage(incomingImage))
+            {
+                baseImage.Write(outgoingImage, MagickFormat.Jpeg);
+            }
+            outgoingImage.Seek(0, SeekOrigin.Begin);
+            await context.Channel.SendFileAsync(outgoingImage, "autoconvert.jpeg");
         }
     }
 }

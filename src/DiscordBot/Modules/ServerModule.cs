@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using ImageMagick;
+using MariBot.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,8 @@ namespace MariBot.Modules
     [Group("server")]
     public class ServerModule : ModuleBase<SocketCommandContext>
     {
+        public FeatureToggleService featureToggleService { get; set; }
+
         [Command("health", RunMode = RunMode.Async)]
         public async Task health()
         {
@@ -68,6 +71,20 @@ namespace MariBot.Modules
 
             report += "```";
             Context.Channel.SendMessageAsync(report);
+        }
+
+        [Command("enable-feature")]
+        public Task EnableFeature(string featureName)
+        {
+            featureToggleService.EnableFeature(featureName, Context.Guild.Id.ToString());
+            return ReplyAsync("Feature enabled");
+        }
+
+        [Command("disable-feature")]
+        public Task DisableFeature(string featureName)
+        {
+            featureToggleService.DisableFeature(featureName, Context.Guild.Id.ToString());
+            return ReplyAsync("Feature disabled");
         }
     }
 }

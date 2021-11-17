@@ -18,6 +18,8 @@ namespace DiscordBot.Services
         private readonly CommandService _commands;
         private IServiceProvider _provider;
         private StaticTextResponseService staticTextResponseService = new StaticTextResponseService();
+        private FeatureToggleService featureToggleService = new FeatureToggleService();
+        private PictureService pictureService = new PictureService(new System.Net.Http.HttpClient());
 
         public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands)
         {
@@ -40,24 +42,36 @@ namespace DiscordBot.Services
             // Ignore system messages and messages from bots
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
+            var context = new SocketCommandContext(_discord, message);
 
             if (hasLatexMathQuotes(message.Content))
             {
-                var latexContext = new SocketCommandContext(_discord, message);
-                var latexTypingState = latexContext.Channel.EnterTypingState();
+                var latexTypingState = context.Channel.EnterTypingState();
                 string formattedLatex = formatLatexString(message.Content);
                 var pictureService = new PictureService(new System.Net.Http.HttpClient());                
                 var image = pictureService.GetLatexImage(formattedLatex).Result;
                 image.Seek(0, SeekOrigin.Begin);
-                await latexContext.Channel.SendFileAsync(image, "latex.png");
+                await context.Channel.SendFileAsync(image, "latex.png");
                 latexTypingState.Dispose();
+            }
+
+            if (featureToggleService.CheckFeature("auto-jfif-to-jpeg", context.Guild.Id.ToString()))
+            {
+                foreach (Attachment attachment in context.Message.Attachments)
+                {
+                    if (attachment.Filename.EndsWith(".jfif") || attachment.Filename.EndsWith(".JFIF")
+                        || attachment.Filename.EndsWith(".jfif-large"))
+                    {
+                        pictureService.ConvertJfifToJpeg(context, attachment.Url);
+                    }
+                }
             }
 
             int argPos = 0;
             if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program._config["prefix"] + " ",ref argPos))) return;
 
-            var context = new SocketCommandContext(_discord, message);
-            var typingState = context.Channel.EnterTypingState();
+            
+            //var typingState = context.Channel.EnterTypingState();
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
 
             if (result.Error.HasValue &&
@@ -87,7 +101,7 @@ namespace DiscordBot.Services
                 }
             }
 
-            typingState.Dispose();
+            //typingState.Dispose();
         }
 
         private bool hasLatexMathQuotes(String text)

@@ -13,7 +13,7 @@ namespace MariBot.Services
     /**
      * Edges2HentaiService
      * 
-     * Internal Use Only - Not Usable
+     * Resource Intensive - Not Usable in Unpermitted Servers
      * 
      * Doesn't actually do what the title implies. Takes an image and turns it into weird colors.
      */
