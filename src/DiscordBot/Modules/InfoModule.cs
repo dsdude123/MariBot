@@ -206,7 +206,7 @@ namespace DiscordBot.Modules
             });
         }
 
-        private async Task ReactionAddedHandlerAsync(Cacheable<IUserMessage, ulong> userMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        private async Task ReactionAddedHandlerAsync(Cacheable<IUserMessage, ulong> userMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             if (reaction.Emote.Name == BIOHAZARD)
             {
@@ -214,7 +214,8 @@ namespace DiscordBot.Modules
                 if (message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
                 {
                     var text = UwuifyText(message.Content);
-                    await channel.SendMessageAsync(text);
+                    var channelContext = await channel.GetOrDownloadAsync();
+                    await channelContext.SendMessageAsync(text);
                     await message.AddReactionAsync(BiohazardEmoji);
                 }
             }

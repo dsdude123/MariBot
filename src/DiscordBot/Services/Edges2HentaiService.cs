@@ -15,7 +15,7 @@ namespace MariBot.Services
      * 
      * Resource Intensive - Not Usable in Unpermitted Servers
      * 
-     * Doesn't actually do what the title implies. Takes an image and turns it into weird colors.
+     * Takes an image and turns it into a weird flesh colored blob (although sometimes not flesh colored).
      */
     public class Edges2HentaiService
     {
