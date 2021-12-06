@@ -73,6 +73,7 @@ namespace MariBot.Modules
             Context.Channel.SendMessageAsync(report);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("enable-feature")]
         public Task EnableFeature(string featureName)
         {
@@ -80,6 +81,7 @@ namespace MariBot.Modules
             return ReplyAsync("Feature enabled");
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("disable-feature")]
         public Task DisableFeature(string featureName)
         {

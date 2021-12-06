@@ -30,6 +30,7 @@
     <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.49.0.2137" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
+    <PackageReference Include="linqtotwitter" Version="5.0.0" />
     <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="7.15.4" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
