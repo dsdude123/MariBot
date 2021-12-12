@@ -825,14 +825,23 @@ namespace MariBot.Services
 
             MemoryStream memoryStream = new MemoryStream();
             image.ColorSpace = ColorSpace.RGB;
+            image.Depth = 32;
             image.Write(memoryStream, MagickFormat.Png);
             memoryStream.Seek(0, SeekOrigin.Begin);
+            FaceRecognitionDotNet.Image imageToDetect;
+            List<Location> faces;
 
-            // TODO: Exception handling, this is not caught by command handler
-            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(memoryStream);
-            FaceRecognitionDotNet.Image imageToDetect = FaceRecognition.LoadImage(bitmap);
+            try
+            {
+                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(memoryStream);
+                imageToDetect = FaceRecognition.LoadImage(bitmap);
 
-            List<Location> faces = finder.FaceLocations(imageToDetect).ToList();
+                faces = finder.FaceLocations(imageToDetect).ToList();
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Failed to run face recognition. " + ex.Message);
+                faces = new List<Location>();
+            }
             //memoryStream.Dispose();
 
             if (faces.Count > 0)
