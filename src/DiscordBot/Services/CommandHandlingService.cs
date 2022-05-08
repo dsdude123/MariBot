@@ -114,6 +114,9 @@ namespace DiscordBot.Services
                 if(c.Equals('$'))
                 {
                     dollarCounter++;
+                } else if (dollarCounter > 0)
+                {
+                    dollarCounter--;
                 }
 
                 if(dollarCounter == 2)
