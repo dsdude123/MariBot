@@ -17,9 +17,9 @@ namespace MariBot.Services
         public static string getGlobalResponse(string key)
         {
             if (globalResponseList == null) loadGlobalResponseList();
-            if (globalResponseList.ContainsKey(key))
+            if (globalResponseList.ContainsKey(key.ToLower()))
             {
-                return globalResponseList[key];
+                return globalResponseList[key.ToLower()];
             } else
             {
                 return null;
@@ -43,18 +43,18 @@ namespace MariBot.Services
         public static void addGlobalResponse(string key, string text)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             if (globalResponseList == null) loadGlobalResponseList();
 
-            if (globalResponseList.ContainsKey(key))
+            if (globalResponseList.ContainsKey(key.ToLower()))
             {
                 throw new InvalidOperationException("The global response list already contains an entry for: " + key);
             } else
             {
-                globalResponseList.Add(key, text);
+                globalResponseList.Add(key.ToLower(), text);
                 File.WriteAllText(globalPath, JsonConvert.SerializeObject(globalResponseList));
             }
         }
@@ -62,15 +62,15 @@ namespace MariBot.Services
         public static void updateGlobalResponse(string key, string text)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             if (globalResponseList == null) loadGlobalResponseList();
 
-            if (globalResponseList.ContainsKey(key))
+            if (globalResponseList.ContainsKey(key.ToLower()))
             {
-                globalResponseList[key] = text;
+                globalResponseList[key.ToLower()] = text;
                 File.WriteAllText(globalPath, JsonConvert.SerializeObject(globalResponseList));
             }
             else
@@ -82,15 +82,15 @@ namespace MariBot.Services
         public static void removeGlobalResponse(string key)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             if (globalResponseList == null) loadGlobalResponseList();
 
-            if (globalResponseList.ContainsKey(key))
+            if (globalResponseList.ContainsKey(key.ToLower()))
             {
-                globalResponseList.Remove(key);
+                globalResponseList.Remove(key.ToLower());
                 File.WriteAllText(globalPath, JsonConvert.SerializeObject(globalResponseList));
             }
             else
@@ -103,9 +103,9 @@ namespace MariBot.Services
         {
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
-            if (serverResponses.ContainsKey(key))
+            if (serverResponses.ContainsKey(key.ToLower()))
             {
-                return serverResponses[key];
+                return serverResponses[key.ToLower()];
             } else
             {
                 return null;
@@ -130,24 +130,24 @@ namespace MariBot.Services
         public void addResponse(ulong guild, string key, string text)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
-            if (globalResponseList != null && globalResponseList.ContainsKey(key))
+            if (globalResponseList != null && globalResponseList.ContainsKey(key.ToLower()))
             {
                 throw new InvalidOperationException("The selected key conflicts with an entry in the global response list");
             }
-            else if (serverResponses.ContainsKey(key))
+            else if (serverResponses.ContainsKey(key.ToLower()))
             {
                 throw new InvalidOperationException("The response list already contains an entry for: " + key);
             }
             else
             {
-                serverResponses.Add(key, text);
+                serverResponses.Add(key.ToLower(), text);
                 File.WriteAllText(path, JsonConvert.SerializeObject(serverResponses));
             }
         }
@@ -155,16 +155,16 @@ namespace MariBot.Services
         public void updateResponse(ulong guild, string key, string text)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
-            if (serverResponses.ContainsKey(key))
+            if (serverResponses.ContainsKey(key.ToLower()))
             {
-                serverResponses[key] = text;
+                serverResponses[key.ToLower()] = text;
                 File.WriteAllText(path, JsonConvert.SerializeObject(serverResponses));
             }
             else
@@ -176,16 +176,16 @@ namespace MariBot.Services
         public void removeResponse(ulong guild, string key)
         {
             Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
-            if (userIdCheck.IsMatch(key))
+            if (userIdCheck.IsMatch(key.ToLower()))
             {
                 key = key.Replace("!", string.Empty);
             }
             string path = Environment.CurrentDirectory + "\\data\\" + guild + "\\textresponse.json";
             Dictionary<string, string> serverResponses = loadResponseList(guild);
 
-            if (serverResponses.ContainsKey(key))
+            if (serverResponses.ContainsKey(key.ToLower()))
             {
-                serverResponses.Remove(key);
+                serverResponses.Remove(key.ToLower());
                 File.WriteAllText(path, JsonConvert.SerializeObject(serverResponses));
             }
             else
