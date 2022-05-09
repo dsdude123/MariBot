@@ -3,7 +3,7 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ]
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
       "BlockedTextCommands": [ "waifu" ]
     },
     {
