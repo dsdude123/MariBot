@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
-using DiscordBot;
+using MariBot;
 using LinqToTwitter;
 using MariBot.Models;
 using MariBot.Services;
@@ -258,7 +258,7 @@ namespace MariBot.Modules
 
         static IGuild findServer(ulong id)
         {
-            foreach (IGuild server in Program._client.Guilds)
+            foreach (IGuild server in Program.client.Guilds)
             {
                 if (server.Id == id)
                     return server;

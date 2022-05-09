@@ -22,7 +22,7 @@
     <PackageReference Include="ByteSize" Version="2.0.0" />
     <PackageReference Include="CSharpMath" Version="0.4.2" />
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
-    <PackageReference Include="Discord.Net.Labs" Version="3.3.3" />
+    <PackageReference Include="Discord.Net.Labs" Version="3.6.1" />
     <PackageReference Include="FaceRecognitionDotNet" Version="1.3.0.4" />
     <PackageReference Include="Google.Apis" Version="1.49.0" />
     <PackageReference Include="Google.Apis.CloudSearch.v1" Version="1.49.0.2126" />
@@ -106,6 +106,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="DlibDotNetNativeDnnGenderClassification.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="dynamic-config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="FaceModels\dlib_face_recognition_resnet_model_v1.dat">

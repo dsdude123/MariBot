@@ -623,7 +623,7 @@ namespace MariBot.Services
 
         public string GetBestFont(string text)
         {
-            List<string> fontList = DiscordBot.Program._config.GetSection("supportedFonts").GetChildren().Select(t => t.Value).ToList();
+            List<string> fontList = MariBot.Program.config.GetSection("supportedFonts").GetChildren().Select(t => t.Value).ToList();
             string topFont = "";
             int topScore = 0;
 

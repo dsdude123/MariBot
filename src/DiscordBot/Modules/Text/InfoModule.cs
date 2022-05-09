@@ -9,10 +9,12 @@ using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 using ImageMagick;
+using MariBot.Models;
 using MariBot.Modules;
 using MariBot.Services;
+using Newtonsoft.Json;
 
-namespace DiscordBot.Modules
+namespace MariBot.Modules
 {
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
@@ -35,6 +37,10 @@ namespace DiscordBot.Modules
             if (Context.Guild.Id == 297485054836342786) // Server is prohibited from using some commands
             {
                 return ReplyAsync("https://dsdude123.github.io/MariBot/297485054836342786/commands.html");
+            }
+            else if (Context.Guild.Id == 564645677586710548)
+            {
+                return ReplyAsync("https://dsdude123.github.io/MariBot/564645677586710548/commands.html");
             }
             else
             {
@@ -211,14 +217,29 @@ namespace DiscordBot.Modules
             if (reaction.Emote.Name == BIOHAZARD)
             {
                 var message = await userMessage.GetOrDownloadAsync();
-                if (message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
+                var channelContext = await channel.GetOrDownloadAsync();
+                SocketGuildChannel socketGuildChannel = (SocketGuildChannel)channelContext;
+                if (CheckEmojiTriggerFeature(socketGuildChannel.Guild.Id) && message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
                 {
                     var text = UwuifyText(message.Content);
-                    var channelContext = await channel.GetOrDownloadAsync();
                     await channelContext.SendMessageAsync(text);
                     await message.AddReactionAsync(BiohazardEmoji);
                 }
             }
+        }
+
+        private bool CheckEmojiTriggerFeature(ulong id)
+        {
+            DynamicConfig dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
+                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config.json"));
+            foreach (var guildConfig in dynamicConfig.Guilds)
+            {
+                if (guildConfig.Id.Equals(id) && guildConfig.EnabledFeatures != null)
+                {
+                    return Array.Exists(guildConfig.EnabledFeatures, x => x.Equals("emoji-triggers"));
+                }
+            }
+            return false;
         }
     }
 }

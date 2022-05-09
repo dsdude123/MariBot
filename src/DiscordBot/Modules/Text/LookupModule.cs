@@ -30,7 +30,7 @@ namespace MariBot.Modules
         public UrbanDictionaryService UrbanDictionaryService { get; set; }
         public WikipediaService WikipediaService { get; set; }
 
-        public WolframAlphaService WolframAlphaService = new WolframAlphaService(DiscordBot.Program._config["wolframAlphaAppId"]);
+        public WolframAlphaService WolframAlphaService = new WolframAlphaService(MariBot.Program.config["wolframAlphaAppId"]);
 
         [Command("urban")]
         public Task urban([Remainder] string word)

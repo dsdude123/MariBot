@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Discord;
 using Discord.Commands;
-using DiscordBot;
+using MariBot;
 using Newtonsoft.Json;
 using MariBot.Models;
 
@@ -57,7 +57,7 @@ namespace MariBot.Modules
 
         static IGuild findServer(ulong id)
         {
-            foreach (IGuild server in Program._client.Guilds) // discord is your DiscorClient instance
+            foreach (IGuild server in Program.client.Guilds) // discord is your DiscorClient instance
             {
                 if (server.Id == id)
                     return server;

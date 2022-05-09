@@ -13,7 +13,7 @@ namespace MariBot.Services
 {
     public class GoogleService
     {
-        private static readonly string ApiKey = DiscordBot.Program._config["googlecloudkey"];
+        private static readonly string ApiKey = MariBot.Program.config["googlecloudkey"];
         private static readonly string ApplicationName = "MariBot";
 
         private CustomsearchService SearchService;
@@ -35,7 +35,7 @@ namespace MariBot.Services
 
         public async Task<Search> Search(string keyword, bool imageSearch = false) {
             CseResource.ListRequest searchRequest = new CseResource.ListRequest(SearchService);
-            searchRequest.Cx = DiscordBot.Program._config["googlecustomsearchid"];
+            searchRequest.Cx = MariBot.Program.config["googlecustomsearchid"];
             searchRequest.Q = keyword;
             searchRequest.Safe = CseResource.ListRequest.SafeEnum.Active;
             if(imageSearch)

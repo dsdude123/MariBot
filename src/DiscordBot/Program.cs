@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBot.Services;
 using MariBot.Modules;
 using MariBot.Services;
 using UrbanDictionnet;
@@ -19,8 +18,9 @@ using System.IO.Compression;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Downloader;
 using ImageMagick;
+using Discord.Interactions;
 
-namespace DiscordBot
+namespace MariBot
 {
     class Program
     {
@@ -30,18 +30,25 @@ namespace DiscordBot
         public static readonly string sharpTalkLink = "https://github.com/dsdude123/SharpTalkGenerator/releases/download/v1.0/SharpTalkGenerator.zip";
         public static readonly string waifuLabsLink = "https://github.com/dsdude123/WaifuLabs.NET/releases/download/v1.0/waifulabs.exe";
 
-        public static DiscordSocketClient _client;
-        public static IConfiguration _config;
+        public static DiscordSocketClient client;
+        public static IConfiguration config;
 
         public async Task MainAsync()
         {
-            _client = new DiscordSocketClient();
-            _config = BuildConfig();
-            _client.Disconnected += ResetBot;
+            client = new DiscordSocketClient();
+            config = BuildConfig();
+            client.Disconnected += ResetBot;
 
             var services = ConfigureServices();
             var logService = services.GetRequiredService<LogService>();
-            await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+            var interactionService = services.GetRequiredService<InteractionService>();
+
+            client.Ready += async () =>
+            {
+                await interactionService.RegisterCommandsGloballyAsync(true);
+            };
+
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
             OpenCL.IsEnabled = true;
 
@@ -110,14 +117,14 @@ namespace DiscordBot
                 await logService.LogInit(new LogMessage(LogSeverity.Info, "Startup", "Updating youtube-dl..."));
                 UpdateYouTubeDl();
 
-                await _client.LoginAsync(TokenType.Bot, _config["token"]);
+                await client.LoginAsync(TokenType.Bot, config["token"]);
             }
             catch (HttpRequestException e)
             {
                 ResetBot(e);
             }
 
-            await _client.StartAsync();
+            await client.StartAsync();
 
             await Task.Delay(-1);
         }
@@ -134,14 +141,15 @@ namespace DiscordBot
         {
             return new ServiceCollection()
                 // Base
-                .AddSingleton(_client)
+                .AddSingleton(client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 // Logging
                 .AddLogging()
                 .AddSingleton<LogService>()
                 // Extra
-                .AddSingleton(_config)
+                .AddSingleton(config)
                 // Add additional services here...
                 .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
@@ -156,7 +164,6 @@ namespace DiscordBot
                 .AddSingleton<BooruService>()
                 .AddSingleton<GoogleService>()
                 .AddSingleton<Edges2HentaiService>()
-                .AddSingleton<FeatureToggleService>()
                 .AddSingleton<TwitterService>()
                 .BuildServiceProvider();
         }

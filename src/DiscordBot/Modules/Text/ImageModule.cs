@@ -267,7 +267,6 @@ namespace MariBot.Modules
             Context.Channel.SendMessageAsync(Context.Message.Author.Mention);
         }
 
-        [DisallowSomeServers]
         [Command("e2h", RunMode = RunMode.Async)]
         public async Task Edges2Hentai(string url = null)
         {

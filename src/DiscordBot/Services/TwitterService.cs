@@ -9,8 +9,8 @@ namespace MariBot.Services
 {
     public class TwitterService
     {
-        private static readonly string ApiKey = DiscordBot.Program._config["twitterApiKey"];
-        private static readonly string ApiKeySecret = DiscordBot.Program._config["twitterApiKeySecret"];
+        private static readonly string ApiKey = MariBot.Program.config["twitterApiKey"];
+        private static readonly string ApiKeySecret = MariBot.Program.config["twitterApiKeySecret"];
 
         public User GetTwitterUser(string username)
         {

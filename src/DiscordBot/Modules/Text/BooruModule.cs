@@ -15,7 +15,6 @@ namespace MariBot.Modules
         public PictureService pictureService { get; set; }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("danbooru")]
         public Task danbooru([Remainder] string tags = null)
         {
@@ -31,7 +30,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("gelbooru")]
         public Task gelbooru([Remainder] string tags = null)
         {
@@ -48,7 +46,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("konachan")]
         public Task konachan([Remainder] string tags = null)
         {
@@ -65,7 +62,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("realbooru")]
         public Task realbooru([Remainder] string tags = null)
         {
@@ -82,7 +78,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("r34")]
         public Task r34([Remainder] string tags = null)
         {
@@ -98,7 +93,6 @@ namespace MariBot.Modules
             }
         }
 
-        [DisallowSomeServers]
         [Command("safebooru")]
         public Task safebooru([Remainder] string tags = null)
         {
@@ -115,7 +109,6 @@ namespace MariBot.Modules
             }
         }
 
-        [DisallowSomeServers]
         [Command("sakugabooru")]
         public Task sakugabooru([Remainder] string tags = null)
         {
@@ -133,7 +126,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("sankakucomplex")]
         public Task sankakucomplex([Remainder] string tags = null)
         {
@@ -150,7 +142,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("xbooru")]
         public Task xbooru([Remainder] string tags = null)
         {
@@ -167,7 +158,6 @@ namespace MariBot.Modules
         }
 
         [RequireNsfw]
-        [DisallowSomeServers]
         [Command("yandere")]
         public async Task yandere([Remainder] string tags = null)
         {
