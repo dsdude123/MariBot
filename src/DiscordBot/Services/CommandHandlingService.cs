@@ -25,7 +25,6 @@ namespace MariBot.Services
         private readonly InteractionService interactionService;
         private IServiceProvider provider;
         private StaticTextResponseService staticTextResponseService = new StaticTextResponseService();
-        private FeatureToggleService featureToggleService = new FeatureToggleService();
         private PictureService pictureService = new PictureService(new System.Net.Http.HttpClient());
         private DynamicConfig dynamicConfig;
 

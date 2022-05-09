@@ -38,6 +38,10 @@ namespace MariBot.Modules
             {
                 return ReplyAsync("https://dsdude123.github.io/MariBot/297485054836342786/commands.html");
             }
+            else if (Context.Guild.Id == 564645677586710548)
+            {
+                return ReplyAsync("https://dsdude123.github.io/MariBot/564645677586710548/commands.html");
+            }
             else
             {
                 return ReplyAsync("https://dsdude123.github.io/MariBot/commands.html");

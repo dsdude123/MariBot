@@ -17,8 +17,6 @@ namespace MariBot.Modules
     [Group("server")]
     public class ServerModule : ModuleBase<SocketCommandContext>
     {
-        public FeatureToggleService featureToggleService { get; set; }
-
         [Command("health", RunMode = RunMode.Async)]
         public async Task health()
         {
@@ -71,22 +69,6 @@ namespace MariBot.Modules
 
             report += "```";
             Context.Channel.SendMessageAsync(report);
-        }
-
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("enable-feature")]
-        public Task EnableFeature(string featureName)
-        {
-            featureToggleService.EnableFeature(featureName, Context.Guild.Id.ToString());
-            return ReplyAsync("Feature enabled");
-        }
-
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("disable-feature")]
-        public Task DisableFeature(string featureName)
-        {
-            featureToggleService.DisableFeature(featureName, Context.Guild.Id.ToString());
-            return ReplyAsync("Feature disabled");
         }
     }
 }
