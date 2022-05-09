@@ -1,0 +1,49 @@
+{
+  "Guilds": [
+    {
+      "Id": 369891771573993474,
+      "Name": "NSSE",
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ]
+    },
+    {
+      "Id": 410597263363276801,
+      "Name": "CSMTestingFacility",
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
+      "AutoReactions": [
+        {
+          "TriggerWords": [ "testemojitrigger" ],
+          "TriggerUsers": [ 234840886519791616 ],
+          "Emoji": "<:nintendo64:642068552106508347>"
+        }
+      ]
+    }
+    {
+      "Id": 297485054836342786,
+      "Name": "CSS",
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h" ]
+    },
+    {
+      "Id": 564645677586710548,
+      "Name": "Mecha",
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h" ],
+      "AutoReactions": [
+        {
+          "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],
+          "TriggerUsers": [ 388872773109284876, 607723716977098753 ],
+          "Emoji": "<:cowboypium:885917545738174505>"
+        },
+        {
+          "TriggerWords": [ "skyrim" ],
+          "TriggerUsers": [ 316822516889026560 ],
+          "Emoji": "<:thunk:764195150045511720>"
+        },
+        {
+          "TriggerWords": [ "mac", "patriots", "pats", "brady", "edelman" ],
+          "TriggerUsers": [ 170295324500426754, 442217258194960384 ],
+          "Emoji": "<:patspium:942638798758633523>"
+        }
+      ]
+    }
+  ]
+}

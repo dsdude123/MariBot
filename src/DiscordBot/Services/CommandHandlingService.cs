@@ -1,40 +1,131 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using MariBot.Models;
 using MariBot.Services;
+using Newtonsoft.Json;
 
-namespace DiscordBot.Services
+namespace MariBot.Services
 {
     public class CommandHandlingService
     {
-        private readonly DiscordSocketClient _discord;
-        private readonly CommandService _commands;
-        private IServiceProvider _provider;
+        private readonly DiscordSocketClient discord;
+        private readonly CommandService commandService;
+        private readonly InteractionService interactionService;
+        private IServiceProvider provider;
         private StaticTextResponseService staticTextResponseService = new StaticTextResponseService();
         private FeatureToggleService featureToggleService = new FeatureToggleService();
         private PictureService pictureService = new PictureService(new System.Net.Http.HttpClient());
+        private DynamicConfig dynamicConfig;
 
-        public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands)
+        private Regex keepOnlyAlphaNum = new Regex("[^a-zA-Z0-9 -]");
+
+        public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands, InteractionService interactionService)
         {
-            _discord = discord;
-            _commands = commands;
-            _provider = provider;
-
-            _discord.MessageReceived += MessageReceived;
+            this.discord = discord;
+            commandService = commands;
+            this.provider = provider;
+            this.interactionService = interactionService;
         }
 
-        public async Task InitializeAsync(IServiceProvider provider)
+        public async Task InitializeAsync()
         {
-            _provider = provider;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
-            // Add additional initialization code here...
+
+            discord.MessageReceived += MessageReceived;
+            discord.InteractionCreated += InteractionCreated;
+
+            interactionService.SlashCommandExecuted += SlashCommandExecuted;
+            interactionService.ContextCommandExecuted += ContextCommandExecuted;
+            interactionService.ComponentCommandExecuted += ComponentCommandExecuted;
+
+            dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
+                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config.json"));
+
+            Timer dynamicConfigUpdate = new Timer(3300000);
+            dynamicConfigUpdate.Elapsed += DynamicConfigUpdate_Elapsed;
+            dynamicConfigUpdate.AutoReset = true;
+            dynamicConfigUpdate.Enabled = true;
+
+            await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
+            await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
+        }
+
+        private void DynamicConfigUpdate_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            using (var client = new WebClient())
+            {
+                client.DownloadFile("https://raw.githubusercontent.com/dsdude123/MariBot/master/src/DiscordBot/dynamic-config.json", "dynamic-config-temp.json");
+                try
+                {
+                    dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
+                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config-temp.json"));
+                } catch (Exception ex)
+                {
+                    dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
+                        System.IO.File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config.json"));
+                    return;
+                }
+                File.Delete("dynamic-config.json");
+                File.Move("dynamic-config-temp.json", "dynamic-config.json");
+            }
+        }
+
+        private Task ComponentCommandExecuted(ComponentCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        {
+            // TODO: Implement Result handling
+            return Task.CompletedTask;
+        }
+
+        private Task ContextCommandExecuted(ContextCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        {
+            // TODO: Implement Result handling
+            return Task.CompletedTask;
+        }
+
+        private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, Discord.Interactions.IResult arg3)
+        {
+            // TODO: Implement Result handling
+            return Task.CompletedTask;
+        }
+
+        private async Task InteractionCreated(SocketInteraction interaction)
+        {
+            try
+            {
+                var context = new SocketInteractionContext(discord, interaction);
+
+                if (interaction is ISlashCommandInteraction) // Check Dynamic Config if command is blocked
+                {
+                    ISlashCommandInteraction slashCommandInteraction = (ISlashCommandInteraction)interaction;
+                    GuildConfig guildConfig = GetGuildConfig(context.Guild.Id);
+
+                    if (guildConfig != null && guildConfig.BlockedSlashCommands != null)
+                    {
+                        if (guildConfig.BlockedSlashCommands.Contains(slashCommandInteraction.Data.Name.ToLower()))
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                await interactionService.ExecuteCommandAsync(context, provider);
+            }
+            catch (Exception ex)
+            {
+                if (interaction.Type == InteractionType.ApplicationCommand)
+                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            }
         }
 
         private async Task MessageReceived(SocketMessage rawMessage)
@@ -42,12 +133,15 @@ namespace DiscordBot.Services
             // Ignore system messages and messages from bots
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
-            var context = new SocketCommandContext(_discord, message);
+            var context = new SocketCommandContext(discord, message);
+            GuildConfig guildConfig = GetGuildConfig(context.Guild.Id);
 
-            if (hasLatexMathQuotes(message.Content))
+            // Text and File Modification Features
+
+            if (CheckFeature(context.Guild.Id, "latex") && HasLatexMathQuotes(message.Content))
             {
                 var latexTypingState = context.Channel.EnterTypingState();
-                string formattedLatex = formatLatexString(message.Content);
+                string formattedLatex = FormatLatexString(message.Content);
                 var pictureService = new PictureService(new System.Net.Http.HttpClient());                
                 var image = pictureService.GetLatexImage(formattedLatex).Result;
                 image.Seek(0, SeekOrigin.Begin);
@@ -55,7 +149,7 @@ namespace DiscordBot.Services
                 latexTypingState.Dispose();
             }
 
-            if (featureToggleService.CheckFeature("auto-jfif-to-jpeg", context.Guild.Id.ToString()))
+            if (CheckFeature(context.Guild.Id, "auto-jfif-to-jpeg"))
             {
                 foreach (Attachment attachment in context.Message.Attachments)
                 {
@@ -67,12 +161,41 @@ namespace DiscordBot.Services
                 }
             }
 
-            int argPos = 0;
-            if (!(message.HasMentionPrefix(_discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program._config["prefix"] + " ",ref argPos))) return;
+            if (guildConfig != null && guildConfig.AutoReactions != null)
+            {
+                foreach (var reactionConfig in guildConfig.AutoReactions)
+                {
+                    if (reactionConfig.TriggerUsers.Contains(rawMessage.Author.Id))
+                    {
+                        string alphaNumOnlyText = keepOnlyAlphaNum.Replace(rawMessage.Content, " ");
+                        string[] words = alphaNumOnlyText.ToLower().Split(' ');
+                        if (words.Intersect(reactionConfig.TriggerWords).Count() > 0)
+                        {
+                            var emote = Emote.Parse(reactionConfig.Emoji);
+                            await rawMessage.AddReactionAsync(emote);
+                        }
+                    }
+                }
+            }
 
-            
-            //var typingState = context.Channel.EnterTypingState();
-            var result = await _commands.ExecuteAsync(context, argPos, _provider);
+
+            // Text Commands
+
+            int argPos = 0;
+            string[] parts = message.Content.Split(' ');
+            if (!(message.HasMentionPrefix(discord.CurrentUser, ref argPos) || message.HasStringPrefix(Program.config["prefix"] + " ",ref argPos))) return;
+          
+            if (parts.Length > 1)
+            {
+                string command = parts[1];
+
+                if (guildConfig != null && guildConfig.BlockedTextCommands != null && guildConfig.BlockedTextCommands.Contains(command.ToLower()))
+                {
+                    return;
+                }
+            }
+
+            var result = await commandService.ExecuteAsync(context, argPos, provider);
 
             if (result.Error.HasValue &&
                 result.Error.Value != CommandError.UnknownCommand)
@@ -81,10 +204,12 @@ namespace DiscordBot.Services
                 return;
             }
 
+            // Static Text Responses
+
             if (result.Error.HasValue &&
                 result.Error.Value == CommandError.UnknownCommand)
             {
-                string[] parts = message.Content.Split(' ');
+                
                 if (parts.Length >= 2) {
                     string textResponseLookup = parts[1];
                     Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
@@ -100,11 +225,9 @@ namespace DiscordBot.Services
                     await context.Channel.SendMessageAsync(response);
                 }
             }
-
-            //typingState.Dispose();
         }
 
-        private bool hasLatexMathQuotes(String text)
+        private bool HasLatexMathQuotes(String text)
         {
             bool foundFirstQuote = false;
             int dollarCounter = 0;
@@ -134,7 +257,7 @@ namespace DiscordBot.Services
             return false;
         }
 
-        private string formatLatexString(String text)
+        private string FormatLatexString(String text)
         {
             string formattedString = "";
             bool inMathBlock = false;
@@ -173,7 +296,7 @@ namespace DiscordBot.Services
                             if (nextChar.Equals('$'))
                             {
                                 // looks like start of a block, make sure it's balanced
-                                if (hasLatexMathQuotes(text.Substring(nextPossibleIndex + 1)))
+                                if (HasLatexMathQuotes(text.Substring(nextPossibleIndex + 1)))
                                 {
                                     // positive for math block
                                     if (formattedString.Equals("")){
@@ -204,6 +327,37 @@ namespace DiscordBot.Services
                 formattedString += "}";
             }
             return formattedString;
+        }
+
+        private GuildConfig GetGuildConfig(ulong id)
+        {
+            foreach (var guildConfig in dynamicConfig.Guilds)
+            {
+                if (id.Equals(guildConfig.Id))
+                {
+                    return guildConfig;
+                }
+            }
+            return null;
+        }
+
+        private bool CheckFeature(ulong id, string feature)
+        {
+            foreach (var guildConfig in dynamicConfig.Guilds)
+            {
+                if (id.Equals(guildConfig.Id) && guildConfig.EnabledFeatures != null)
+                {
+                    foreach (var enabledFeature in guildConfig.EnabledFeatures)
+                    {
+                        if (enabledFeature.Equals(feature))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return false;
         }
     }
 }
