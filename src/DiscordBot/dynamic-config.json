@@ -3,8 +3,7 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
-      "BlockedTextCommands": [ "waifu" ]
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ]
     },
     {
       "Id": 410597263363276801,
@@ -22,12 +21,12 @@
       "Id": 297485054836342786,
       "Name": "CSS",
       "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "waifu" ]
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h"]
     },
     {
       "Id": 564645677586710548,
       "Name": "Mecha",
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "waifu" ],
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h"],
       "AutoReactions": [
         {
           "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],

@@ -28,7 +28,7 @@ namespace MariBot
             => new Program().MainAsync().GetAwaiter().GetResult();
 
         public static readonly string sharpTalkLink = "https://github.com/dsdude123/SharpTalkGenerator/releases/download/v1.0/SharpTalkGenerator.zip";
-        public static readonly string waifuLabsLink = "https://github.com/dsdude123/WaifuLabs.NET/releases/download/v1.0/waifulabs.exe";
+        public static readonly string waifuLabsLink = "https://github.com/dsdude123/WaifuLabs.NET/releases/download/v2.0/waifulabs.exe";
 
         public static DiscordSocketClient client;
         public static IConfiguration config;
