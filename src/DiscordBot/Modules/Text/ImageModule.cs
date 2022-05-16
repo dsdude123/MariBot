@@ -262,7 +262,7 @@ namespace MariBot.Modules
                     PictureService.OverlayImage(Context, url, "daryl", 1043, 565, 1515, 492, 1040, 792, 1517, 801);
                     break;
                 case 1:
-                    PictureService.OverlayImage(Context, url, "daryl2", 1145, 233, 1692, 151, 1128, 644, 1881, 678);
+                    PictureService.OverlayImage(Context, url, "daryl2", 1145, 233, 1941, 151, 1128, 644, 1881, 678);
                     break;
                 default:
                     throw new ArithmeticException("Random not properly calculated.");

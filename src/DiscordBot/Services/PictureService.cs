@@ -481,7 +481,7 @@ namespace MariBot.Services
                 else
                 {
                     outgoingImage.Seek(0, SeekOrigin.Begin);
-                    context.Channel.SendFileAsync(outgoingImage, filename + ".gif");
+                    await context.Channel.SendFileAsync(outgoingImage, filename + ".gif");
                 }
             }
             else
