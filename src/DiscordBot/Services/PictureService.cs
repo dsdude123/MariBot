@@ -247,7 +247,16 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = GetWebResource(url).Result;
+            MemoryStream incomingImage = new MemoryStream();
+            try
+            {
+                incomingImage = GetWebResource(url).Result;
+            }
+            catch (Exception ex)
+            {
+                await context.Channel.SendMessageAsync(ex.Message);
+                return;
+            }
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;
@@ -388,7 +397,15 @@ namespace MariBot.Services
                 return;
             }
 
-            MemoryStream incomingImage = GetWebResource(url).Result;
+            MemoryStream incomingImage = new MemoryStream();
+            try
+            {
+                incomingImage = GetWebResource(url).Result;
+            } catch (Exception ex)
+            {
+                await context.Channel.SendMessageAsync(ex.Message);
+                return;
+            }
             incomingImage.Seek(0, SeekOrigin.Begin);
 
             bool isAnimated = false;

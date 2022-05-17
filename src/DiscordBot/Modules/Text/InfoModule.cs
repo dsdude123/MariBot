@@ -114,7 +114,7 @@ namespace MariBot.Modules
             return Context.Channel.SendMessageAsync(expression.calculate().ToString());
         }
 
-        [Command("waifu")]
+        [Command("waifu", RunMode = RunMode.Async)]
         public async Task waifu()
         {
             string id = Guid.NewGuid().ToString();
