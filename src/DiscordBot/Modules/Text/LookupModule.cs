@@ -13,7 +13,7 @@ using Google.Apis.Kgsearch.v1.Data;
 using MariBot.Models.Google.KnowledgeGraph;
 using MariBot.Services;
 using Newtonsoft.Json;
-using UrbanDictionnet;
+using UrbanDictionaryDex.Models;
 using Wolfram.Alpha;
 using Wolfram.Alpha.Models;
 using static MariBot.Services.WikipediaService;
@@ -38,23 +38,24 @@ namespace MariBot.Modules
             DefinitionData result;
             try
             {
-                result = UrbanDictionaryService.GetRandomDefinition(word).Result;
+                result = UrbanDictionaryService.GetTopDefinition(word).Result;
             }
-            catch (AggregateException ex)
+            catch (Exception)
             {
-                return ReplyAsync(ex.InnerException.Message);
+                var errorEmbed = new EmbedBuilder();
+                errorEmbed.WithTitle("Urban Dictionary");
+                errorEmbed.WithDescription("Definition does not exist or an unknown error occurred.");
+                errorEmbed.Color = Color.Red;
+                return Context.Channel.SendMessageAsync("", false, errorEmbed.Build());
             }
-            string output ="";
-            result.Definition = result.Definition.Replace("[", "");
-            result.Definition = result.Definition.Replace("]", "");
-            result.Example = result.Example.Replace("[", "");
-            result.Example = result.Example.Replace("]", "");
-            output += "**" + result.Word + "'s definition**\n\n";
-            output += result.Definition + "\n\n";
+            string output = "**" + result.Word + "'s definition**\n\n";
+            output += result.Definition.Replace("[","").Replace("]","") + "\n\n";
             output += "**Example**\n\n";
-            output += result.Example + "\n\n";
+            output += result.Example.Replace("[", "").Replace("]", "") + "\n\n";
             output += "**Upvotes** " + result.ThumbsUp + " **Downvotes** " + result.ThumbsDown;
             var eb = new EmbedBuilder();
+            eb.WithTitle("Urban Dictionary");
+            eb.WithUrl(result.Permalink);
             eb.WithDescription(output);
             eb.Color = Color.Green;
             return Context.Channel.SendMessageAsync("", false, eb.Build());
@@ -64,46 +65,14 @@ namespace MariBot.Modules
         public Task urbanrand()
         {
             var result = UrbanDictionaryService.GetRandomWord().Result;
-            string output = "";
-            result.Definition = result.Definition.Replace("[", "");
-            result.Definition = result.Definition.Replace("]", "");
-            result.Example = result.Example.Replace("[", "");
-            result.Example = result.Example.Replace("]", "");
-            output += "**" + result.Word + "'s definition**\n\n";
-            output += result.Definition + "\n\n";
+            string output = "**" + result.Word + "'s definition**\n\n";
+            output += result.Definition.Replace("[", "").Replace("]", "") + "\n\n";
             output += "**Example**\n\n";
-            output += result.Example + "\n\n";
+            output += result.Example.Replace("[", "").Replace("]", "") + "\n\n";
             output += "**Upvotes** " + result.ThumbsUp + " **Downvotes** " + result.ThumbsDown;
             var eb = new EmbedBuilder();
-            eb.WithDescription(output);
-            eb.Color = Color.Green;
-            return Context.Channel.SendMessageAsync("", false, eb.Build());
-        }
-
-        [Command("urbantop")]
-        public Task urbantop([Remainder] string word)
-        {
-            DefinitionData result;
-            try
-            {
-                result = UrbanDictionaryService.GetTopDefinition(word).Result;
-            }
-            catch (AggregateException ex)
-            {
-                return ReplyAsync(ex.InnerException.Message);
-            }
-
-            string output = "";
-            result.Definition = result.Definition.Replace("[", "");
-            result.Definition = result.Definition.Replace("]", "");
-            result.Example = result.Example.Replace("[", "");
-            result.Example = result.Example.Replace("]", "");
-            output += "**" + result.Word + "'s definition**\n\n";
-            output += result.Definition + "\n\n";
-            output += "**Example**\n\n";
-            output += result.Example + "\n\n";
-            output += "**Upvotes** " + result.ThumbsUp + " **Downvotes** " + result.ThumbsDown;
-            var eb = new EmbedBuilder();
+            eb.WithTitle("Urban Dictionary");
+            eb.WithUrl(result.Permalink);
             eb.WithDescription(output);
             eb.Color = Color.Green;
             return Context.Channel.SendMessageAsync("", false, eb.Build());

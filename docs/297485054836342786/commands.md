@@ -55,8 +55,8 @@ These commands configure static text responses that the bot uses when a command 
 `statictext remove <keyword>` - Remove a local text response. Replace `<keyword>` with the triger word to be removed.  
 
 ### Urban Dictionary Commands
-`urban <text>` - Displays a random Urban Dictionary definition for the specified word. Replace `<text>` with your word.  
-`urbantop <text>` - Displays the top Urban Dictionary definition for the specified word. Replace `<text>` with your word.  
+`urban <text>` - Displays a Urban Dictionary definition for the specified word. Replace `<text>` with your word.  
+`urbanrand` - Displays a random Urban Dictionary definition.  
 
 ### Wikipedia Commands
 `wiki <text>` - Gets the specified Wikipedia article and displays the first section. The first result from a search will be used. Replace `<text>` with article name or search term.  

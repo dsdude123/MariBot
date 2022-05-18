@@ -11,7 +11,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using MariBot.Modules;
 using MariBot.Services;
-using UrbanDictionnet;
 using System.Diagnostics;
 using System.Threading;
 using System.IO.Compression;
@@ -160,7 +159,6 @@ namespace MariBot
                 .AddSingleton<HttpService>()
                 .AddSingleton<XmlDocument>()
                 .AddSingleton<UrbanDictionaryService>()
-                .AddSingleton<UrbanClient>()
                 .AddSingleton<WikipediaService>()
                 .AddSingleton<MediawikiSharp_API.Mediawiki>()
                 .AddSingleton<YouTubeService>()

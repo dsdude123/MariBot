@@ -3,72 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UrbanDictionnet;
+using UrbanDictionaryDex.Client;
+using UrbanDictionaryDex.Models;
 
 namespace MariBot.Services
 {
     public class UrbanDictionaryService
     {
-        private readonly UrbanClient UrbanDictionary;
-
-        public UrbanDictionaryService(UrbanClient uc)
-            => UrbanDictionary = uc;
-
-        public async Task<UrbanDictionnet.DefinitionData> GetRandomDefinition(string word)
+        public async Task<DefinitionData> GetRandomWord()
         {
-            WordDefine result = UrbanDictionary.GetWordAsync(word).Result;
-            if (result.ResultType == ResultType.NoResults || result.List.Count < 1)
-            {
-                throw new WordNotFoundException("No results were found.");
-            }
-
-            if (result.List.Count > 1)
-            {
-                Random r = new Random();
-                int toChoose = r.Next(0, result.List.Count);
-                return result.List[toChoose];
-            }
-            else
-            {
-                return result.List[0];
-            }
-
+            var client = new UrbanDictionaryClient();
+            return client.GetRandomTerm().Result.First();
         }
 
-        public async Task<UrbanDictionnet.DefinitionData> GetRandomWord()
+        public async Task<DefinitionData> GetTopDefinition(string word)
         {
-            return UrbanDictionary.GetRandomWordAsync().Result;
-        }
-
-        public async Task<UrbanDictionnet.DefinitionData> GetTopDefinition(string word)
-        {
-            WordDefine result = UrbanDictionary.GetWordAsync(word).Result;
-            if (result.ResultType == ResultType.NoResults || result.List.Count < 1)
+            var client = new UrbanDictionaryClient();
+            var results = await client.SearchTerm(word.ToLower());
+            bool foundOne = false;
+            DefinitionData topDefinition = new DefinitionData();
+            foreach (var item in results)
             {
-                throw new WordNotFoundException("No results were found.");
-            }
+                if (item.Word.ToLower().Equals(word.ToLower())) {
+                    foundOne = true;
+                    var topScore = topDefinition.ThumbsUp - topDefinition.ThumbsDown;
+                    var newScore = item.ThumbsUp - item.ThumbsDown;
 
-            if (result.List.Count > 1)
-            {
-                int bestScore = int.MinValue;
-                int bestIndex = -1;
-                for (int i = 0; i < result.List.Count; i++)
-                {
-                    DefinitionData j = result.List[i];
-                    if ((j.ThumbsUp - j.ThumbsDown) > bestScore)
+                    if (newScore > topScore)
                     {
-                        bestScore = j.ThumbsUp - j.ThumbsDown;
-                        bestIndex = i;
+                        topDefinition = item;
                     }
                 }
-
-                return result.List[bestIndex];
             }
-            else
+
+            if (foundOne)
             {
-                return result.List[0];
+                return topDefinition;
+            } else
+            {
+                throw new ArgumentException("No result found");
             }
-
         }
     }
 }
