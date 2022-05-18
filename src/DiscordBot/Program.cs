@@ -35,7 +35,11 @@ namespace MariBot
 
         public async Task MainAsync()
         {
-            client = new DiscordSocketClient();
+            var clientConfig = new DiscordSocketConfig()
+            {
+                GatewayIntents = GatewayIntents.All
+            };
+            client = new DiscordSocketClient(clientConfig);
             config = BuildConfig();
             client.Disconnected += ResetBot;
 

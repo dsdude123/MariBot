@@ -21,10 +21,9 @@ namespace MariBot.Services
 {
     public class PictureService
     {
-        private static readonly string[] supportedExtensions = new string[] { ".png", ".gif", ".jpeg", ".jpg", ".bmp", ".jfif", ".webp", ".apng" };
-        private static readonly string[] animatedExtensions = new string[] { ".gif", ".png", ".apng", ".webp" };
         private static readonly string TenorDomain = "tenor.com";
         private static readonly string ImgurDomain = "imgur.com";
+        private static readonly string GiphyDomain = "giphy.com";
         private readonly HttpClient _http;
         private FaceRecognition finder = FaceRecognition.Create("./FaceModels");
         private Random random = new Random();
@@ -78,6 +77,10 @@ namespace MariBot.Services
                                     else if (u.Host.ToLower().Equals(ImgurDomain))
                                     {
                                         return GetImgurGif(s);
+                                    }
+                                    else if (u.Host.ToLower().Equals(GiphyDomain))
+                                    {
+                                        return GetGiphyGif(s);
                                     }
                                     return u.AbsoluteUri;
                                 }
@@ -137,15 +140,27 @@ namespace MariBot.Services
             }
             else
             {
-                Regex userIdCheck = new Regex(@"<@![0-9]+>", RegexOptions.Compiled);
+                Regex userIdCheck = new Regex(@"<@[0-9]+>", RegexOptions.Compiled);
                 if (userIdCheck.IsMatch(url))
                 {
-                    string userId = url.Replace("<@!", "").Replace(">", "");
+                    string userId = url.Replace("<@", "").Replace(">", "");
+                    context.Guild.DownloadUsersAsync().Wait();
                     foreach (var user in context.Guild.Users.ToArray())
                     {
                         if (user.Id.ToString().Equals(userId))
                         {
-                            return new Uri(user.GetAvatarUrl()).AbsolutePath;
+                            string guildAvatar = user.GetGuildAvatarUrl();
+
+                            if (guildAvatar == null)
+                            {
+                                string avatar = user.GetAvatarUrl();
+                                if (avatar == null)
+                                {
+                                    return user.GetDefaultAvatarUrl();
+                                }
+                                return avatar;
+                            }
+                            return guildAvatar;
                         }
                     }
                 }
@@ -164,6 +179,9 @@ namespace MariBot.Services
                 else if (u.Host.ToLower().Equals(ImgurDomain))
                 {
                     return GetImgurGif(url);
+                } else if (u.Host.ToLower().Equals(GiphyDomain))
+                {
+                    return GetGiphyGif(url);
                 }
                 return url;
             }
@@ -173,32 +191,27 @@ namespace MariBot.Services
         {
             HtmlWeb web = new HtmlWeb();
             web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
-            HtmlDocument tenorBase = web.Load(url);
-            Uri contentUrl = new Uri(tenorBase.DocumentNode.SelectSingleNode("//meta[@itemprop='contentUrl']").Attributes["content"].Value.ToString());
-            if (supportedExtensions.Any(x => contentUrl.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                return contentUrl.AbsoluteUri;
-            }
-            else
-            {
-                throw new NotSupportedException("Tenor image has unsupported extension.");
-            }
+            HtmlDocument document = web.Load(url);
+            Uri contentUrl = new Uri(document.DocumentNode.SelectSingleNode("//meta[@itemprop='contentUrl']").Attributes["content"].Value.ToString());
+            return contentUrl.AbsoluteUri;
+        }
+
+        public string GetGiphyGif(string url)
+        {
+            HtmlWeb web = new HtmlWeb();
+            web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
+            HtmlDocument document = web.Load(url);
+            Uri contentUrl = new Uri(document.DocumentNode.SelectSingleNode("//meta[@property='og:image']").Attributes["content"].Value.ToString());
+            return contentUrl.AbsoluteUri;
         }
 
         public string GetImgurGif(string url)
         {
             HtmlWeb web = new HtmlWeb();
             web.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
-            HtmlDocument tenorBase = web.Load(url);
-            Uri contentUrl = new Uri(tenorBase.DocumentNode.SelectSingleNode("//meta[@property='og:url']").Attributes["content"].Value.ToString());
-            if (supportedExtensions.Any(x => contentUrl.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                return contentUrl.AbsoluteUri;
-            }
-            else
-            {
-                throw new NotSupportedException("Imgur image has unsupported extension.");
-            }
+            HtmlDocument document = web.Load(url);
+            Uri contentUrl = new Uri(document.DocumentNode.SelectSingleNode("//meta[@property='og:url']").Attributes["content"].Value.ToString());
+            return contentUrl.AbsoluteUri;
         }
 
         public bool IsSupportedImage(string url)
@@ -207,20 +220,32 @@ namespace MariBot.Services
             try
             {
                 Uri uri = new Uri(url);
-                if (uri.Host.ToLower().Equals(TenorDomain) || uri.Host.ToLower().Equals(ImgurDomain))
+                if (uri.Host.ToLower().Equals(TenorDomain) || uri.Host.ToLower().Equals(ImgurDomain) || uri.Host.ToLower().Equals(GiphyDomain))
                 {
                     return true;
                 }
-                if (supportedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
-                {
-                    return true;
-                }
-                return false;
+
+                var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpRequest.Method = "HEAD";
+                var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+                return httpResponse.Headers.Get("Content-Type").StartsWith("image/");
             }
             catch (Exception e)
             {
                 return false;
             }
+        }
+
+        public bool IsAnimated(Stream incomingImage)
+        {
+            bool isAnimated;
+            using (var overlayCollection = new MagickImageCollection(incomingImage))
+            {
+                isAnimated = overlayCollection.Count > 1;
+                incomingImage.Seek(0, SeekOrigin.Begin);
+            }
+
+            return isAnimated;
         }
 
         public async Task<MemoryStream> GetWebResource(string url)
@@ -259,16 +284,7 @@ namespace MariBot.Services
             }
             incomingImage.Seek(0, SeekOrigin.Begin);
 
-            bool isAnimated = false;
-            Uri uri = new Uri(url);
-            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                using (var overlayCollection = new MagickImageCollection(incomingImage))
-                {
-                    isAnimated = overlayCollection.Count > 1;
-                    incomingImage.Seek(0, SeekOrigin.Begin);
-                }
-            }
+            bool isAnimated = IsAnimated(incomingImage);
 
             MemoryStream outgoingImage = new MemoryStream();
 
@@ -408,16 +424,7 @@ namespace MariBot.Services
             }
             incomingImage.Seek(0, SeekOrigin.Begin);
 
-            bool isAnimated = false;
-            Uri uri = new Uri(url);
-            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                using (var overlayCollection = new MagickImageCollection(incomingImage))
-                {
-                    isAnimated = overlayCollection.Count > 1;
-                    incomingImage.Seek(0, SeekOrigin.Begin);
-                }
-            }
+            bool isAnimated = IsAnimated(incomingImage);
 
             MemoryStream outgoingImage = new MemoryStream();
 
@@ -541,16 +548,7 @@ namespace MariBot.Services
             MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
-            bool isAnimated = false;
-            Uri uri = new Uri(url);
-            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                using (var overlayCollection = new MagickImageCollection(incomingImage))
-                {
-                    isAnimated = overlayCollection.Count > 1;
-                    incomingImage.Seek(0, SeekOrigin.Begin);
-                }
-            }
+            bool isAnimated = IsAnimated(incomingImage);
 
             MemoryStream outgoingImage = new MemoryStream();
 
@@ -707,16 +705,7 @@ namespace MariBot.Services
             MemoryStream incomingImage = GetWebResource(url).Result;
             incomingImage.Seek(0, SeekOrigin.Begin);
 
-            bool isAnimated = false;
-            Uri uri = new Uri(url);
-            if (animatedExtensions.Any(x => uri.AbsolutePath.ToLower().EndsWith(x)))
-            {
-                using (var overlayCollection = new MagickImageCollection(incomingImage))
-                {
-                    isAnimated = overlayCollection.Count > 1;
-                    incomingImage.Seek(0, SeekOrigin.Begin);
-                }
-            }
+            bool isAnimated = IsAnimated(incomingImage);
 
             MemoryStream outgoingImage = new MemoryStream();
 
