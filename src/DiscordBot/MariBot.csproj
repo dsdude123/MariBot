@@ -31,7 +31,7 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
     <PackageReference Include="linqtotwitter" Version="5.0.0" />
-    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="7.15.4" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="11.1.2" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
@@ -103,6 +103,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\daryl3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\daryl4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\daryl5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\sonicsaystemplate.png">

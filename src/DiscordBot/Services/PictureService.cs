@@ -435,7 +435,6 @@ namespace MariBot.Services
                 {
                     using (var outputCollection = new MagickImageCollection())
                     {
-                        bool usedBaseOnce = false;
                         using (var overlayCollection = new MagickImageCollection(incomingImage))
                         {
                             overlayCollection.Coalesce();
@@ -452,19 +451,12 @@ namespace MariBot.Services
                                 frame.Distort(DistortMethod.Perspective, new double[] { 0, 0, x1Dest, y1Dest, xMax, 0, x2Dest, y2Dest, 0, yMax, x3Dest, y3Dest, xMax, yMax, x4Dest, y4Dest });
                                 frame.GifDisposeMethod = GifDisposeMethod.None;
                                 frame.Crop(baseImage.Width, baseImage.Height);
-                                if (usedBaseOnce)
-                                {
-                                    outputCollection.Add(new MagickImage(frame));
-                                }
-                                else
-                                {
-                                    MagickImage newBase = new MagickImage(baseImage);
-                                    newBase.Composite(frame, CompositeOperator.DstOver);
-                                    outputCollection.Add(new MagickImage(newBase));
-                                    usedBaseOnce = true;
-                                }
+                                MagickImage newBase = new MagickImage(baseImage);
+                                newBase.Composite(frame, CompositeOperator.DstOver);
+                                outputCollection.Add(new MagickImage(newBase));
                             }
                         }
+                        outputCollection.OptimizeTransparency();
                         outputCollection.Write(outgoingImage, MagickFormat.Gif);
                     }
 
@@ -854,11 +846,11 @@ namespace MariBot.Services
             {
                 // Explode the face(s)
 
-                using (MagickImage result = new MagickImage(image))
+                using (MagickImage result = new MagickImage(image.ToByteArray()))
                 {
                     foreach (Location face in faces)
                     {
-                        using (MagickImage singleFace = new MagickImage(image))
+                        using (MagickImage singleFace = new MagickImage(image.ToByteArray()))
                         {
                             int rectWidth = face.Right - face.Left;
                             int rectHeight = face.Bottom - face.Top;
@@ -951,7 +943,7 @@ namespace MariBot.Services
             else
             {
                 // random location
-                using (MagickImage result = new MagickImage(image))
+                using (MagickImage result = new MagickImage(image.ToByteArray()))
                 {
                     int desiredBoxSize = (int)(Math.Min(image.Width, image.Height) * facelessBoxPercentage);
 
@@ -968,7 +960,7 @@ namespace MariBot.Services
                         y = random.Next(0, result.Height);
                     } while (y > (result.Height - desiredBoxSize));
 
-                    using (MagickImage box = new MagickImage(image))
+                    using (MagickImage box = new MagickImage(image.ToByteArray()))
                     {
                         MagickGeometry boxGeometry = new MagickGeometry(x, y, desiredBoxSize, desiredBoxSize);
                         box.Crop(boxGeometry);
