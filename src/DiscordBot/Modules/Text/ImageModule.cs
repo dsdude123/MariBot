@@ -299,5 +299,11 @@ namespace MariBot.Modules
         {
             Edges2HentaiService.Edges2Hentai(Context, url);
         }
+
+        [Command("pence", RunMode = RunMode.Async)]
+        public async Task Pence(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "pence", 615, 254, 663, 261, 566, 379, 618, 389);
+        }
     }
 }

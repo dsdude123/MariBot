@@ -111,6 +111,9 @@
     <None Update="Content\daryl5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\pence.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\sonicsaystemplate.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
