@@ -255,7 +255,7 @@ namespace MariBot.Modules
         [Command("daryl", RunMode = RunMode.Async)]
         public async Task Daryl(string url = null)
         {
-            var source = new Random().Next(0, 5);
+            var source = new Random().Next(0, 7);
             switch (source)
             {
                 case 0:
@@ -272,6 +272,12 @@ namespace MariBot.Modules
                     break;
                 case 4:
                     PictureService.OverlayImage(Context, url, "daryl5", 94, 15, 770, 0, 248, 530, 842, 437);
+                    break;
+                case 5:
+                    PictureService.OverlayImage(Context, url, "daryl6", 822, 1347, 882, 1338, 829, 1389, 890, 1379);
+                    break;
+                case 6:
+                    PictureService.OverlayImage(Context, url, "daryl7", 1648, 1528, 2426, 1495, 1655, 2288, 2542, 2264);
                     break;
                 default:
                     throw new ArithmeticException("Random not properly calculated.");
