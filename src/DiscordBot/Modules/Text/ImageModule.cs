@@ -306,10 +306,45 @@ namespace MariBot.Modules
             Edges2HentaiService.Edges2Hentai(Context, url);
         }
 
+        [Command("kurisu", RunMode = RunMode.Async)]
+        public async Task Kurisu([Remainder] string text)
+        {
+            var readSettings = new MagickReadSettings
+            {
+                TextEncoding = Encoding.Unicode,
+                FontFamily = PictureService.GetBestFont(text),
+                FontStyle = FontStyleType.Bold,
+                FillColor = MagickColors.Black,
+                BackgroundColor = MagickColors.White,
+                Width = 980,
+                Height = 980
+            };
+
+            PictureService.AnnotateImage(Context, "kurisu", text, readSettings, MagickColors.White, 32, 74, 241, 74, 32, 280, 241, 280);
+        }
+
+
         [Command("pence", RunMode = RunMode.Async)]
         public async Task Pence(string url = null)
         {
             PictureService.OverlayImage(Context, url, "pence", 615, 254, 663, 261, 566, 379, 618, 389);
+        }
+
+        [Command("queen", RunMode = RunMode.Async)]
+        public async Task Queen([Remainder] string text)
+        {
+            var readSettings = new MagickReadSettings
+            {
+                TextEncoding = Encoding.Unicode,
+                FontFamily = PictureService.GetBestFont(text),
+                FontStyle = FontStyleType.Bold,
+                FillColor = MagickColors.Black,
+                BackgroundColor = MagickColors.White,
+                Width = 980,
+                Height = 624
+            };
+
+            PictureService.AnnotateImage(Context, "queen", text, readSettings, MagickColors.White, 86, 175, 408, 177, 86, 342, 404, 353);
         }
     }
 }
