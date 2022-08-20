@@ -264,12 +264,6 @@ namespace MariBot.Modules
             PictureService.OverlayImage(Context, url, "condom", 0, 381, 320, 381, 0, 702, 320, 702);
         }
 
-        [Command("dave", RunMode = RunMode.Async)]
-        public async Task dave(string url = null)
-        {
-            PictureService.OverlayImage(Context, url, "dave", 895, 258, 1234, 234, 894, 441, 1234, 447);
-        }
-
         [Command("daryl", RunMode = RunMode.Async)]
         public async Task Daryl(string url = null)
         {
@@ -301,6 +295,12 @@ namespace MariBot.Modules
                     throw new ArithmeticException("Random not properly calculated.");
             }
             
+        }
+
+        [Command("dave", RunMode = RunMode.Async)]
+        public async Task dave(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "dave", 895, 258, 1234, 234, 894, 441, 1234, 447);
         }
 
         [Command("deepfry", RunMode = RunMode.Async)]
