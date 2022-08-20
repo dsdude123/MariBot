@@ -214,7 +214,19 @@ namespace MariBot.Modules
         [Command("biden", RunMode = RunMode.Async)]
         public async Task Biden(string url = null)
         {
-            PictureService.OverlayImage(Context, url, "biden", 50, 72, 341, 117, 42, 627, 339, 587);
+            var source = new Random().Next(0, 3);
+
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "biden", 50, 72, 341, 117, 42, 627, 339, 587);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "biden2", 66, 255, 442, 284, 75, 830, 446, 641);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
         }
 
         [Command("binoculars", RunMode = RunMode.Async)]
