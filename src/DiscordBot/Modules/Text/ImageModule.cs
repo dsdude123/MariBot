@@ -214,7 +214,7 @@ namespace MariBot.Modules
         [Command("biden", RunMode = RunMode.Async)]
         public async Task Biden(string url = null)
         {
-            var source = new Random().Next(0, 3);
+            var source = new Random().Next(0, 2);
 
             switch (source)
             {
