@@ -26,6 +26,8 @@ namespace MariBot.Modules
 
         public PictureService PictureService { get; set; }
 
+        public TalkHubService TalkHubService { get; set; } // TODO: Move this into its own module
+
         public InfoModule(DiscordSocketClient discordClient)
         {
             discordClient.ReactionAdded += ReactionAddedHandlerAsync;
@@ -51,7 +53,7 @@ namespace MariBot.Modules
         [Command("info")]
         public Task Info()
             => ReplyAsync(
-                $"Hello, I am a bot called {Context.Client.CurrentUser.Username} written in Discord.Net 1.0\n"); // TODO: Fix version
+                $"Hello, I am a bot called {Context.Client.CurrentUser.Username} written in Discord.Net\n"); // TODO: Fix version
 
         [Command("tts", RunMode = RunMode.Async)]
         public async Task tts([Remainder]string text)
@@ -73,6 +75,12 @@ namespace MariBot.Modules
             var audioClient = await channel.ConnectAsync();
             await SendAsync(audioClient, Environment.CurrentDirectory + "\\tts.wav");
             audioClient.StopAsync();
+        }
+
+        [Command("yoda", RunMode = RunMode.Async)]
+        public async Task yoda([Remainder]string text)
+        {
+            TalkHubService.GetTextToSpeech(Context, "yoda", text);
         }
 
         [Command("radar")]
