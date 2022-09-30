@@ -1,4 +1,4 @@
-# MariBot
+# MariBot -- an amazing project
 (Formally StarBot)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/dsdude123/maribot/badge)](https://www.codefactor.io/repository/github/dsdude123/maribot)
