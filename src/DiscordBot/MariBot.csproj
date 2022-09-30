@@ -67,10 +67,7 @@
 
   <ItemGroup>
     <Reference Include="PresentationCore" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 
 </Project>
