@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MariBot.Modules.Interaction
 {
-    public class InfoModule : InteractionModuleBase<SocketInteractionContext>
+    public class InfoModule : InteractionModuleBase<IInteractionContext>
     {
         [SlashCommand("ping", "Test slash command flow")]
         public async Task about()
@@ -16,7 +16,7 @@ namespace MariBot.Modules.Interaction
             var embed = new EmbedBuilder()
             {
                 Color = Color.Blue,
-                Title = "SpookMari",
+                Title = "SpookyMari",
                 Description = "Pong!"
             };
 

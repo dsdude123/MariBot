@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace MariBot.Modules.Interaction
 {
-    public class SpookeningModule : InteractionModuleBase<SocketInteractionContext>
+    public class SpookeningModule : InteractionModuleBase<IInteractionContext>
     {
         public SpookeningService spookening { get; set; }
 
-        [SlashCommand("Doot", "Doot.")]
+        [SlashCommand("doot", "Doot.")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
         public async Task doot()
@@ -42,7 +42,7 @@ namespace MariBot.Modules.Interaction
             }
         }
 
-        [SlashCommand("Spoop", "Spoopy.")]
+        [SlashCommand("spoop", "Spoopy.")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
         public async Task Spoop()
@@ -72,7 +72,7 @@ namespace MariBot.Modules.Interaction
             }
         }
 
-        [SlashCommand("ThankMrSkeletal", "Chooses a new (spooky) nickname.")]
+        [SlashCommand("thankmrskeletal", "Chooses a new (spooky) nickname.")]
         public async Task RespookMePlease()
         {
             if (IsOctober)
@@ -103,7 +103,7 @@ namespace MariBot.Modules.Interaction
             }
         }
 
-        [SlashCommand("Spook", "Spooks a user the following night.")]
+        [SlashCommand("spook", "Spooks a user the following night.")]
         [RequireContext(ContextType.Guild)]
         public async Task Spook(IGuildUser user)
         {
@@ -145,7 +145,7 @@ namespace MariBot.Modules.Interaction
             }
         }
 
-        [SlashCommand("SpookyJoke", "Tells a spooky joke.")]
+        [SlashCommand("spookyjoke", "Tells a spooky joke.")]
         [RequireContext(ContextType.Guild)]
         public async Task SpookyJoke()
         {
@@ -173,7 +173,7 @@ namespace MariBot.Modules.Interaction
             }
         }
 
-        [SlashCommand("AdminProcessSpooks", "Process spooks now.", runMode: RunMode.Async)]
+        [SlashCommand("adminarocessspooks", "Process spooks now.", runMode: RunMode.Async)]
         [RequireOwner]
         public async Task ManuallySpookUsers()
         {
@@ -181,7 +181,7 @@ namespace MariBot.Modules.Interaction
             await RespondAsync("Wow, that was spooky");
         }
 
-        [SlashCommand("AdminSpookNow", "Spook immediately.")]
+        [SlashCommand("adminspooknow", "Spook immediately.")]
         [RequireOwner]
         public async Task HeyAdminSpookThisPeopleRightNow(IGuildUser user)
         {
@@ -189,7 +189,7 @@ namespace MariBot.Modules.Interaction
             await RespondAsync("ugh. fine. try now.");
         }
 
-        [SlashCommand("ForceMidnight", "Whoa did you change timezones?", runMode: RunMode.Async)]
+        [SlashCommand("forcemidnight", "Whoa did you change timezones?", runMode: RunMode.Async)]
         [RequireOwner]
         public async Task ForceOnMidnight()
         {

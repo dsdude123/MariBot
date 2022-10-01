@@ -300,11 +300,11 @@ namespace MariBot.Services
                 await SendSpookMessage(
 @"Spooked Users have access to the following commads:
 ```
-/Spook <@User> - Spooks a user the following night.
-/Doot - Doot.
-/Spoop - Spoop.
-/SpookyJoke - Tells a spooky joke.
-/ThankMrSkeletal - Chooses a new (spooky) nickname.
+/spook <@User> - Spooks a user the following night.
+/doot - Doot.
+/spoop - Spoop.
+/spookyjoke - Tells a spooky joke.
+/thankmrskeletal - Chooses a new (spooky) nickname.
 ```
 "
 );

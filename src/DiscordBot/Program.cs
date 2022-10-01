@@ -14,6 +14,7 @@ using System.Threading;
 using Discord.Interactions;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using DiscordBot.Services;
 
 namespace MariBot
 {
@@ -24,7 +25,6 @@ namespace MariBot
 
         public static DiscordSocketClient client;
         public static IConfiguration config;
-        private static ILogger logger;
         private LiteDatabase database;
 
         public async Task MainAsync()
@@ -37,12 +37,13 @@ namespace MariBot
             config = BuildConfig();
 
             var services = ConfigureServices();
+            var logService = services.GetRequiredService<LogService>();
             var interactionService = services.GetRequiredService<InteractionService>();
             database = new LiteDatabase("database.db");
 
             client.Ready += async () =>
             {
-                await interactionService.RegisterCommandsGloballyAsync(true);
+                await interactionService.RegisterCommandsToGuildAsync(297485054836342786, true);
             };
 
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
@@ -64,12 +65,13 @@ namespace MariBot
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 // Logging
                 .AddLogging()
+                .AddSingleton<LogService>()
                 // Extra
                 .AddSingleton(config)
                 // Add additional services here...
                 .AddSingleton<HttpClient>()
                 .AddSingleton<XmlDocument>()
-                .AddSingleton(new SpookeningService(client, database))
+                .AddSingleton(x => new SpookeningService(x.GetRequiredService<DiscordSocketClient>(), database))
                 .BuildServiceProvider();
         }
 
