@@ -12,6 +12,8 @@ using Discord.WebSocket;
 using MariBot.Services;
 using System.Threading;
 using Discord.Interactions;
+using LiteDB;
+using Microsoft.Extensions.Logging;
 
 namespace MariBot
 {
@@ -22,6 +24,8 @@ namespace MariBot
 
         public static DiscordSocketClient client;
         public static IConfiguration config;
+        private static ILogger logger;
+        private LiteDatabase database;
 
         public async Task MainAsync()
         {
@@ -31,11 +35,10 @@ namespace MariBot
             };
             client = new DiscordSocketClient(clientConfig);
             config = BuildConfig();
-            client.Disconnected += ResetBot;
 
             var services = ConfigureServices();
-            var logService = services.GetRequiredService<LogService>();
             var interactionService = services.GetRequiredService<InteractionService>();
+            database = new LiteDatabase("database.db");
 
             client.Ready += async () =>
             {
@@ -44,26 +47,11 @@ namespace MariBot
 
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            try
-            {
-                await client.LoginAsync(TokenType.Bot, config["token"]);
-            }
-            catch (HttpRequestException e)
-            {
-                ResetBot(e);
-            }
+            await client.LoginAsync(TokenType.Bot, config["token"]);
 
             await client.StartAsync();
 
             await Task.Delay(-1);
-        }
-
-        public async Task ResetBot(Exception ex)
-        {
-            Console.WriteLine("Bot reset event has been triggered, resetting in 5 seconds: " + ex.Message);
-            Thread.Sleep(5000);
-            System.Diagnostics.Process.Start(Assembly.GetExecutingAssembly().Location);
-            Environment.Exit(59);           
         }
 
         private IServiceProvider ConfigureServices()
@@ -76,12 +64,12 @@ namespace MariBot
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 // Logging
                 .AddLogging()
-                .AddSingleton<LogService>()
                 // Extra
                 .AddSingleton(config)
                 // Add additional services here...
                 .AddSingleton<HttpClient>()
                 .AddSingleton<XmlDocument>()
+                .AddSingleton(new SpookeningService(client, database))
                 .BuildServiceProvider();
         }
 

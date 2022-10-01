@@ -9,6 +9,9 @@ namespace MariBot.Models
         public ulong UserId { get; set; }
 
         [BsonField]
+        public string SpookedNickname { get; set; }
+
+        [BsonField]
         public DateTime SpookedTime { get; set; }
 
         [BsonField]

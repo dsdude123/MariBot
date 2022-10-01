@@ -8,7 +8,7 @@ namespace MariBot.Models
 {
     public class SpookConfig
     {
-        public ulong TargetGuild { get; set; }
+        public ulong TargetGuildId { get; set; }
         public ulong MessageChannelId { get; set; }
         public ulong SpookyRoleId { get; set; }
         public uint SpookUserLimit { get; set; }

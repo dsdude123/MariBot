@@ -16,7 +16,7 @@ namespace MariBot.Modules.Interaction
             var embed = new EmbedBuilder()
             {
                 Color = Color.Blue,
-                Title = "MariBot",
+                Title = "SpookMari",
                 Description = "Pong!"
             };
 
