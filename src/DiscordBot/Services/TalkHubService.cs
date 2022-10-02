@@ -43,6 +43,9 @@ namespace MariBot.Services
                     {
                         throw new Exception(talkHubResponse.ErrorDetail.ToString());
                     }
+                } else
+                {
+                    throw new Exception("TalkHub returned failure reponse at queue time");
                 }
             } catch (Exception ex)
             {
