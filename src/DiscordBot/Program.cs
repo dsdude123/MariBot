@@ -31,7 +31,8 @@ namespace MariBot
         {
             var clientConfig = new DiscordSocketConfig()
             {
-                GatewayIntents = GatewayIntents.All
+                GatewayIntents = GatewayIntents.All,
+                UseInteractionSnowflakeDate = false
             };
             client = new DiscordSocketClient(clientConfig);
             config = BuildConfig();
@@ -43,6 +44,8 @@ namespace MariBot
 
             client.Ready += async () =>
             {
+                await client.GetGuild(297485054836342786).DownloadUsersAsync();
+                logService.LogInfo("Registering interaction commands");
                 await interactionService.RegisterCommandsToGuildAsync(297485054836342786, true);
             };
 
@@ -71,7 +74,7 @@ namespace MariBot
                 // Add additional services here...
                 .AddSingleton<HttpClient>()
                 .AddSingleton<XmlDocument>()
-                .AddSingleton(x => new SpookeningService(x.GetRequiredService<DiscordSocketClient>(), database))
+                .AddSingleton(x => new SpookeningService(x.GetRequiredService<DiscordSocketClient>(), database, x.GetRequiredService<LogService>()))
                 .BuildServiceProvider();
         }
 

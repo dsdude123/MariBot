@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using DiscordBot.Services;
 using MariBot.Services;
 using System;
 using System.Collections.Generic;
@@ -12,12 +13,14 @@ namespace MariBot.Modules.Interaction
     public class SpookeningModule : InteractionModuleBase<IInteractionContext>
     {
         public SpookeningService spookening { get; set; }
+        public LogService log { get; set; }
 
         [SlashCommand("doot", "Doot.")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
         public async Task doot()
         {
+            log.LogInfo("DOOT");
             if (IsOctober)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
@@ -33,7 +36,9 @@ namespace MariBot.Modules.Interaction
                 }
                 else
                 {
+                    log.LogInfo("GOING TO REJECT THE DOOT");
                     await RespondAsync("You aren't spooky enough to use this command.");
+                    log.LogInfo("REJECTED THE DOOT");
                 }
             }
             else
@@ -47,6 +52,7 @@ namespace MariBot.Modules.Interaction
         [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
         public async Task Spoop()
         {
+            log.LogInfo("SPOOP");
             if (IsOctober)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
@@ -75,6 +81,7 @@ namespace MariBot.Modules.Interaction
         [SlashCommand("thankmrskeletal", "Chooses a new (spooky) nickname.")]
         public async Task RespookMePlease()
         {
+            log.LogInfo("RESPOOK");
             if (IsOctober)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
@@ -107,6 +114,7 @@ namespace MariBot.Modules.Interaction
         [RequireContext(ContextType.Guild)]
         public async Task Spook(IGuildUser user)
         {
+            log.LogInfo("SPOOK");
             if (IsOctober)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
@@ -149,8 +157,10 @@ namespace MariBot.Modules.Interaction
         [RequireContext(ContextType.Guild)]
         public async Task SpookyJoke()
         {
+            log.LogInfo("JOKE");
             if (IsOctober)
             {
+
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
                     if (spookening.CheckUserRateLimit(Models.ActionType.Joke, Context.User.Id))

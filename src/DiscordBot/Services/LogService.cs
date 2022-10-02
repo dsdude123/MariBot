@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Diagnostics;
 
 namespace DiscordBot.Services
 {
@@ -43,6 +44,27 @@ namespace DiscordBot.Services
                 message.Exception,
                 (_1, _2) => message.ToString(prependTimestamp: false));
             return Task.CompletedTask;
+        }
+
+        public Task LogInfo(string message)
+        {
+            var methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            var className = methodInfo.DeclaringType.Name;
+            return LogCommand(new LogMessage(LogSeverity.Info, className, message));
+        }
+
+        public Task LogWarning(string message)
+        {
+            var methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            var className = methodInfo.DeclaringType.Name;
+            return LogCommand(new LogMessage(LogSeverity.Warning, className, message));
+        }
+
+        public Task LogError(string message)
+        {
+            var methodInfo = new StackTrace().GetFrame(1).GetMethod();
+            var className = methodInfo.DeclaringType.Name;
+            return LogCommand(new LogMessage(LogSeverity.Error, className, message));
         }
 
         private Task LogCommand(LogMessage message)

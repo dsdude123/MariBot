@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using DiscordBot.Services;
 using LiteDB;
 using MariBot.Models;
 using Microsoft.Extensions.Logging;
@@ -23,20 +24,22 @@ namespace MariBot.Services
 
         private DiscordSocketClient discord;
         private LiteDatabase database;
-        // private ILogger log;
+        private LogService logService;
         private Random random;
         private ILiteCollection<SpookedUser> SpookedUserCollection => database.GetCollection<SpookedUser>("SpookedUser");
         private ILiteCollection<SpookTask> SpookTaskCollection => database.GetCollection<SpookTask>("SpookTask");
         private ILiteCollection<UsageLog> SpookLogCollection => database.GetCollection<UsageLog>("SpookLog");
         private System.Timers.Timer timer;
 
-        public SpookeningService(DiscordSocketClient discord, LiteDatabase database)
+        public SpookeningService(DiscordSocketClient discord, LiteDatabase database, LogService logService)
         {
             this.discord = discord;
             this.database = database;
-            //this.log = log;
+            this.logService = logService;
             random = new Random();
             timer = new System.Timers.Timer();
+
+            logService.LogInfo("Starting spookening service");
 
             if (!File.Exists("spook.json"))
             {
@@ -48,8 +51,8 @@ namespace MariBot.Services
             timer.Interval = 60000;
             timer.Elapsed += Timer_Elapsed;
 
-            discord.Ready += Discord_Ready;
-            discord.MessageReceived += MimicSpookyEmojiWithReactions;
+            //discord.Ready += Discord_Ready;
+            //discord.MessageReceived += MimicSpookyEmojiWithReactions;
             timer.Start();
         }
 
@@ -64,10 +67,12 @@ namespace MariBot.Services
             {
                 if (IsMidnight && IsHaloween)
                 {
+                    logService.LogInfo("Triggering Halloween Midnight event");
                     OnHalloweenMidnight();
                 }
                 else if (IsMidnight)
                 {
+                    logService.LogInfo("Triggering Midnight event");
                     OnMidnight();
                 }
             }
@@ -75,7 +80,7 @@ namespace MariBot.Services
             {
                 if (DateTime.Now.Month == 11 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
                 {
-                    //log.LogInformation("Starting reset all names task.");
+                    logService.LogInfo("Starting reset all names task.");
                     Task.Factory.StartNew(() => ResetAllNames());
                 }
             }
@@ -93,8 +98,8 @@ namespace MariBot.Services
         public bool CheckUserRateLimit(ActionType actionType, ulong userId)
         {
 
-            int userCountLimit = 0;
-            int globalCountLimit = 0;
+            int userCountLimit;
+            int globalCountLimit;
             TimeSpan userCountSpan;
             TimeSpan globalCountSpan;
 
@@ -138,6 +143,7 @@ namespace MariBot.Services
 
         public void RegisterAction(ActionType actionType, ulong userId)
         {
+            logService.LogInfo($"Logging action {actionType} for {userId}");
             SpookLogCollection
                 .Insert(new UsageLog()
                 {
@@ -182,6 +188,7 @@ namespace MariBot.Services
 
         public async Task ProcessSpooking()
         {
+            logService.LogInfo("Processing spooks");
             var guild = discord.GetGuild(config.TargetGuildId);
             await guild.DownloadUsersAsync();
 
@@ -198,7 +205,7 @@ namespace MariBot.Services
 
                 if (user == null)
                 {
-                    //log.LogWarning($"User `user` [{spook.UserId}] was null.");
+                    logService.LogWarning($"User `user` [{spook.UserId}] was null.");
 
                     // could potentially result in this repeating a lot?
                     continue;
@@ -206,7 +213,7 @@ namespace MariBot.Services
 
                 if (by == null)
                 {
-                    //log.LogWarning($"User `by` [{spook.SpookedByUserId}] was null.");
+                    logService.LogWarning($"User `by` [{spook.SpookedByUserId}] was null.");
                     continue;
                 }
 
@@ -224,6 +231,7 @@ namespace MariBot.Services
             // ensure user is already spooked
             if (IsUserSpooked(userId))
             {
+                logService.LogInfo($"Respooking user {userId}");
                 // get their original name
                 var user = SpookedUserCollection.FindOne(x => x.UserId == userId);
                 // get the discord user to modify
@@ -269,7 +277,7 @@ namespace MariBot.Services
                 var userId = GetRandomUser();
                 if (userId == null)
                 {
-                    //log.LogWarning("Get random user was null");
+                    logService.LogWarning("Get random user was null");
                 }
 
                 var user = discord.GetGuild(config.TargetGuildId).GetUser(userId.Value);
@@ -277,11 +285,11 @@ namespace MariBot.Services
                 // if no users left, then just do nothing
                 if (user == null)
                 {
-                   // log.LogWarning("Could not find a random user");
+                    logService.LogWarning("Could not find a random user");
                     return;
                 }
 
-                //log.LogDebug($"Spooking user {user?.Id.ToString() ?? "NULL"}");
+                logService.LogInfo($"Spooking user {user?.Id.ToString() ?? "NULL"}");
 
                 SpookUser(user);
             }
@@ -292,7 +300,7 @@ namespace MariBot.Services
                 .GetAwaiter()
                 .GetResult();
 
-            //log.LogDebug($"Sending info message");
+            logService.LogInfo($"Sending info message");
 
             Task.Factory.StartNew(async () =>
             {
@@ -320,6 +328,7 @@ namespace MariBot.Services
 
         public void QueueSpooking(ulong user, ulong by)
         {
+            logService.LogInfo($"Queueing spook for user {user} by {by}");
             if (!SpookTaskCollection.Exists(x => x.UserId == user))
             {
                 SpookTaskCollection.Insert(new SpookTask()
@@ -414,7 +423,7 @@ namespace MariBot.Services
                 .GetAwaiter().GetResult()
                 .ToList();
 
-            //log.LogInformation($"Found {guildUsers.Count} users");
+            logService.LogInfo($"Found {guildUsers.Count} users");
 
             // remove the bots
             guildUsers.RemoveAll(x => x.IsBot);
@@ -431,7 +440,7 @@ namespace MariBot.Services
             // if none left, then skip operation
             if (guildUsers.Count == 0)
             {
-            //    log.LogInformation("No users left to spook");
+                logService.LogInfo("No users left to spook");
                 return null;
             }
 

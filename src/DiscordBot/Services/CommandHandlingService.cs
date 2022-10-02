@@ -68,16 +68,16 @@ namespace MariBot.Services
 
         private async Task InteractionCreated(SocketInteraction interaction)
         {
-            try
-            {
+            //try
+            //{
                 var context = new SocketInteractionContext(discord, interaction);
                 await interactionService.ExecuteCommandAsync(context, provider);
-            }
-            catch (Exception ex)
-            {
-                if (interaction.Type == InteractionType.ApplicationCommand)
-                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
-            }
+            //}
+            //catch (Exception ex)
+            //{       
+            //    if (interaction.Type == InteractionType.ApplicationCommand)
+            //        await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            //}
         }
 
         private async Task MessageReceived(SocketMessage rawMessage)
