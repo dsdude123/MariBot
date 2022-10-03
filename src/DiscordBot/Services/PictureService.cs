@@ -683,136 +683,138 @@ namespace MariBot.Services
         public async void DeepfryImage(SocketCommandContext context, string url, int times = 1)
         {
             //Console.WriteLine($"{brightness} {contrast} {saturation} {noise} {jpeg} {sharpen}");
-
             try
             {
                 url = GetImageUrl(context, url);
-            }
-            catch (NotSupportedException e)
-            {
-                await context.Channel.SendMessageAsync(e.Message);
-                return;
-            }
+                MemoryStream incomingImage = GetWebResource(url).Result;
+                incomingImage.Seek(0, SeekOrigin.Begin);
 
-            MemoryStream incomingImage = GetWebResource(url).Result;
-            incomingImage.Seek(0, SeekOrigin.Begin);
+                bool isAnimated = IsAnimated(incomingImage);
 
-            bool isAnimated = IsAnimated(incomingImage);
+                MemoryStream outgoingImage = new MemoryStream();
 
-            MemoryStream outgoingImage = new MemoryStream();
-
-            if (isAnimated)
-            {
-                string longTimeText = times > 1 ? "Oh... I see you gave me a GIF. This is going to take a real loooonnngggg time." : "This might take awhile. I'm working on it.";
-                context.Channel.SendMessageAsync(longTimeText);
-                using (var outputCollection = new MagickImageCollection())
+                if (isAnimated)
                 {
-                    using (var overlayCollection = new MagickImageCollection(incomingImage))
+                    string longTimeText = times > 1 ? "Oh... I see you gave me a GIF. This is going to take a real loooonnngggg time." : "This might take awhile. I'm working on it.";
+                    context.Channel.SendMessageAsync(longTimeText);
+                    using (var outputCollection = new MagickImageCollection())
                     {
-                        overlayCollection.Coalesce();
-                        foreach (var frame in overlayCollection)
+                        using (var overlayCollection = new MagickImageCollection(incomingImage))
                         {
-                            MagickImage newFrame = new MagickImage(frame);
-                            for (int i = 0; i < times; i++)
+                            overlayCollection.Coalesce();
+                            foreach (var frame in overlayCollection)
                             {
-                                int brightness = random.Next(-10, 30);
-                                int contrast = (int)((-2.5 * brightness) + 75);
-                                int saturation = random.Next(400, 600);
-                                double noise = (double)random.Next(1, 8) / 10;
-                                int jpeg = random.Next(3, 7);
-                                double sharpen = 24;
-                                bool reduceBitDepth = random.Next(11) < 6;
-                                newFrame = AutoExplode(newFrame);
-                                newFrame.Settings.AntiAlias = false;
-                                if (reduceBitDepth)
+                                MagickImage newFrame = new MagickImage(frame);
+                                for (int i = 0; i < times; i++)
                                 {
-                                    newFrame.BitDepth(Channels.Red, 3);
-                                    newFrame.BitDepth(Channels.Green, 3);
-                                    newFrame.BitDepth(Channels.Blue, 2);
+                                    int brightness = random.Next(-10, 30);
+                                    int contrast = (int)((-2.5 * brightness) + 75);
+                                    int saturation = random.Next(400, 600);
+                                    double noise = (double)random.Next(1, 8) / 10;
+                                    int jpeg = random.Next(3, 7);
+                                    double sharpen = 24;
+                                    bool reduceBitDepth = random.Next(11) < 6;
+                                    newFrame = AutoExplode(newFrame);
+                                    newFrame.Settings.AntiAlias = false;
+                                    if (reduceBitDepth)
+                                    {
+                                        newFrame.BitDepth(Channels.Red, 3);
+                                        newFrame.BitDepth(Channels.Green, 3);
+                                        newFrame.BitDepth(Channels.Blue, 2);
+                                    }
+                                    newFrame.AddNoise(NoiseType.MultiplicativeGaussian, noise);
+                                    newFrame.BrightnessContrast(new Percentage(brightness), new Percentage(contrast));
+                                    newFrame.Modulate(new Percentage(100.0), new Percentage(saturation));
+                                    newFrame.Quality = jpeg;
+                                    newFrame.Sharpen(12, sharpen);
                                 }
-                                newFrame.AddNoise(NoiseType.MultiplicativeGaussian, noise);
-                                newFrame.BrightnessContrast(new Percentage(brightness), new Percentage(contrast));
-                                newFrame.Modulate(new Percentage(100.0), new Percentage(saturation));
-                                newFrame.Quality = jpeg;
-                                newFrame.Sharpen(12, sharpen);
+                                outputCollection.Add(new MagickImage(newFrame));
                             }
-                            outputCollection.Add(new MagickImage(newFrame));
                         }
+                        outputCollection.Write(outgoingImage, MagickFormat.Gif);
                     }
-                    outputCollection.Write(outgoingImage, MagickFormat.Gif);
-                }
 
-                outgoingImage.Seek(0, SeekOrigin.Begin);
-                if (outgoingImage.Length > ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
-                {
-                    double[] scales = new double[] { 75, 50, 25 };
-                    for (int i = 0; i < 3; i++)
+                    outgoingImage.Seek(0, SeekOrigin.Begin);
+                    if (outgoingImage.Length > ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
                     {
-                        using (var outputDownscale = new MagickImageCollection())
+                        double[] scales = new double[] { 75, 50, 25 };
+                        for (int i = 0; i < 3; i++)
                         {
-                            using (var inputImage = new MagickImageCollection(outgoingImage))
+                            using (var outputDownscale = new MagickImageCollection())
                             {
-                                foreach (var frame in inputImage)
+                                using (var inputImage = new MagickImageCollection(outgoingImage))
                                 {
-                                    frame.Resize(new Percentage(scales[i]));
-                                    outputDownscale.Add(new MagickImage(frame));
+                                    foreach (var frame in inputImage)
+                                    {
+                                        frame.Resize(new Percentage(scales[i]));
+                                        outputDownscale.Add(new MagickImage(frame));
+                                    }
                                 }
-                            }
-                            MemoryStream newResized = new MemoryStream();
-                            outputDownscale.Write(newResized, MagickFormat.Gif);
+                                MemoryStream newResized = new MemoryStream();
+                                outputDownscale.Write(newResized, MagickFormat.Gif);
 
-                            if (newResized.Length < ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
-                            {
-                                outgoingImage = new MemoryStream();
-                                newResized.Seek(0, SeekOrigin.Begin);
-                                newResized.CopyTo(outgoingImage);
-                                break;
+                                if (newResized.Length < ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
+                                {
+                                    outgoingImage = new MemoryStream();
+                                    newResized.Seek(0, SeekOrigin.Begin);
+                                    newResized.CopyTo(outgoingImage);
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                if (outgoingImage.Length > ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
-                {
-                    context.Channel.SendMessageAsync("Sorry that image was just too big for me to handle.");
+                    if (outgoingImage.Length > ByteSizeLib.ByteSize.FromMegaBytes(8).Bytes)
+                    {
+                        context.Channel.SendMessageAsync("Sorry that image was just too big for me to handle.");
+                    }
+                    else
+                    {
+                        outgoingImage.Seek(0, SeekOrigin.Begin);
+                        context.Channel.SendFileAsync(outgoingImage, "deepfry.gif");
+                    }
                 }
                 else
                 {
-                    outgoingImage.Seek(0, SeekOrigin.Begin);
-                    context.Channel.SendFileAsync(outgoingImage, "deepfry.gif");
-                }
-            }
-            else
-            {
 
-                MagickImage newImage = new MagickImage(incomingImage);
-                for (int i = 0; i < times; i++)
-                {
-                    int brightness = random.Next(-10, 30);
-                    int contrast = (int)((-2.5 * brightness) + 75);
-                    int saturation = random.Next(400, 600);
-                    double noise = (double)random.Next(1, 8) / 10;
-                    int jpeg = random.Next(3, 7);
-                    double sharpen = 24;
-                    bool reduceBitDepth = random.Next(11) < 6;
-                    newImage = AutoExplode(newImage);
-                    newImage.Settings.AntiAlias = false;
-                    if (reduceBitDepth)
+                    MagickImage newImage = new MagickImage(incomingImage);
+                    for (int i = 0; i < times; i++)
                     {
-                        newImage.BitDepth(Channels.Red, 3);
-                        newImage.BitDepth(Channels.Green, 3);
-                        newImage.BitDepth(Channels.Blue, 2);
+                        int brightness = random.Next(-10, 30);
+                        int contrast = (int)((-2.5 * brightness) + 75);
+                        int saturation = random.Next(400, 600);
+                        double noise = (double)random.Next(1, 8) / 10;
+                        int jpeg = random.Next(3, 7);
+                        double sharpen = 24;
+                        bool reduceBitDepth = random.Next(11) < 6;
+                        newImage = AutoExplode(newImage);
+                        newImage.Settings.AntiAlias = false;
+                        if (reduceBitDepth)
+                        {
+                            newImage.BitDepth(Channels.Red, 3);
+                            newImage.BitDepth(Channels.Green, 3);
+                            newImage.BitDepth(Channels.Blue, 2);
+                        }
+                        newImage.AddNoise(NoiseType.MultiplicativeGaussian, noise);
+                        newImage.BrightnessContrast(new Percentage(brightness), new Percentage(contrast));
+                        newImage.Modulate(new Percentage(100.0), new Percentage(saturation));
+                        newImage.Quality = jpeg;
+                        newImage.Sharpen(12, sharpen);
                     }
-                    newImage.AddNoise(NoiseType.MultiplicativeGaussian, noise);
-                    newImage.BrightnessContrast(new Percentage(brightness), new Percentage(contrast));
-                    newImage.Modulate(new Percentage(100.0), new Percentage(saturation));
-                    newImage.Quality = jpeg;
-                    newImage.Sharpen(12, sharpen);
+                    newImage.Write(outgoingImage, MagickFormat.Jpeg);
+                    outgoingImage.Seek(0, SeekOrigin.Begin);
+                    context.Channel.SendFileAsync(outgoingImage, "deepfry.jpg");
                 }
-                newImage.Write(outgoingImage, MagickFormat.Jpeg);
-                outgoingImage.Seek(0, SeekOrigin.Begin);
-                context.Channel.SendFileAsync(outgoingImage, "deepfry.jpg");
+            } catch (Exception ex)
+            {
+                var exMessage = ex.Message;
+                if (ex is AggregateException)
+                {
+                    exMessage = ex.InnerException.Message;
+                }
+                await context.Channel.SendMessageAsync($"Something went wrong: {exMessage}", messageReference: new MessageReference(context.Message.Id));
             }
+            
         }
 
         public MagickImage AutoExplode(IMagickImage image)

@@ -168,6 +168,7 @@ namespace MariBot
                 .AddSingleton<Edges2HentaiService>()
                 .AddSingleton<TwitterService>()
                 .AddSingleton<TalkHubService>()
+                .AddSingleton<ImageHubService>()
                 .BuildServiceProvider();
         }
 

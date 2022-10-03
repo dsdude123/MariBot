@@ -19,6 +19,8 @@ namespace MariBot.Modules
         public PictureService PictureService { get; set; }
         public Edges2HentaiService Edges2HentaiService { get; set; }
 
+        public ImageHubService ImageHubService { get; set; }
+
         [Command("sonicsays", RunMode = RunMode.Async)]
         public async Task sonicsays([Remainder] string text)
         {
@@ -179,6 +181,18 @@ namespace MariBot.Modules
         public async Task AdminWalk(string url = null)
         {
             PictureService.OverlayImage(Context, url, "adw", 379, 113, 513, 113, 379, 245, 513, 245);
+        }
+
+        [Command("ai-image", RunMode = RunMode.Async)]
+        public async Task aiimage([Remainder]string prompt)
+        {
+            ImageHubService.ExecuteTextCommand(Context, "stablediffusion-text", prompt);
+        }
+
+        [Command("ai-pokemon", RunMode = RunMode.Async)]
+        public async Task aipokemon([Remainder] string prompt)
+        {
+            ImageHubService.ExecuteTextCommand(Context, "pokemon", prompt);
         }
 
         [Command("ajit", RunMode = RunMode.Async)]

@@ -22,19 +22,20 @@ namespace MariBot.Services
             HasActiveRequest = new Dictionary<ulong, bool>();
         }
 
-        public async void ExecuteStableDiffusionText(SocketCommandContext context, string prompt)
+        public async void ExecuteTextCommand(SocketCommandContext context, string provider, string prompt)
         {
             var user = context.User.Id;
 
             if (HasActiveRequest.ContainsKey(user) && HasActiveRequest[user])
             {
-                await context.Channel.SendMessageAsync("You can only send one request at a time.", messageReference: new MessageReference(context.Message.Id));
+                await context.Channel.SendMessageAsync("You can only have one active request at a time. Wait for your previous request to complete and then try again.", messageReference: new MessageReference(context.Message.Id));
             } else
             {
+                HasActiveRequest[user] = true;
                 try
                 {
                     ImageRequest request = new ImageRequest();
-                    request.commandName = "stablediffusion-text";
+                    request.commandName = provider;
                     request.commandData = prompt;
 
                     var imageHubResponse = SendRequest(request).Result;
@@ -49,6 +50,8 @@ namespace MariBot.Services
                             await Task.Delay(2000);
                             imageHubResponse = QueryStatus(imageHubResponse.RequestId).Result;
                         }
+
+                        HasActiveRequest[user] = false;
 
                         if (imageHubResponse.Status == RequestStatus.Done)
                         {
@@ -68,7 +71,12 @@ namespace MariBot.Services
                 } catch (Exception ex)
                 {
                     HasActiveRequest[user] = false;
-                    await context.Channel.SendMessageAsync($"Something went wrong: {ex.Message}", messageReference: new MessageReference(context.Message.Id));
+                    var exMessage = ex.Message;
+                    if (ex is AggregateException)
+                    {
+                        exMessage = ex.InnerException.Message;
+                    }
+                    await context.Channel.SendMessageAsync($"Something went wrong: {exMessage}", messageReference: new MessageReference(context.Message.Id));
                 }
             }
         }
@@ -78,15 +86,15 @@ namespace MariBot.Services
             HttpClient client = new HttpClient();
             var requestContent = new StringContent(JsonConvert.SerializeObject(ImageRequest), Encoding.UTF8, "application/json");
             // TODO: Make domain configurable
-            var response = client.PostAsync("http://nerv.jpn.com/api/ImageRequest", requestContent).Result;
-
+            var response = client.PostAsync("http://nerv.jpn.com:8090/api/ImageRequest", requestContent).Result;
+            response.EnsureSuccessStatusCode();
             return JsonConvert.DeserializeObject<ImageResponse>(response.Content.ReadAsStringAsync().Result);
         }
 
         private async Task<ImageResponse> QueryStatus(Guid guid)
         {
             HttpClient client = new HttpClient();
-            string response = client.GetStringAsync($"http://nerv.jpn.com/api/ImageRequest?guid={guid}").Result;
+            string response = client.GetStringAsync($"http://nerv.jpn.com:8090/api/ImageRequest?guid={guid}").Result;
 
             return JsonConvert.DeserializeObject<ImageResponse>(response);
         }
@@ -94,7 +102,7 @@ namespace MariBot.Services
         private async Task<Stream> GetImageData(Guid guid)
         {
             HttpClient client = new HttpClient();
-            return client.GetStreamAsync($"http://nerv.jpn.com/api/ImageData?guid={guid}").Result;
+            return client.GetStreamAsync($"http://nerv.jpn.com:8090/api/ImageData?guid={guid}").Result;
         }
 
         private string GetEstimatedTimeString(uint seconds)
