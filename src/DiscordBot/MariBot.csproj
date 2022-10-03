@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <None Update="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="DlibDotNetNativeDnn.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

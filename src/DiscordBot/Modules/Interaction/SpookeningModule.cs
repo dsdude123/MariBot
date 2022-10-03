@@ -23,14 +23,18 @@ namespace MariBot.Modules.Interaction
             log.LogInfo("DOOT");
             if (IsOctober)
             {
+                log.LogInfo("It is October.");
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
+                    log.LogInfo("User is spooky.");
                     if (spookening.CheckUserRateLimit(Models.ActionType.Doot, Context.User.Id))
                     {
+                        log.LogInfo("User within limits.");
                         await RespondAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
                     }
                     else
                     {
+                        log.LogInfo("Command rate limited.");
                         await RespondAsync("2doot5me, please try again later");
                     }
                 }

@@ -103,6 +103,8 @@ namespace MariBot.Services
             TimeSpan userCountSpan;
             TimeSpan globalCountSpan;
 
+            logService.LogInfo($"The action type is {actionType}. The user ID is {userId}");
+
 
             switch (actionType)
             {
@@ -127,17 +129,21 @@ namespace MariBot.Services
                 default:
                     return false;
             }
+            //logService.LogInfo($"Rate limit parameters are: \nUser Count Limit: {userCountLimit}\nGlobal Count Limit: {globalCountLimit}\nUser Count Span: {userCountSpan}\nGlobal Count Span: {globalCountSpan}");
             var userCount = GetRateLimitCount(actionType, userId, userCountSpan);
+            logService.LogInfo($"User count is {userCount}");
             var globalCount = GetRateLimitCount(actionType, null, globalCountSpan);
+            logService.LogInfo($"Global count is {globalCount}");
             var result = userCount < userCountLimit && globalCount < globalCountLimit;
             return result;
         }
 
         public int GetRateLimitCount(ActionType actionType, ulong? userId, TimeSpan timeRange)
         {
+            DateTime span = DateTime.Now.Add(-timeRange);
             return SpookLogCollection
                 .Find(x =>
-                    (x.UserId == userId || userId == null) && x.ActionType == actionType && x.Timestamp > DateTime.Now.Add(-timeRange))
+                    (x.UserId == userId || userId == null) && x.ActionType == actionType && x.Timestamp > span)
                 .Count();
         }
 
