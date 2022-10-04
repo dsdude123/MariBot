@@ -195,6 +195,12 @@ namespace MariBot.Modules
             ImageHubService.ExecuteTextCommand(Context, "pokemon", prompt);
         }
 
+        [Command("ai-waifu", RunMode = RunMode.Async)]
+        public async Task aiwaifu([Remainder] string prompt)
+        {
+            ImageHubService.ExecuteTextCommand(Context, "waifudiffusion", prompt);
+        }
+
         [Command("ajit", RunMode = RunMode.Async)]
         public async Task Ajit(string url = null)
         {
