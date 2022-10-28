@@ -29,25 +29,16 @@
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h" ],
       "AutoReactions": [
         {
-          "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],
-          "TriggerUsers": [ 388872773109284876, 607723716977098753 ],
-          "Emoji": "<:cowboypium:885917545738174505>"
-        },
-        {
           "TriggerWords": [ "skyrim" ],
           "TriggerUsers": [ 316822516889026560 ],
           "Emoji": "<:thunk:764195150045511720>"
-        },
-        {
-          "TriggerWords": [ "mac", "patriots", "pats", "brady", "edelman" ],
-          "TriggerUsers": [ 170295324500426754, 442217258194960384 ],
-          "Emoji": "<:patspium:942638798758633523>"
         }
       ]
     },
     {
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
+      "EmabledFeatures": [ "auto-jfif-to-jpeg", "emoji-triggers"],
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere" ],
       "AutoReactions": [
         {
