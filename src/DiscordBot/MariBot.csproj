@@ -1,26 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
     <Content Remove="C:\Users\conne\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNative.dll" />
     <Content Remove="C:\Users\conne\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnn.dll" />
     <Content Remove="C:\Users\conne\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnAgeClassification.dll" />
     <Content Remove="C:\Users\conne\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnGenderClassification.dll" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="BooruSharp" Version="2.11.0" />
     <PackageReference Include="ByteSize" Version="2.0.0" />
@@ -28,7 +23,7 @@
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="3.7.2" />
     <PackageReference Include="FaceRecognitionDotNet" Version="1.3.0.4" />
-    <PackageReference Include="Google.Apis" Version="1.49.0" />
+    <PackageReference Include="Genbox.WolframAlpha" Version="3.0.0-alpha3" />
     <PackageReference Include="Google.Apis.CloudSearch.v1" Version="1.49.0.2126" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.49.0.2084" />
     <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.49.0.2137" />
@@ -37,23 +32,21 @@
     <PackageReference Include="linqtotwitter" Version="5.0.0" />
     <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="11.1.2" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
-    <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
-    <PackageReference Include="PlaintextWikipedia" Version="1.0.0" />
-    <PackageReference Include="SkiaSharp.Views" Version="1.68.0" />
     <PackageReference Include="UrbanDictionaryDex" Version="1.0.3" />
     <PackageReference Include="VideoLibrary" Version="2.0.1" />
+    <PackageReference Include="WaterTrans.GlyphLoader" Version="1.2.0" />
     <PackageReference Include="WikipediaNET" Version="2.0.0" />
-    <PackageReference Include="Wolfram.Alpha" Version="1.0.7" />
     <PackageReference Include="Xabe.FFmpeg.Downloader" Version="4.3.1" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.346202">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp.Views.Maui.Controls.Compatibility" Version="2.88.0-preview.256" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.1" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -194,13 +187,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Content\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-  </ItemGroup>
-
 </Project>

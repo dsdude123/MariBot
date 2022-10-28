@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Media;
+using WaterTrans.GlyphLoader;
 
 namespace MariBot.Services
 {
@@ -646,18 +646,14 @@ namespace MariBot.Services
 
             foreach (string font in fontList)
             {
-                FontFamily fontToCheck = new FontFamily(font);
-                var typefaces = fontToCheck.GetTypefaces();
-                foreach (Typeface typeface in typefaces)
+                using (var fontStream = System.IO.File.OpenRead(font))
                 {
-                    GlyphTypeface glyph;
-                    typeface.TryGetGlyphTypeface(out glyph);
-                    IDictionary<int, ushort> characterMap = glyph.CharacterToGlyphMap;
+                    var typeface = new Typeface(fontStream);
+                    IDictionary<int, ushort> characterMap = typeface.CharacterToGlyphMap;
                     int score = 0;
                     foreach (char c in uniqueCharacters)
                     {
-                        ushort val;
-                        if (glyph != null && glyph.CharacterToGlyphMap.TryGetValue(c, out val))
+                        if (characterMap != null && characterMap.ContainsKey((int)c))
                         {
                             score++;
                         }
@@ -673,8 +669,8 @@ namespace MariBot.Services
                     {
                         return topFont; // Found a font with everything we need
                     }
-
                 }
+                
             }
 
             return topFont;

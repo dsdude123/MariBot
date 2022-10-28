@@ -8,14 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Genbox.WolframAlpha;
+using Genbox.WolframAlpha.Responses;
 using Google.Apis.Customsearch.v1.Data;
 using Google.Apis.Kgsearch.v1.Data;
 using MariBot.Models.Google.KnowledgeGraph;
 using MariBot.Services;
 using Newtonsoft.Json;
 using UrbanDictionaryDex.Models;
-using Wolfram.Alpha;
-using Wolfram.Alpha.Models;
 using static MariBot.Services.WikipediaService;
 
 namespace MariBot.Modules
@@ -30,7 +30,7 @@ namespace MariBot.Modules
         public UrbanDictionaryService UrbanDictionaryService { get; set; }
         public WikipediaService WikipediaService { get; set; }
 
-        public WolframAlphaService WolframAlphaService = new WolframAlphaService(MariBot.Program.config["wolframAlphaAppId"]);
+        public WolframAlphaClient WolframAlphaService = new WolframAlphaClient(MariBot.Program.config["wolframAlphaAppId"]);
 
         [Command("urban")]
         public Task urban([Remainder] string word)
@@ -215,11 +215,9 @@ namespace MariBot.Modules
         [Command("wa", RunMode = RunMode.Async)]
         public async Task wolframAlphaSimple([Remainder] string query)
         {
-            WolframAlphaRequest request = new WolframAlphaRequest(query);
-            request.Reinterpret = true;
-            QueryResult result = (await WolframAlphaService.Compute(request)).QueryResult;
+            FullResultResponse result = await WolframAlphaService.FullResultAsync(query);
             Queue<string> messageQueue = new Queue<string>();
-            if(result.Success)
+            if(result.IsSuccess)
             {
                 string outputBuffer = "";
                 foreach (var pod in result.Pods)
@@ -268,7 +266,7 @@ namespace MariBot.Modules
                                 messageQueue.Enqueue(outputBuffer);
                                 outputBuffer = "";
                             }
-                            messageQueue.Enqueue(subPod.Image.Src);
+                            messageQueue.Enqueue(subPod.Image.Src.ToString());
                         }
 
                     }

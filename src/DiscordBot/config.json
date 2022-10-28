@@ -4,7 +4,7 @@
   "googlecloudkey": "set me",
   "googlecustomsearchid": "set me",
   "wolframAlphaAppId": "set me",
-  "supportedFonts": [
-    "Arial"
+  "supportedFontPaths": [
+    "C:\\Windows\\Fonts\\Arial.ttf"
   ]
 }
