@@ -42,7 +42,7 @@ namespace MariBot
             };
             client = new DiscordSocketClient(clientConfig);
             config = BuildConfig();
-            client.Disconnected += ResetBot;
+            //client.Disconnected += ResetBot;
 
             var services = ConfigureServices();
             var logService = services.GetRequiredService<LogService>();
@@ -126,7 +126,7 @@ namespace MariBot
             }
             catch (HttpRequestException e)
             {
-                ResetBot(e);
+           //     ResetBot(e);
             }
 
             await client.StartAsync();
@@ -134,13 +134,13 @@ namespace MariBot
             await Task.Delay(-1);
         }
 
-        public async Task ResetBot(Exception ex)
-        {
-            Console.WriteLine("Bot reset event has been triggered, resetting in 5 seconds: " + ex.Message);
-            Thread.Sleep(5000);
-            System.Diagnostics.Process.Start(Assembly.GetExecutingAssembly().Location);
-            Environment.Exit(59);           
-        }
+        //public async Task ResetBot(Exception ex)
+        //{
+        //    Console.WriteLine("Bot reset event has been triggered, resetting in 5 seconds: " + ex.Message);
+        //    Thread.Sleep(5000);
+        //    System.Diagnostics.Process.Start(Assembly.GetExecutingAssembly().Location);
+        //    Environment.Exit(59);           
+        //}
 
         private IServiceProvider ConfigureServices()
         {

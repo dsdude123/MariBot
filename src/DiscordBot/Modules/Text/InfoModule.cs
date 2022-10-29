@@ -181,7 +181,7 @@ namespace MariBot.Modules
             var textResult = await OpenAiService.CreateCompletion(new CompletionCreateRequest()
             {
                 Prompt = input,
-                MaxTokens = 4000
+                MaxTokens = 500
             }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV2);
 
             if (textResult.Successful)
