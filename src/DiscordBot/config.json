@@ -4,6 +4,9 @@
   "googlecloudkey": "set me",
   "googlecustomsearchid": "set me",
   "wolframAlphaAppId": "set me",
+  "openAiApiKey": "set me",
+  "twitterApiKey": "set me",
+  "twitterApiKeySecret": "set me",
   "supportedFontPaths": [
     "C:\\Windows\\Fonts\\Arial.ttf"
   ]

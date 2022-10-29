@@ -18,6 +18,8 @@ using Xabe.FFmpeg;
 using Xabe.FFmpeg.Downloader;
 using ImageMagick;
 using Discord.Interactions;
+using OpenAI.GPT3.Managers;
+using OpenAI.GPT3;
 
 namespace MariBot
 {
@@ -169,6 +171,7 @@ namespace MariBot
                 .AddSingleton<TwitterService>()
                 .AddSingleton<TalkHubService>()
                 .AddSingleton<ImageHubService>()
+                .AddSingleton(x => new OpenAIService(new OpenAiOptions() { ApiKey = config["openAiApiKey"] }))
                 .BuildServiceProvider();
         }
 

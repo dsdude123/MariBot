@@ -13,6 +13,8 @@ using MariBot.Models;
 using MariBot.Modules;
 using MariBot.Services;
 using Newtonsoft.Json;
+using OpenAI.GPT3.Managers;
+using OpenAI.GPT3.ObjectModels.RequestModels;
 
 namespace MariBot.Modules
 {
@@ -27,6 +29,8 @@ namespace MariBot.Modules
         public PictureService PictureService { get; set; }
 
         public TalkHubService TalkHubService { get; set; } // TODO: Move this into its own module
+
+        public OpenAIService OpenAiService { get; set; }
 
         public InfoModule(DiscordSocketClient discordClient)
         {
@@ -154,6 +158,45 @@ namespace MariBot.Modules
             input = UwuifyText(input);
             
             await Context.Channel.SendMessageAsync(input);
+        }
+
+        [Command("gpt3", RunMode = RunMode.Async)]
+        public async Task OpenAiTextCompletion([Remainder] string input)
+        {
+            var moderationResult = await OpenAiService.CreateModeration(new CreateModerationRequest()
+            {
+                Input = input,
+                Model = "text-moderation-latest"
+            });
+
+            foreach (var moderation in moderationResult.Results)
+            {
+                if (moderation.Flagged)
+                {
+                    await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
+                    return;
+                }
+            }
+
+            var textResult = await OpenAiService.CreateCompletion(new CompletionCreateRequest()
+            {
+                Prompt = input,
+                MaxTokens = 4000
+            }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV2);
+
+            if (textResult.Successful)
+            {
+                var text = textResult.Choices.FirstOrDefault().Text;
+
+                if (text.Length > 1992)
+                {
+                    text = text.Substring(0, 1992);
+                }
+                await Context.Channel.SendMessageAsync($"```\n{text}\n```", messageReference: new MessageReference(Context.Message.Id));
+            } else
+            {
+                await Context.Channel.SendMessageAsync($"{textResult.Error.Code}: {textResult.Error.Message}", messageReference: new MessageReference(Context.Message.Id));
+            }
         }
 
         private string UwuifyText(string input)
