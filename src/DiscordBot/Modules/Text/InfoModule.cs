@@ -182,7 +182,7 @@ namespace MariBot.Modules
             {
                 Prompt = input,
                 MaxTokens = 500
-            }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV2);
+            }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV3);
 
             if (textResult.Successful)
             {
