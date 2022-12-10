@@ -287,7 +287,7 @@ namespace MariBot.Modules
         [Command("daryl", RunMode = RunMode.Async)]
         public async Task Daryl(string url = null)
         {
-            var source = new Random().Next(0, 7);
+            var source = new Random().Next(0, 9);
             switch (source)
             {
                 case 0:
@@ -310,6 +310,12 @@ namespace MariBot.Modules
                     break;
                 case 6:
                     PictureService.OverlayImage(Context, url, "daryl7", 1648, 1528, 2426, 1495, 1655, 2288, 2542, 2264);
+                    break;
+                case 7:
+                    PictureService.OverlayImage(Context, url, "daryl8", 1126, 501, 1940, 311, 1135, 801, 1914, 862);
+                    break;
+                case 8:
+                    PictureService.OverlayImage(Context, url, "daryl9", 1098, 448, 1903, 268, 1100, 754, 1846, 809);
                     break;
                 default:
                     throw new ArithmeticException("Random not properly calculated.");
@@ -343,6 +349,13 @@ namespace MariBot.Modules
         {
             Edges2HentaiService.Edges2Hentai(Context, url);
         }
+
+        [Command("kevin", RunMode = RunMode.Async)]
+        public async Task kevin(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
+        }
+
 
         [Command("kurisu", RunMode = RunMode.Async)]
         public async Task Kurisu([Remainder] string text)
@@ -383,6 +396,24 @@ namespace MariBot.Modules
             };
 
             PictureService.AnnotateImage(Context, "queen", text, readSettings, MagickColors.White, 86, 175, 408, 177, 86, 342, 404, 353);
+        }
+
+        [Command("scarecrow", RunMode = RunMode.Async)]
+        public async Task Scarecrow(string url = null)
+        {
+            var source = new Random().Next(0, 3);
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "scarecrow", 1168, 278, 1897, 37, 1159, 567, 1773, 585);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "scarecrow2", 1021, 408, 1957, 291, 1003, 757, 1806, 909);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
+
         }
     }
 }
