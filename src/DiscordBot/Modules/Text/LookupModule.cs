@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Remoting;
 using System.Text;
 using System.Threading;
@@ -174,7 +175,7 @@ namespace MariBot.Modules
                 eb.WithColor(Color.Green);
 
                 EntitySearchResult result = JsonConvert.DeserializeObject<EntitySearchResult>(searchResponse.ItemListElement[0].ToString());
-                eb.WithTitle(result.Result.Name);
+                eb.WithTitle(WebUtility.HtmlDecode(result.Result.Name));
                 eb.WithDescription(ConvertKnowledgeGraphEntityToMessage(result.Result));
 
                 if (result.Result.DetailedDescription != null)
@@ -319,10 +320,10 @@ namespace MariBot.Modules
         {
             if (entity.DetailedDescription != null)
             {
-                return "*" + entity.Description + "*\n\n" + entity.DetailedDescription.ArticleBody;
+                return WebUtility.HtmlDecode("*" + entity.Description + "*\n\n" + entity.DetailedDescription.ArticleBody);
             } else
             {
-                return "*" + entity.Description + "*";
+                return WebUtility.HtmlDecode("*" + entity.Description + "*");
             }
         }
     }
