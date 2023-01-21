@@ -225,6 +225,12 @@ namespace MariBot.Modules
             PictureService.AppendFooter(Context, url, "analysis");
         }
 
+        [Command("asuka", RunMode = RunMode.Async)]
+        public async Task Asuka([Remainder] string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "asuka", 143, 98, 651, 101, 138, 359, 649, 363);
+        }
+
         [Command("austin", RunMode = RunMode.Async)]
         public async Task Austin(string url = null)
         {
