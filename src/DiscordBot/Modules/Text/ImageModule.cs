@@ -183,6 +183,12 @@ namespace MariBot.Modules
             PictureService.OverlayImage(Context, url, "adw", 379, 113, 513, 113, 379, 245, 513, 245);
         }
 
+        [Command("aew", RunMode = RunMode.Async)]
+        public async Task AEW([Remainder] string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "aew", 285, 0, 685, 14, 265, 308, 668, 330);
+        }
+
         [Command("ai-image", RunMode = RunMode.Async)]
         public async Task aiimage([Remainder]string prompt)
         {
@@ -223,6 +229,25 @@ namespace MariBot.Modules
         public async Task Austin(string url = null)
         {
             PictureService.OverlayImage(Context, url, "austin", 525, 366, 706, 360, 529, 475, 712, 466);
+        }
+
+        [Command("banner", RunMode = RunMode.Async)]
+        public async Task HangTheBanner([Remainder] string text)
+        {
+            var readSettings = new MagickReadSettings
+            {
+                TextEncoding = Encoding.Unicode,
+                FontFamily = PictureService.GetBestFont(text),
+                FontStyle = FontStyleType.Bold,
+                FontWeight = FontWeight.ExtraBold,
+                FillColor = MagickColors.White,
+                BackgroundColor = MagickColors.Black,
+                TextGravity = Gravity.Center,
+                Width = 800,
+                Height = 800
+            };
+
+            PictureService.AnnotateImage(Context, "banner", text.ToUpper(), readSettings, MagickColors.Black, 86, 297, 412, 330, 85, 575, 413, 573);
         }
 
         [Command("bernie", RunMode = RunMode.Async)]
@@ -271,6 +296,7 @@ namespace MariBot.Modules
                 FontStyle = FontStyleType.Bold,
                 FillColor = MagickColors.Black,
                 BackgroundColor = MagickColors.White,
+                TextGravity = Gravity.Center,
                 Width = 980,
                 Height = 624
             };
@@ -373,6 +399,13 @@ namespace MariBot.Modules
 
             PictureService.AnnotateImage(Context, "kurisu", text, readSettings, MagickColors.White, 32, 74, 241, 74, 32, 280, 241, 280);
         }
+
+        [Command("makoto", RunMode = RunMode.Async)]
+        public async Task Makoto(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "makoto", 50, 332, 258, 246, 124, 505, 311, 402);
+        }
+
 
 
         [Command("pence", RunMode = RunMode.Async)]
