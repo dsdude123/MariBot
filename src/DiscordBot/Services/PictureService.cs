@@ -226,9 +226,10 @@ namespace MariBot.Services
                 }
 
                 var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
                 httpRequest.Method = "HEAD";
                 var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
-                return httpResponse.Headers.Get("Content-Type").StartsWith("image/");
+                return httpResponse.Headers.Get("Content-Type").StartsWith("image/") || httpResponse.Headers.Get("content-type").StartsWith("image/");
             }
             catch (Exception e)
             {
@@ -251,6 +252,7 @@ namespace MariBot.Services
         public async Task<MemoryStream> GetWebResource(string url)
         {
             var request = HttpWebRequest.CreateHttp(url);
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
             request.Method = "GET";
             using (var response = await request.GetResponseAsync())
             {

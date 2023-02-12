@@ -229,6 +229,23 @@ namespace MariBot.Modules
             PictureService.AppendFooter(Context, url, "analysis");
         }
 
+        [Command("andrew", RunMode = RunMode.Async)]
+        public async Task Andrew(string url = null)
+        {
+            var source = new Random().Next(0, 2);
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "andrew", 335, 172, 951, 172, 357, 1098, 974, 1072);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "andrew2", 569, 566, 1078, 552, 577, 1034, 1061, 1039);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
+        }
+
         [Command("asuka", RunMode = RunMode.Async)]
         public async Task Asuka([Remainder] string url = null)
         {
@@ -409,6 +426,13 @@ namespace MariBot.Modules
             PictureService.DeepfryImage(Context, url);
         }
 
+        [Command("dskoopa", RunMode = RunMode.Async)]
+        public async Task Dskoopa(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "dskoopa", 60, 47, 262, 59, 126, 425, 336, 387);
+        }
+
+
         [Command("nuke", RunMode = RunMode.Async)]
         public async Task Nuke([Remainder] string url = null)
         {
@@ -422,6 +446,12 @@ namespace MariBot.Modules
         public async Task Edges2Hentai(string url = null)
         {
             Edges2HentaiService.Edges2Hentai(Context, url);
+        }
+
+        [Command("herschel", RunMode = RunMode.Async)]
+        public async Task Herschel(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
         }
 
         [Command("kevin", RunMode = RunMode.Async)]
@@ -454,7 +484,11 @@ namespace MariBot.Modules
             PictureService.OverlayImage(Context, url, "makoto", 50, 332, 258, 246, 124, 505, 311, 402);
         }
 
-
+        [Command("miyamoto", RunMode = RunMode.Async)]
+        public async Task Miyamoto(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "miyamoto", 257, 281, 689, 356, 209, 553, 643, 624);
+        }
 
         [Command("pence", RunMode = RunMode.Async)]
         public async Task Pence(string url = null)
@@ -479,6 +513,29 @@ namespace MariBot.Modules
             PictureService.AnnotateImage(Context, "queen", text, readSettings, MagickColors.White, 86, 175, 408, 177, 86, 342, 404, 353);
         }
 
+        [Command("radical", RunMode = RunMode.Async)]
+        public async Task RadicalReggie(string url = null)
+        {
+            var source = new Random().Next(0, 2);
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "radical", 658, 85, 1319, 85, 654, 719, 1249, 719);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "radical2", 0, 0, 691, 0, 0, 374, 691, 374);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
+        }
+
+        [Command("rgt", RunMode = RunMode.Async)]
+        public async Task RGT(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "rgt", 0, 66, 727, 26, 25, 531, 753, 490);
+        }
+
         [Command("scarecrow", RunMode = RunMode.Async)]
         public async Task Scarecrow(string url = null)
         {
@@ -490,6 +547,39 @@ namespace MariBot.Modules
                     break;
                 case 1:
                     PictureService.OverlayImage(Context, url, "scarecrow2", 1021, 408, 1957, 291, 1003, 757, 1806, 909);
+                    break;
+                case 2:
+                    PictureService.OverlayImage(Context, url, "scarecrow3", 226, 1330, 1164, 1378, 216, 2185, 1087, 2284);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
+
+        }
+
+        [Command("spawnwave", RunMode = RunMode.Async)]
+        public async Task Spawnwave(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "spawnwave", 0, 0, 984, 0, 0, 719, 984, 719);
+        }
+
+        [Command("trump", RunMode = RunMode.Async)]
+        public async Task Trump(string url = null)
+        {
+            var source = new Random().Next(0, 4);
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "trump", 49, 472, 651, 472, 26, 767, 667, 767);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "trump2", 352, 59, 732, 80, 349, 276, 738, 290);
+                    break;
+                case 2:
+                    PictureService.OverlayImage(Context, url, "trump3", 1188, 399, 1667, 473, 1119, 1024, 1627, 1103);
+                    break;
+                case 3:
+                    PictureService.OverlayImage(Context, url, "trump4", 1433, 234, 1755, 248, 1413, 567, 1737, 577);
                     break;
                 default:
                     throw new ArithmeticException("Random not properly calculated.");
