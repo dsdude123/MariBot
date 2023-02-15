@@ -34,7 +34,7 @@ namespace MariBot.Modules
 
         public InfoModule(DiscordSocketClient discordClient)
         {
-            discordClient.ReactionAdded += ReactionAddedHandlerAsync;
+            discordClient.ReactionAdded += ReactionAddedHandler;
         }
 
         [Command("help")]
@@ -395,20 +395,24 @@ namespace MariBot.Modules
             });
         }
 
-        private async Task ReactionAddedHandlerAsync(Cacheable<IUserMessage, ulong> userMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+        private Task ReactionAddedHandler(Cacheable<IUserMessage, ulong> userMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
-            if (reaction.Emote.Name == BIOHAZARD)
+            Task.Run(async () =>
             {
-                var message = await userMessage.GetOrDownloadAsync();
-                var channelContext = await channel.GetOrDownloadAsync();
-                SocketGuildChannel socketGuildChannel = (SocketGuildChannel)channelContext;
-                if (CheckEmojiTriggerFeature(socketGuildChannel.Guild.Id) && message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
+                if (reaction.Emote.Name == BIOHAZARD)
                 {
-                    var text = UwuifyText(message.Content);
-                    await channelContext.SendMessageAsync(text);
-                    await message.AddReactionAsync(BiohazardEmoji);
+                    var message = await userMessage.GetOrDownloadAsync();
+                    var channelContext = await channel.GetOrDownloadAsync();
+                    SocketGuildChannel socketGuildChannel = (SocketGuildChannel)channelContext;
+                    if (CheckEmojiTriggerFeature(socketGuildChannel.Guild.Id) && message.Reactions.TryGetValue(BiohazardEmoji, out var reactionMetadata) && !reactionMetadata.IsMe)
+                    {
+                        var text = UwuifyText(message.Content);
+                        await channelContext.SendMessageAsync(text);
+                        await message.AddReactionAsync(BiohazardEmoji);
+                    }
                 }
-            }
+            });
+            return Task.CompletedTask;
         }
 
         private bool CheckEmojiTriggerFeature(ulong id)
