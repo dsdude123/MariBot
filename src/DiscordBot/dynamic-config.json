@@ -3,12 +3,12 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers", "andrew" ]
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers"]
     },
     {
       "Id": 410597263363276801,
       "Name": "CSMTestingFacility",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers", "andrew" ],
+      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers"],
       "AutoReactions": [
         {
           "TriggerWords": [ "testemojitrigger" ],
@@ -21,12 +21,12 @@
       "Id": 297485054836342786,
       "Name": "CSS",
       "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "andrew"]
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3"]
     },
     {
       "Id": 564645677586710548,
       "Name": "Mecha",
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "andrew" ],
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h"],
       "AutoReactions": [
         {
           "TriggerWords": [ "skyrim" ],
@@ -39,7 +39,7 @@
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
       "EnabledFeatures": [ "auto-jfif-to-jpeg", "emoji-triggers"],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "andrew" ],
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere"],
       "AutoReactions": [
         {
           "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],
