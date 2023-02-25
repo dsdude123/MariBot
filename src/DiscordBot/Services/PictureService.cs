@@ -45,11 +45,11 @@ namespace MariBot.Services
             return painter.DrawAsStream(format: SKEncodedImageFormat.Png);
         }
 
-        public string GetNewestImageUrl(IMessage[] messages)
+        public string FindNewestImageUrl(IMessage[] messages)
         {
             foreach (IMessage m in messages)
             {
-                if (m.Type.Equals(MessageType.Default))
+                if (m.Type.Equals(MessageType.Default) || m.Type.Equals(MessageType.Reply) || m.Type.Equals(MessageType.ApplicationCommand))
                 {
                     if (m.Attachments != null && m.Attachments.Count > 0)
                     {
@@ -136,7 +136,7 @@ namespace MariBot.Services
             {
                 var messages = context.Channel.GetMessagesAsync(100, Discord.CacheMode.AllowDownload).FlattenAsync().Result.ToArray();
                 messages.OrderBy(message => message.Timestamp);
-                return GetNewestImageUrl(messages);
+                return FindNewestImageUrl(messages);
             }
             else
             {
