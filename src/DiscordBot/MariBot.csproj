@@ -142,6 +142,9 @@
     <None Update="Content\dave.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\dkoldies.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\dskoopa.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -426,6 +426,12 @@ namespace MariBot.Modules
             PictureService.DeepfryImage(Context, url);
         }
 
+        [Command("dkoldies", RunMode = RunMode.Async)]
+        public async Task DKOldies(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "dkoldies", 190, 334, 264, 332, 193, 450, 265, 448);
+        }
+
         [Command("dskoopa", RunMode = RunMode.Async)]
         public async Task Dskoopa(string url = null)
         {
