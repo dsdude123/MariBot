@@ -340,9 +340,6 @@ namespace MariBot.Modules
         [Command("daryl", RunMode = RunMode.Async)]
         public async Task Daryl(string url = null)
         {
-            url = "https://media-cldnry.s-nbcnews.com/image/upload/t_fit-760w,f_auto,q_auto:best/msnbc/Components/Photos/070905/070905_hillary1969_vlrg_530a.jpg";
-            PictureService.OverlayImage(Context, url, "daryl8", 1126, 501, 1940, 311, 1135, 801, 1914, 862);
-
             var source = new Random().Next(0, 9);
             switch (source)
             {

@@ -251,7 +251,7 @@ namespace MariBot.Services
 
         public async Task<MemoryStream> GetWebResource(string url)
         {
-            var request = HttpWebRequest.CreateHttp(url);
+            var request = WebRequest.CreateHttp(url);
             request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
             request.Method = "GET";
             using (var response = await request.GetResponseAsync())
@@ -444,7 +444,7 @@ namespace MariBot.Services
                             {
                                 while (frame.Width < minimumOverlayWidth || frame.Height < minimumOverlayHeight)
                                 {
-                                    frame.Scale(new Percentage(200), new Percentage(200));
+                                    frame.Scale(new Percentage(110), new Percentage(110));
                                 }
                                 int xMax = frame.Width - 1;
                                 int yMax = frame.Height - 1;
@@ -510,7 +510,7 @@ namespace MariBot.Services
                     {
                         while (overlayImage.Width < minimumOverlayWidth || overlayImage.Height < minimumOverlayHeight)
                         {
-                            overlayImage.Scale(new Percentage(200), new Percentage(200));
+                            overlayImage.Scale(new Percentage(110), new Percentage(110));
                         }
                         int xMax = overlayImage.Width - 1;
                         int yMax = overlayImage.Height - 1;
