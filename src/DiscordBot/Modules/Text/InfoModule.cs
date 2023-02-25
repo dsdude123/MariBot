@@ -28,8 +28,6 @@ namespace MariBot.Modules
 
         public PictureService PictureService { get; set; }
 
-        public TalkHubService TalkHubService { get; set; } // TODO: Move this into its own module
-
         public OpenAIService OpenAiService { get; set; }
 
         public InfoModule(DiscordSocketClient discordClient)
@@ -79,12 +77,6 @@ namespace MariBot.Modules
             var audioClient = await channel.ConnectAsync();
             await SendAsync(audioClient, Environment.CurrentDirectory + "\\tts.wav");
             audioClient.StopAsync();
-        }
-
-        [Command("yoda", RunMode = RunMode.Async)]
-        public async Task yoda([Remainder]string text)
-        {
-            TalkHubService.GetTextToSpeech(Context, "yoda", text);
         }
 
         [Command("radar")]
