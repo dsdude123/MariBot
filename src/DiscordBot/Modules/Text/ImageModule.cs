@@ -340,6 +340,9 @@ namespace MariBot.Modules
         [Command("daryl", RunMode = RunMode.Async)]
         public async Task Daryl(string url = null)
         {
+            url = "https://media-cldnry.s-nbcnews.com/image/upload/t_fit-760w,f_auto,q_auto:best/msnbc/Components/Photos/070905/070905_hillary1969_vlrg_530a.jpg";
+            PictureService.OverlayImage(Context, url, "daryl8", 1126, 501, 1940, 311, 1135, 801, 1914, 862);
+
             var source = new Random().Next(0, 9);
             switch (source)
             {
@@ -490,6 +493,24 @@ namespace MariBot.Modules
             PictureService.OverlayImage(Context, url, "miyamoto", 257, 281, 689, 356, 209, 553, 643, 624);
         }
 
+        [Command("obama", RunMode = RunMode.Async)]
+        public async Task Obama(string url = null)
+        {
+            var source = new Random().Next(0, 2);
+            switch (source)
+            {
+                case 0:
+                    PictureService.OverlayImage(Context, url, "obama", 501, 86, 829, 80, 503, 270, 831, 273);
+                    break;
+                case 1:
+                    PictureService.OverlayImage(Context, url, "obama2", 416, 54, 899, 51, 414, 313, 887, 329);
+                    break;
+                default:
+                    throw new ArithmeticException("Random not properly calculated.");
+            }
+
+        }
+
         [Command("pence", RunMode = RunMode.Async)]
         public async Task Pence(string url = null)
         {
@@ -528,6 +549,12 @@ namespace MariBot.Modules
                 default:
                     throw new ArithmeticException("Random not properly calculated.");
             }
+        }
+
+        [Command("reagan", RunMode = RunMode.Async)]
+        public async Task Reagan(string url = null)
+        {
+            PictureService.OverlayImage(Context, url, "reagan", 46, 136, 547, 226, 100, 603, 614, 581);
         }
 
         [Command("rgt", RunMode = RunMode.Async)]
