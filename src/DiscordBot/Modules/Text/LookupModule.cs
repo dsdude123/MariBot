@@ -27,6 +27,7 @@ namespace MariBot.Modules
     public class LookupModule : ModuleBase<SocketCommandContext>
     {
         public GoogleService GoogleService { get; set; }
+
         public PictureService PictureService { get; set; }
         public UrbanDictionaryService UrbanDictionaryService { get; set; }
         public WikipediaService WikipediaService { get; set; }
@@ -197,18 +198,18 @@ namespace MariBot.Modules
         {
             Search searchResults = GoogleService.Search(keywords, true).Result;
             var eb = new EmbedBuilder();
-            if (searchResults.Items.Count < 1)
+            string imageUrl = GetFirstValidImageUrl(searchResults);
+            if (imageUrl != null)
             {
                 eb.WithTitle("Google Search");
-                eb.WithColor(Color.Red);
-                eb.WithDescription("No results were found.");
+                eb.WithColor(Color.Green);
+                eb.WithImageUrl(imageUrl);
             }
             else
             {
                 eb.WithTitle("Google Search");
-                eb.WithColor(Color.Green);
-                Result result = searchResults.Items[0];
-                eb.WithImageUrl(result.Link);
+                eb.WithColor(Color.Red);
+                eb.WithDescription("No results were found.");
             }
             await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
@@ -324,6 +325,57 @@ namespace MariBot.Modules
             } else
             {
                 return WebUtility.HtmlDecode("*" + entity.Description + "*");
+            }
+        }
+
+        private string GetFirstValidImageUrl(Search searchResult)
+        {
+            foreach(Result result in searchResult.Items) // Try to find the full image first
+            {
+                try
+                {
+                    if (IsContentTypeImage(result.Link))
+                    {
+                        return result.Link;
+                    }
+                    else if (IsContentTypeImage(result.Image.ContextLink))
+                    {
+                        return result.Image.ContextLink;
+                    }
+                } catch (Exception ex)
+                {
+                    // Do nothing this is fine
+                }
+            }
+
+            foreach (Result result in searchResult.Items) // Somehow didn't find an image, get the first thumbnail
+            {
+                try
+                {
+                    if (IsContentTypeImage(result.Image.ThumbnailLink))
+                    {
+                        return result.Link;
+                    }
+                } catch (Exception ex)
+                {
+                    // Do nothing this is fine
+                }
+            }
+            return null; // Something is probably wrong if we get here.
+        }
+
+        private bool IsContentTypeImage(String url)
+        {
+            try
+            {
+                var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
+                httpRequest.Method = "HEAD";
+                var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+                return httpResponse.Headers.Get("Content-Type").StartsWith("image/") || httpResponse.Headers.Get("content-type").StartsWith("image/");
+            } catch (Exception ex)
+            {
+                return false;
             }
         }
     }
