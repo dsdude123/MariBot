@@ -21,7 +21,7 @@
       "Id": 297485054836342786,
       "Name": "CSS",
       "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3"]
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt"]
     },
     {
       "Id": 564645677586710548,

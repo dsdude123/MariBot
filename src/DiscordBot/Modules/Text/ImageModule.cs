@@ -3,8 +3,6 @@ using Discord.Commands;
 using HtmlAgilityPack;
 using ImageMagick;
 using MariBot.Services;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3.ObjectModels.RequestModels;
 using System;
 using System.Drawing;
 using System.IO;
@@ -380,37 +378,16 @@ namespace MariBot.Modules
         [RequireOwner]
         public async Task dalle([Remainder] string prompt)
         {
-            var moderationResult = await OpenAiService.CreateModeration(new CreateModerationRequest()
+            try
             {
-                Input = prompt,
-                Model = "text-moderation-latest"
-            });
-
-            foreach (var moderation in moderationResult.Results)
+                string imageUrl = OpenAiService.ExecuteDalleQuery(prompt).Result;
+                await Context.Channel.SendMessageAsync($"{imageUrl}", messageReference: new MessageReference(Context.Message.Id));
+            } catch (ArgumentException)
             {
-                if (moderation.Flagged)
-                {
-                    await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
-                    return;
-                }
-            }
-
-            var imageResult = await OpenAiService.CreateImage(new ImageCreateRequest()
+                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
+            } catch (ApplicationException ex)
             {
-                Prompt = prompt,
-                Size = "1024x1024",
-                N = 1
-            });
-
-            if (imageResult.Successful)
-            {
-                var resultImage = imageResult.Results.First();
-
-                await Context.Channel.SendMessageAsync($"{resultImage.Url}", messageReference: new MessageReference(Context.Message.Id));
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"{imageResult.Error.Code}: {imageResult.Error.Message}", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
             }
         }
 

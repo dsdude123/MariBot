@@ -171,7 +171,7 @@ namespace MariBot
                 .AddSingleton<TwitterService>()
                 .AddSingleton<TalkHubService>()
                 .AddSingleton<ImageHubService>()
-                .AddSingleton(x => new OpenAIService(new OpenAiOptions() { ApiKey = config["openAiApiKey"] }))
+                .AddSingleton<Services.OpenAIService>()
                 .BuildServiceProvider();
         }
 
