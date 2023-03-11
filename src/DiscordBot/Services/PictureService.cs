@@ -21,6 +21,13 @@ namespace MariBot.Services
 {
     public class PictureService
     {
+        /*
+         * TODOS
+         * 
+         * We need a queue, too many requests at once and it all bogs down. 
+         * 
+         * Use Discord replies, also delete old messages
+         */
         private static readonly string TenorDomain = "tenor.com";
         private static readonly string ImgurDomain = "imgur.com";
         private static readonly string GiphyDomain = "giphy.com";

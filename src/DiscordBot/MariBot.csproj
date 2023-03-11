@@ -31,7 +31,7 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
     <PackageReference Include="linqtotwitter" Version="5.0.0" />
-    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Version="11.1.2" />
+    <PackageReference Include="Magick.NET-Q8-OpenMP-x64" Version="11.1.2" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
