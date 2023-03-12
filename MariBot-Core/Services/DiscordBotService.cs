@@ -38,6 +38,11 @@ namespace MariBot_Core.Services
             client.StartAsync();
         }
 
+        public ConnectionState GetClientStatus()
+        {
+            return client.ConnectionState;
+        }
+
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             try
