@@ -1,7 +1,15 @@
+using Discord;
+using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using MariBot_Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var clientConfig = new DiscordSocketConfig()
+{
+    GatewayIntents = GatewayIntents.All
+};
+var discordClient = new DiscordSocketClient(clientConfig);
 
 // Add services to the container.
 
@@ -10,8 +18,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
-builder.Services.AddSingleton<DiscordSocketClient>();
+builder.Services.AddSingleton(discordClient);
 builder.Services.AddHostedService<DiscordBotService>();
+builder.Services.AddSingleton<CommandService>();
+builder.Services.AddSingleton<CommandHandlingService>();
+builder.Services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
 
 var app = builder.Build();
 

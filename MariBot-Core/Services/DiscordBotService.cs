@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 
 namespace MariBot_Core.Services
@@ -8,12 +9,16 @@ namespace MariBot_Core.Services
         private DiscordSocketClient client;
         private readonly IConfiguration configuration;
         private ILogger<DiscordBotService> logger;
+        private InteractionService interactionService;
+        private CommandHandlingService commandHandlingService;
 
-        public DiscordBotService(DiscordSocketClient client, IConfiguration configuration, ILogger<DiscordBotService> logger)
+        public DiscordBotService(DiscordSocketClient client, IConfiguration configuration, ILogger<DiscordBotService> logger, InteractionService interactionService, CommandHandlingService commandHandlingService)
         {
             this.client = client;
             this.configuration = configuration;
             this.logger = logger;
+            this.interactionService = interactionService;
+            this.commandHandlingService = commandHandlingService;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -21,7 +26,14 @@ namespace MariBot_Core.Services
             logger.LogInformation("Starting up Discord bot");
             client.Log += Log;
             var botToken = configuration.GetValue<string>("DiscordSettings:BotToken");
-            logger.LogInformation("Got token {}", botToken);
+
+            // Setup command handling
+            client.Ready += async () =>
+            {
+                await interactionService.RegisterCommandsGloballyAsync(true);
+            };
+            await commandHandlingService.InitializeAsync();
+
             await client.LoginAsync(TokenType.Bot, botToken);
             client.StartAsync();
         }
