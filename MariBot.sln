@@ -10,7 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariBot-Core", "MariBot-Core\MariBot-Core.csproj", "{8EF5A15A-E065-43C8-B177-D882C49BDD33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MariBot.Core", "MariBot-Core\MariBot.Core.csproj", "{8EF5A15A-E065-43C8-B177-D882C49BDD33}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MariBot.Common", "MariBot-Common\MariBot.Common.csproj", "{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,14 @@ Global
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Release|x64.ActiveCfg = Release|Any CPU
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Release|x64.Build.0 = Release|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Debug|x64.Build.0 = Debug|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Release|x64.ActiveCfg = Release|Any CPU
+		{AE0CDC12-C7FF-4AC5-A0BF-AEC6198AAE58}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

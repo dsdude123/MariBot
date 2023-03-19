@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 
-namespace MariBot_Core.Modules.Text
+namespace MariBot.Core.Modules.Text
 {
     public class InfoModule : ModuleBase<SocketCommandContext>
     {

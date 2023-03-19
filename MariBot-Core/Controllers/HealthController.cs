@@ -1,8 +1,8 @@
 using Discord;
-using MariBot_Core.Services;
+using MariBot.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MariBot_Core.Controllers
+namespace MariBot.Core.Controllers
 {
     [ApiController]
     [Route("status")]

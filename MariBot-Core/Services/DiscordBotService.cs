@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace MariBot_Core.Services
+namespace MariBot.Core.Services
 {
     public class DiscordBotService : IHostedService
     {

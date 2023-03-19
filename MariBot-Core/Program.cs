@@ -2,7 +2,7 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using MariBot_Core.Services;
+using MariBot.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var clientConfig = new DiscordSocketConfig()
@@ -19,10 +19,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
 builder.Services.AddSingleton(discordClient);
-builder.Services.AddHostedService<DiscordBotService>();
+builder.Services.AddSingleton<DiscordBotService>();
+builder.Services.AddHostedService<DiscordBotService>(provider => provider.GetService<DiscordBotService>());
+builder.Services.AddSingleton<DynamicConfigService>();
 builder.Services.AddSingleton<CommandService>();
 builder.Services.AddSingleton<CommandHandlingService>();
 builder.Services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
+
+builder.Services.AddSingleton<DataService>();
+builder.Services.AddSingleton<OpenAiService>();
+builder.Services.AddSingleton<PricechartingService>();
+builder.Services.AddSingleton<StaticTextResponseService>();
 
 var app = builder.Build();
 
