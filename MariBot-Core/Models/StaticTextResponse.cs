@@ -10,14 +10,7 @@
 
         private string GenerateId()
         {
-            if (IsGlobal)
-            {
-                return $"{Command.ToLower()}:global";
-            }
-            else
-            {
-                return $"{Command.ToLower()}:{GuildId}";
-            }
+            return IsGlobal ? $"{Command.ToLower()}:global" : $"{Command.ToLower()}:{GuildId}";
         }
     }
 }

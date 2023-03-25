@@ -206,6 +206,8 @@ namespace MariBot.Core.Services
                 Messages = new List<Tuple<MessageType, string>>()
             };
 
+            history.Messages.Add(new Tuple<MessageType, string>(MessageType.User, input));
+
             var messages = new List<ChatMessage>();
 
             foreach (var message in history.Messages)
@@ -222,8 +224,6 @@ namespace MariBot.Core.Services
                         throw new NotImplementedException("MessageType not supported.");
                 }
             }
-
-            messages.Add(ChatMessage.FromUser(input));
 
             // Call OpenAI
             var completionResult = await apiClient.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest

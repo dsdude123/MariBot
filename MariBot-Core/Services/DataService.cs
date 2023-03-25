@@ -209,6 +209,7 @@ namespace MariBot.Core.Services
         public MessageHistory? GetChatGptMessageHistory(ulong guildId, ulong channelId, ulong messageId)
         {
             var id = $"{guildId}-{channelId}-{messageId}";
+            logger.LogDebug("Trying to get chatgpt {}", id);
             try
             {
                 using (var db = new LiteDatabase("data.db"))
@@ -258,6 +259,7 @@ namespace MariBot.Core.Services
         public bool UpdateChatGptMessageHistoryId(ulong guildId, ulong channelId, ulong messageId, ulong newMessageId)
         {
             var oldId = $"{guildId}-{channelId}-{messageId}";
+            logger.LogDebug("Old id {}", oldId);
             try
             {
                 using (var db = new LiteDatabase("data.db"))
@@ -265,7 +267,9 @@ namespace MariBot.Core.Services
                     var col = db.GetCollection<MessageHistory>("chatGptHistory");
                     var history = col.FindById(oldId);
                     history.MessageId = newMessageId;
-                    return col.Upsert(history);
+                    col.Delete(oldId);
+                    col.Insert(history);
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -273,8 +277,6 @@ namespace MariBot.Core.Services
                 logger.LogCritical("Failed to update ID in DB. {}", ex.Message);
                 return false;
             }
-
-            return true;
         }
     }
 }
