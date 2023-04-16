@@ -134,6 +134,38 @@ namespace MariBot.Core.Services
         }
 
         /// <summary>
+        /// Removes a static text response
+        /// </summary>
+        /// <param name="command">Command name</param>
+        /// <param name="guild">Guild ID</param>
+        /// <param name="isGlobal">Is the command global</param>
+        /// <returns>Status message</returns>
+        public string RemoveResponse(string command, ulong guild, bool isGlobal)
+        {
+            var newResponse = new StaticTextResponse
+            {
+                Command = command
+            };
+
+            // Set values depending if global or not
+
+            if (!isGlobal)
+            {
+                newResponse.GuildId = guild;
+                newResponse.IsGlobal = false;
+            }
+            else
+            {
+                newResponse.IsGlobal = true;
+            }
+
+            // Delete from DB
+
+            var isSuccess = dataService.DeleteStaticTextResponse(newResponse);
+            return isSuccess ? "OK" : "Failed to delete command. It may not exist or there is a problem with the database.";
+        }
+
+        /// <summary>
         /// Migrates static text responses from legacy data format to the DB.
         /// </summary>
         /// <param name="guild">Guild ID</param>

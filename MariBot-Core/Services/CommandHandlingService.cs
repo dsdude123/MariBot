@@ -17,6 +17,7 @@ namespace MariBot.Core.Services
         private readonly DataService dataService;
         private readonly DiscordSocketClient discord;
         private readonly DynamicConfigService dynamicConfigService;
+        private readonly ImageService imageService;
         private readonly InteractionService interactionService;
         private readonly Regex keepOnlyAlphaNum = new("[^a-zA-Z0-9 -]");
         private readonly Regex latexDetector = new("\\$[^$]+\\$");
@@ -24,7 +25,7 @@ namespace MariBot.Core.Services
         private readonly IServiceProvider serviceProvider;
         private readonly StaticTextResponseService staticTextResponseService;
 
-        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService)
+        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService)
         {
             this.dataService = dataService;
             this.dynamicConfigService = dynamicConfigService;
@@ -35,6 +36,7 @@ namespace MariBot.Core.Services
             this.interactionService = interactionService;
             this.configuration = configuration;
             this.staticTextResponseService = staticTextResponseService;
+            this.imageService = imageService;
         }
 
         public async Task InitializeAsync()
@@ -161,38 +163,8 @@ namespace MariBot.Core.Services
                         if (latexDetector.IsMatch(context.Message.Content))
                         {
                             logger.LogInformation("Detected possible LaTeX message, rendering...");
-
-                            // Render the LaTeX
-                            var painter = new TextPainter
-                            {
-                                LaTeX = context.Message.Content,
-                                FontSize = 48f
-                            };
-
-                            var latexStream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
-                            var skBitmap = SKBitmap.Decode(latexStream);
-
-                            // Setup the background to be white
-                            var skImageInfo = new SKImageInfo(skBitmap.Width, skBitmap.Height);
-                            var skSurface = SKSurface.Create(skImageInfo);
-                            var skCanvas = skSurface.Canvas;
-                            
-                            skCanvas.Clear(SKColors.White);
-
-                            var skPaint = new SKPaint
-                            {
-                                IsAntialias = true,
-                                FilterQuality = SKFilterQuality.High
-                            };
-
-                            skCanvas.DrawBitmap(skBitmap, skImageInfo.Rect, skPaint);
-                            skCanvas.Flush();
-
-                            // Send the final result
-                            var skResult = skSurface.Snapshot();
-                            var skData = skResult.Encode();
-
-                            await context.Channel.SendFileAsync(skData.AsStream(), "latex.png", messageReference: new MessageReference(context.Message.Id));
+                            var latexImage = imageService.GenerateLatexImage(context.Message.Content);
+                            await context.Channel.SendFileAsync(latexImage, "latex.png", messageReference: new MessageReference(context.Message.Id));
                         }
                     }
                 }

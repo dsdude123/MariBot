@@ -1,0 +1,10 @@
+﻿[
+  {
+    "Endpoint": "http://tokyo-2.nerv.jpn.com:8092",
+    "Capabilities": [ "CPU", "ConsumerGPU" ]
+  },
+  {
+    "Endpoint": "http://tokyo-3.nerv.jpn.com:8092",
+    "Capabilities": [ "CPU", "ConsumerGPU", "DatacenterGPU" ]
+  }
+]

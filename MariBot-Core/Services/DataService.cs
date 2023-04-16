@@ -197,6 +197,29 @@ namespace MariBot.Core.Services
             return true;
         }
 
+
+        /// <summary>
+        /// Deletes an existing StaticTextResponse in the DB.
+        /// </summary>
+        /// <param name="staticTextResponse">StaticTextResponse</param>
+        /// <returns>True if successful</returns>
+        public bool DeleteStaticTextResponse(StaticTextResponse staticTextResponse)
+        {
+            try
+            {
+                using (var db = new LiteDatabase("data.db"))
+                {
+                    var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                    return col.Delete(staticTextResponse.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+        }
+
         // ChatGPT Methods
 
         /// <summary>
@@ -278,5 +301,74 @@ namespace MariBot.Core.Services
                 return false;
             }
         }
+
+        // Twitter Subscription Methods
+
+        /// <summary>
+        /// Gets a Twitter subscription
+        /// </summary>
+        /// <param name="id">Id to find</param>
+        /// <returns>TwitterSubscription or null if not found</returns>
+        public TwitterSubscription? GetTwitterSubscription(string id)
+        {
+            try
+            {
+                using (var db = new LiteDatabase("data.db"))
+                {
+                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                    return col.FindById(id);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets all Twitter subscriptions
+        /// </summary>
+        /// <returns>IEnumerable of TwitterSubscriptions</returns>
+        public IEnumerable<TwitterSubscription> GetAllTwitterSubscriptions()
+        {
+            try
+            {
+                using (var db = new LiteDatabase("data.db"))
+                {
+                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                    return col.FindAll();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing Twitter subscription in the DB or adds a new one if it doesn't exist.
+        /// </summary>
+        /// <param name="twitterSubscription">TwitterSubscription</param>
+        /// <returns>True if successful</returns>
+        public bool UpdateTwitterSubscription(TwitterSubscription twitterSubscription)
+        {
+            try
+            {
+                using (var db = new LiteDatabase("data.db"))
+                {
+                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                    col.Upsert(twitterSubscription);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
     }
 }
