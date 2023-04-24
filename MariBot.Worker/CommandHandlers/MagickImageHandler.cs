@@ -9,10 +9,18 @@ namespace MariBot.Worker.CommandHandlers
     public class MagickImageHandler
     {
         private static readonly int EIGHT_MB = 8000000;
+
+        private readonly OpenCVHandler openCvHandler;
+
+        public MagickImageHandler(OpenCVHandler openCvHandler)
+        {
+            this.openCvHandler = openCvHandler;
+        }
+
         /// <summary>
         /// Converts a input image to a format Discord understands
         /// </summary>
-        public static void ConvertToDiscordFriendly()
+        public void ConvertToDiscordFriendly()
         {
             if (IsAnimated(WorkerGlobals.Job.SourceImage))
             {
@@ -52,7 +60,7 @@ namespace MariBot.Worker.CommandHandlers
             
         }
 
-        public static void OverlayImage(string filename, double overlayWidthPercentage = .75, double overlayHeightPercentage = .75, bool ignoreAspectRatio = false)
+        public void OverlayImage(string filename, double overlayWidthPercentage = .75, double overlayHeightPercentage = .75, bool ignoreAspectRatio = false)
         {
 
             bool isAnimated = IsAnimated(WorkerGlobals.Job.SourceImage);
@@ -151,7 +159,7 @@ namespace MariBot.Worker.CommandHandlers
             }
         }
 
-        public static void AnnotateImage(string filename, MagickReadSettings textSettings, MagickColor transparentColor,
+        public void AnnotateImage(string filename, MagickReadSettings textSettings, MagickColor transparentColor,
             int x1Dest, int y1Dest, int x2Dest, int y2Dest, int x3Dest, int y3Dest, int x4Dest, int y4Dest)
         {
 
@@ -178,7 +186,7 @@ namespace MariBot.Worker.CommandHandlers
             };
         }
 
-        public static void OverlayImage(string filename,
+        public void OverlayImage(string filename,
             int x1Dest, int y1Dest, int x2Dest, int y2Dest, int x3Dest, int y3Dest, int x4Dest, int y4Dest)
         {
             int[] xCoords = new int[] { x1Dest, x2Dest, x3Dest, x4Dest };
@@ -295,7 +303,7 @@ namespace MariBot.Worker.CommandHandlers
             }
         }
 
-        public static void AppendFooter(string filename)
+        public void AppendFooter(string filename)
         {
             bool isAnimated = IsAnimated(WorkerGlobals.Job.SourceImage);
 
@@ -393,7 +401,7 @@ namespace MariBot.Worker.CommandHandlers
             }
         }
 
-        public static string GetBestFont(string text)
+        public string GetBestFont(string text)
         {
             //List<string> fontList = MariBot.Program.config.GetSection("supportedFonts").GetChildren().Select(t => t.Value).ToList();
             // TODO: Make this configurable
@@ -450,7 +458,7 @@ namespace MariBot.Worker.CommandHandlers
             return topFont;
         }
 
-        public static void DeepfryImage(int times = 1)
+        public void DeepfryImage(int times = 1)
         {
             //Console.WriteLine($"{brightness} {contrast} {saturation} {noise} {jpeg} {sharpen}");
             var random = new Random(GuidToRandomSeed(WorkerGlobals.Job.Id));
@@ -591,7 +599,7 @@ namespace MariBot.Worker.CommandHandlers
 
         }
 
-        public static MagickImage AutoExplode(IMagickImage image)
+        public MagickImage AutoExplode(IMagickImage image)
         {
             var random = new Random(GuidToRandomSeed(WorkerGlobals.Job.Id));
             double implodeAmount = -2.0;
@@ -602,9 +610,8 @@ namespace MariBot.Worker.CommandHandlers
             image.Depth = 32;
             image.Write(memoryStream, MagickFormat.Png);
             memoryStream.Seek(0, SeekOrigin.Begin);
-            // TODO: Cuda face recognition
 
-            var faces = OpenCVHandler.FindFaces();
+            var faces = openCvHandler.FindFaces();
 
             if (faces.Length > 0)
             {

@@ -120,6 +120,7 @@ namespace MariBot.Core.Modules.Text
                 {
                     List<Status> tweets = twitterService.GetLatestUserTweets(username);
                     TwitterSubscription newSubsciption = new TwitterSubscription();
+                    newSubsciption.Id = username;
                     newSubsciption.GuildChannelSubscriptions = new Dictionary<ulong, HashSet<ulong>>();
                     newSubsciption.GuildChannelSubscriptions.Add(Context.Guild.Id, new HashSet<ulong> { Context.Channel.Id });
                     newSubsciption.PostedIds = new HashSet<ulong>();

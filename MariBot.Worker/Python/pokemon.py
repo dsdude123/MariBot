@@ -13,7 +13,7 @@ pipe = pipe.to("cuda")
 request_guid = sys.argv[1]
 
 # Load text prompt into file
-file = open(f"{request_guid}.txt")
+file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
 prompt = file.read()
 file.close()
 
@@ -36,4 +36,4 @@ with autocast("cuda"):
   images = pipe(n_samples*[prompt], guidance_scale=scale).images
 
 for idx, im in enumerate(images):
-  im.save(f"{request_guid}.png")
+  im.save(f".{chr(92)}Python{chr(92)}{request_guid}.png")

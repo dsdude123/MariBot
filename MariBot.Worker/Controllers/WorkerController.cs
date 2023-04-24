@@ -10,17 +10,25 @@ namespace MariBot.Worker.Controllers
     [ApiController]
     public class WorkerController : ControllerBase
     {
-        // GET: api/<WorkerController>
+
+        private JobHandler jobHandler;
+
+        public WorkerController(JobHandler jobHandler)
+        {
+            this.jobHandler = jobHandler;
+        }
+
         [HttpGet]
         public WorkerStatus Get()
         {
             return WorkerGlobals.WorkerStatus;
         }
-        
-        // POST api/<WorkerController>
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] WorkerJob value)
         {
+            value.ReturnHost = HttpContext.Connection.RemoteIpAddress.ToString();
+
             if (WorkerGlobals.WorkerStatus != WorkerStatus.Ready)
             {
                 return StatusCode(503);
@@ -29,7 +37,7 @@ namespace MariBot.Worker.Controllers
             WorkerGlobals.WorkerStatus = WorkerStatus.Working;
             WorkerGlobals.Job = value;
 
-            Task.Run(JobHandler.HandleJob);
+            Task.Run(jobHandler.HandleJob);
 
             return Accepted();
         }

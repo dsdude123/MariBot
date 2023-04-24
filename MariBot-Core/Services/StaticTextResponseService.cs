@@ -67,7 +67,7 @@ namespace MariBot.Core.Services
 
             if (!isGlobal)
             {
-                noExistingGlobalResponse = dataService.GetStaticTextResponse(GenerateId(command)) != null;
+                noExistingGlobalResponse = dataService.GetStaticTextResponse(GenerateId(command)) == null;
             }
 
             // Write to DB
@@ -117,7 +117,7 @@ namespace MariBot.Core.Services
 
             if (!isGlobal)
             {
-                noExistingGlobalResponse = dataService.GetStaticTextResponse(GenerateId(command)) != null;
+                noExistingGlobalResponse = dataService.GetStaticTextResponse(GenerateId(command)) == null;
             }
 
             // Write to DB

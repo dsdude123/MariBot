@@ -36,13 +36,13 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, true);
+                var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, true);
+                return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
         }
 
         [Command("add")]
@@ -50,13 +50,14 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, false);
+               var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, false);
+               return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
+            
         }
 
         [RequireOwner]
@@ -64,14 +65,14 @@ namespace MariBot.Core.Modules.Text
         public Task updateGlobal(string key, [Remainder] string text)
         {
             try
-            {
-                staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, true);
+            { 
+                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, true);
+                return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
         }
 
         [Command("update")]
@@ -79,13 +80,13 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, false);
+                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, false);
+                return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
         }
 
         [RequireOwner]
@@ -94,13 +95,13 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                staticTextResponseService.RemoveResponse(key, Context.Guild.Id, true);
+                var result = staticTextResponseService.RemoveResponse(key, Context.Guild.Id, true);
+                return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
         }
 
         [Command("remove")]
@@ -108,22 +109,24 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                staticTextResponseService.RemoveResponse(key, Context.Guild.Id, false);
+                var result = staticTextResponseService.RemoveResponse(key, Context.Guild.Id, false);
+                return Context.Channel.SendMessageAsync(result);
             }
             catch (InvalidOperationException ex)
             {
                 return Context.Channel.SendMessageAsync(ex.Message);
             }
-            return Context.Channel.SendMessageAsync("OK");
         }
 
         [Command("migrateglobal")]
+        [RequireOwner]
         public Task MigrateGlobal()
         {
             return Context.Channel.SendMessageAsync(staticTextResponseService.MigrateResponses(0, true));
         }
 
         [Command("migrate")]
+        [RequireOwner]
         public Task Migrate()
         {
             return Context.Channel.SendMessageAsync(staticTextResponseService.MigrateResponses(Context.Guild.Id, false));

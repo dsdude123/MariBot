@@ -88,11 +88,11 @@ namespace MariBot.Core.Services
         {
             var guildConfig = GetGuildConfig(id);
 
-            if (guildConfig != null)
+            if (guildConfig != null && guildConfig.AutoReactions != null)
             {
                 return guildConfig.AutoReactions;
             }
-            return new ReactionConfig[0];
+            return Array.Empty<ReactionConfig>();
         }
 
         /// <summary>

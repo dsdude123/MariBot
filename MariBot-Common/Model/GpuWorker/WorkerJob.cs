@@ -13,6 +13,7 @@ namespace MariBot.Common.Model.GpuWorker
         public ulong ChannelId { get; set; }
         public ulong MessageId { get; set; }
         public Command Command { get; set; }
+        public string? ReturnHost { get; set; }
         public byte[]? SourceImage { get; set; }
         public string? SourceText { get; set; }
         public JobResult? Result { get; set; }

@@ -13,9 +13,10 @@ def dummy(images, **kwargs):
 
 # Read parameters from command line
 request_guid = sys.argv[1]
+hf_token = sys.argv[2]
 
 # Load text prompt into file
-file = open(f"{request_guid}.txt")
+file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
 prompt = file.read()
 file.close()
 
@@ -24,10 +25,11 @@ file.close()
 pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",
                                                 revision="fp16",
                                                 torch_dtype=torch.float16,
-                                                use_auth_token="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")
+                                                use_auth_token=hf_token,
+                                                cache_dir=".\cache")
 pipe.to("cuda")                 # Run on GPU
 #pipe.safety_checker = dummy    # Disable NSFW check
 
 with autocast(True):
 	image = pipe(prompt).images[0]
-	image.save(f'{request_guid}.png')
+	image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')

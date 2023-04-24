@@ -26,25 +26,25 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("9gag", RunMode = RunMode.Async)]
-        public async Task NineGag([Remainder] string text)
+        public async Task NineGag([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.NineGag);
         }
 
         [Command("adidas", RunMode = RunMode.Async)]
-        public async Task Adidas([Remainder] string text)
+        public async Task Adidas([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Adidas);
         }
 
         [Command("adw", RunMode = RunMode.Async)]
-        public async Task AdminWalk([Remainder] string text)
+        public async Task AdminWalk([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.AdminWalk);
         }
 
         [Command("aew", RunMode = RunMode.Async)]
-        public async Task AEW([Remainder] string text)
+        public async Task AEW([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.AEW);
         }
@@ -68,37 +68,37 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("ajit", RunMode = RunMode.Async)]
-        public async Task Ajit([Remainder] string text)
+        public async Task Ajit([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Ajit);
         }
 
         [Command("america", RunMode = RunMode.Async)]
-        public async Task America([Remainder] string text)
+        public async Task America([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.America);
         }
 
         [Command("analysis", RunMode = RunMode.Async)]
-        public async Task Analysis([Remainder] string text)
+        public async Task Analysis([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Analysis);
         }
 
         [Command("andrew", RunMode = RunMode.Async)]
-        public async Task Andrew([Remainder] string text)
+        public async Task Andrew([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Andrew);
         }
 
         [Command("asuka", RunMode = RunMode.Async)]
-        public async Task Asuka([Remainder] string text)
+        public async Task Asuka([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Asuka);
         }
 
         [Command("austin", RunMode = RunMode.Async)]
-        public async Task Austin([Remainder] string text)
+        public async Task Austin([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Austin);
         }
@@ -110,43 +110,43 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("bernie", RunMode = RunMode.Async)]
-        public async Task Bernie([Remainder] string text)
+        public async Task Bernie([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Bernie);
         }
 
         [Command("biden", RunMode = RunMode.Async)]
-        public async Task Biden([Remainder] string text)
+        public async Task Biden([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Biden);
         }
 
         [Command("binoculars", RunMode = RunMode.Async)]
-        public async Task Binoculars([Remainder] string text)
+        public async Task Binoculars([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Binoculars);
         }
 
         [Command("bobross", RunMode = RunMode.Async)]
-        public async Task BobRoss([Remainder] string text)
+        public async Task BobRoss([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.BobRoss);
         }
 
         [Command("cmm", RunMode = RunMode.Async)]
-        public async Task ChangeMyMind([Remainder] string text)
+        public async Task ChangeMyMind([Remainder] string text = null)
         {
             HandleCommonTextScenario(Command.ChangeMyMind, text);
         }
 
         [Command("condom", RunMode = RunMode.Async)]
-        public async Task Condom([Remainder] string text)
+        public async Task Condom([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Condom);
         }
 
         [Command("daryl", RunMode = RunMode.Async)]
-        public async Task Daryl([Remainder] string text)
+        public async Task Daryl([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Daryl);
         }
@@ -171,49 +171,49 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("dave", RunMode = RunMode.Async)]
-        public async Task dave([Remainder] string text)
+        public async Task dave([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Dave);
         }
 
         [Command("deepfry", RunMode = RunMode.Async)]
-        public async Task Deepfry([Remainder] string text)
+        public async Task Deepfry([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.DeepFry);
         }
 
         [Command("dkoldies", RunMode = RunMode.Async)]
-        public async Task DKOldies([Remainder] string text)
+        public async Task DKOldies([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.DkOldies);
         }
 
         [Command("dskoopa", RunMode = RunMode.Async)]
-        public async Task Dskoopa([Remainder] string text)
+        public async Task Dskoopa([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.DsKoopa);
         }
 
         [Command("nuke", RunMode = RunMode.Async)]
-        public async Task Nuke([Remainder] string text)
+        public async Task Nuke([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Nuke);
         }
 
         [Command("e2h", RunMode = RunMode.Async)]
-        public async Task Edges2Hentai([Remainder] string text)
+        public async Task Edges2Hentai([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Edges2Hentai);
         }
 
         [Command("herschel", RunMode = RunMode.Async)]
-        public async Task Herschel([Remainder] string text)
+        public async Task Herschel([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Herschel);
         }
 
         [Command("kevin", RunMode = RunMode.Async)]
-        public async Task kevin([Remainder] string text)
+        public async Task kevin([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Kevin);
         }
@@ -225,25 +225,25 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("makoto", RunMode = RunMode.Async)]
-        public async Task Makoto([Remainder] string text)
+        public async Task Makoto([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Makoto);
         }
 
         [Command("miyamoto", RunMode = RunMode.Async)]
-        public async Task Miyamoto([Remainder] string text)
+        public async Task Miyamoto([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Miyamoto);
         }
 
         [Command("obama", RunMode = RunMode.Async)]
-        public async Task Obama([Remainder] string text)
+        public async Task Obama([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Obama);
         }
 
         [Command("pence", RunMode = RunMode.Async)]
-        public async Task Pence([Remainder] string text)
+        public async Task Pence([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Pence);
         }
@@ -255,37 +255,37 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("radical", RunMode = RunMode.Async)]
-        public async Task RadicalReggie([Remainder] string text)
+        public async Task RadicalReggie([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.RadicalReggie);
         }
 
         [Command("reagan", RunMode = RunMode.Async)]
-        public async Task Reagan([Remainder] string text)
+        public async Task Reagan([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Reagan);
         }
 
         [Command("rgt", RunMode = RunMode.Async)]
-        public async Task RGT([Remainder] string text)
+        public async Task RGT([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.RGT);
         }
 
         [Command("scarecrow", RunMode = RunMode.Async)]
-        public async Task Scarecrow([Remainder] string text)
+        public async Task Scarecrow([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Scarecrow);
         }
 
         [Command("spawnwave", RunMode = RunMode.Async)]
-        public async Task Spawnwave([Remainder] string text)
+        public async Task Spawnwave([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Spawnwave);
         }
 
         [Command("trump", RunMode = RunMode.Async)]
-        public async Task Trump([Remainder] string text)
+        public async Task Trump([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Trump);
         }
@@ -293,18 +293,39 @@ namespace MariBot.Core.Modules.Text
         private async void HandleCommonImageScenario(Command command)
         {
             var imageUrl = await imageService.GetImageUrl(Context);
+            if (imageUrl == null)
+            {
+                await Context.Channel.SendMessageAsync("Failed to find a valid link.",
+                    messageReference: new MessageReference(Context.Message.Id));
+                return;
+            }
+
             var image = await imageService.GetWebResource(imageUrl);
 
             var job = BuildImageJob(Context, command, image);
-            await Context.Channel.SendMessageAsync(workerManagerService.EnqueueJob(job),
+            var serviceResult = workerManagerService.EnqueueJob(job);
+
+            var notification = await Context.Channel.SendMessageAsync(serviceResult.Item1,
                 messageReference: new MessageReference(Context.Message.Id));
+
+            if (serviceResult.Item2.HasValue)
+            {
+                workerManagerService.AcceptanceNotifications.Add(serviceResult.Item2.Value, notification.Id);
+            }
         }
 
         private async void HandleCommonTextScenario(Command command, string text)
         {
             var job = BuildTextJob(Context, command, text);
-            await Context.Channel.SendMessageAsync(workerManagerService.EnqueueJob(job),
+            var serviceResult = workerManagerService.EnqueueJob(job);
+
+            var notification = await Context.Channel.SendMessageAsync(serviceResult.Item1,
                 messageReference: new MessageReference(Context.Message.Id));
+
+            if (serviceResult.Item2.HasValue)
+            {
+                workerManagerService.AcceptanceNotifications.Add(serviceResult.Item2.Value, notification.Id);
+            }
         }
 
         private WorkerJob BuildImageJob(SocketCommandContext context, Command command, Stream image)

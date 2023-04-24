@@ -13,7 +13,7 @@ os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
 request_guid = sys.argv[1]
 
 # Load text prompt into file
-file = open(f"{request_guid}.txt")
+file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
 prompt = file.read()
 file.close()
 
@@ -33,4 +33,4 @@ pipe = pipe.to(device)
 
 with autocast("cuda"):
 	image = pipe(prompt).images[0]
-	image.save(f'{request_guid}.png')
+	image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')

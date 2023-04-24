@@ -165,25 +165,31 @@ namespace MariBot.Core.Modules.Text
             conversionJob.SourceImage = image.ToArray();
             conversionJob.Command = Command.ConvertToDiscordFriendly;
 
-            var queueResult = workerManagerService.EnqueueJob(conversionJob);
+            var serviceResult = workerManagerService.EnqueueJob(conversionJob);
 
-            Context.Channel.SendMessageAsync(queueResult, messageReference: new MessageReference(Context.Message.Id));
-/*            MemoryStream outgoingImage = new MemoryStream();
+            var notification = await Context.Channel.SendMessageAsync(serviceResult.Item1,
+                messageReference: new MessageReference(Context.Message.Id));
 
-            using (var baseImage = new MagickImageCollection(image))
+            if (serviceResult.Item2.HasValue)
             {
-                using (var outputCollection = new MagickImageCollection())
-                {
-                    bool usedBaseOnce = false;
-                    baseImage.Coalesce();
-                    foreach (var frame in baseImage)
-                    {
-                        outputCollection.Add(new MagickImage(frame));
-                    }
-                    outputCollection.Write(outgoingImage, MagickFormat.Gif);
-                }
+                workerManagerService.AcceptanceNotifications.Add(serviceResult.Item2.Value, notification.Id);
             }
-            outgoingImage.Seek(0, SeekOrigin.Begin);*/
+            /*            MemoryStream outgoingImage = new MemoryStream();
+
+                        using (var baseImage = new MagickImageCollection(image))
+                        {
+                            using (var outputCollection = new MagickImageCollection())
+                            {
+                                bool usedBaseOnce = false;
+                                baseImage.Coalesce();
+                                foreach (var frame in baseImage)
+                                {
+                                    outputCollection.Add(new MagickImage(frame));
+                                }
+                                outputCollection.Write(outgoingImage, MagickFormat.Gif);
+                            }
+                        }
+                        outgoingImage.Seek(0, SeekOrigin.Begin);*/
             //Context.Channel.SendFileAsync(outgoingImage, "radar.gif");
         }
 

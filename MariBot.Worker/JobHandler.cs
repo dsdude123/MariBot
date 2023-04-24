@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Text;
+﻿using System.Text;
 using ImageMagick;
 using MariBot.Common.Model.GpuWorker;
 using MariBot.Worker.CommandHandlers;
@@ -9,32 +8,41 @@ namespace MariBot.Worker
 {
     public class JobHandler
     {
-        // TODO: Make this configurable
-        public static Uri returnAddress = new("http://tokyo-2.nerv.jpn.com:8091");
+        private readonly ILogger<JobHandler> logger;
+        private readonly StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler;
+        private readonly MagickImageHandler magickImageHandler;
 
-        public static void HandleJob()
+        public JobHandler(ILogger<JobHandler> logger, StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler, MagickImageHandler magickImageHandler)
+        {
+            this.logger = logger;
+            this.stableDiffusionTextVariantHandler = stableDiffusionTextVariantHandler;
+            this.magickImageHandler = magickImageHandler;
+        }
+
+        public void HandleJob()
         {
             try
             {
+                logger.LogInformation("Working job {} from {}", WorkerGlobals.Job.Id, WorkerGlobals.Job.ReturnHost);
                 switch (WorkerGlobals.Job.Command)
                 {
                     case Command.Adidas:
-                        MagickImageHandler.OverlayImage("adidas");
+                        magickImageHandler.OverlayImage("adidas");
                         break;
                     case Command.AdminWalk:
-                        MagickImageHandler.OverlayImage("adw", 379, 113, 513, 113, 379, 245, 513, 245);
+                        magickImageHandler.OverlayImage("adw", 379, 113, 513, 113, 379, 245, 513, 245);
                         break;
                     case Command.AEW:
-                        MagickImageHandler.OverlayImage("aew", 285, 0, 685, 14, 265, 308, 668, 330);
+                        magickImageHandler.OverlayImage("aew", 285, 0, 685, 14, 265, 308, 668, 330);
                         break;
                     case Command.Ajit:
-                        MagickImageHandler.OverlayImage("ajit", 1, 1);
+                        magickImageHandler.OverlayImage("ajit", 1, 1);
                         break;
                     case Command.America:
-                        MagickImageHandler.OverlayImage("america", 1, 1, true);
+                        magickImageHandler.OverlayImage("america", 1, 1, true);
                         break;
                     case Command.Analysis:
-                        MagickImageHandler.AppendFooter("analysis");
+                        magickImageHandler.AppendFooter("analysis");
                         break;
                     case Command.Andrew:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -44,16 +52,16 @@ namespace MariBot.Worker
                         });
                         break;
                     case Command.Asuka:
-                        MagickImageHandler.OverlayImage("asuka", 143, 98, 651, 101, 138, 359, 649, 363);
+                        magickImageHandler.OverlayImage("asuka", 143, 98, 651, 101, 138, 359, 649, 363);
                         break;
                     case Command.Austin:
-                        MagickImageHandler.OverlayImage("austin", 525, 366, 706, 360, 529, 475, 712, 466);
+                        magickImageHandler.OverlayImage("austin", 525, 366, 706, 360, 529, 475, 712, 466);
                         break;
                     case Command.Banner:
                         var bannerReadSettings = new MagickReadSettings
                         {
                             TextEncoding = Encoding.Unicode,
-                            FontFamily = MagickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
                             FontStyle = FontStyleType.Bold,
                             FontWeight = FontWeight.ExtraBold,
                             FillColor = MagickColors.White,
@@ -63,10 +71,10 @@ namespace MariBot.Worker
                             Height = 800
                         };
 
-                        MagickImageHandler.AnnotateImage("banner", bannerReadSettings, MagickColors.Black, 86, 297, 412, 330, 85, 575, 413, 573);
+                        magickImageHandler.AnnotateImage("banner", bannerReadSettings, MagickColors.Black, 86, 297, 412, 330, 85, 575, 413, 573);
                         break;
                     case Command.Bernie:
-                        MagickImageHandler.OverlayImage("bernie", 294, 93, 638, 67, 306, 374, 649, 349);
+                        magickImageHandler.OverlayImage("bernie", 294, 93, 638, 67, 306, 374, 649, 349);
                         break;
                     case Command.Biden:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -76,16 +84,16 @@ namespace MariBot.Worker
                         });
                         break;
                     case Command.Binoculars:
-                        MagickImageHandler.OverlayImage("binoculars", 36, 458, 769, 458, 36, 894, 769, 894);
+                        magickImageHandler.OverlayImage("binoculars", 36, 458, 769, 458, 36, 894, 769, 894);
                         break;
                     case Command.BobRoss:
-                        MagickImageHandler.OverlayImage("bobross", 22, 71, 453, 88, 22, 389, 453, 403);
+                        magickImageHandler.OverlayImage("bobross", 22, 71, 453, 88, 22, 389, 453, 403);
                         break;
                     case Command.ChangeMyMind:
                         var cmmReadSettings = new MagickReadSettings
                         {
                             TextEncoding = Encoding.Unicode,
-                            FontFamily = MagickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
                             FontStyle = FontStyleType.Bold,
                             FillColor = MagickColors.Black,
                             BackgroundColor = MagickColors.White,
@@ -94,13 +102,13 @@ namespace MariBot.Worker
                             Height = 624
                         };
 
-                        MagickImageHandler.AnnotateImage("cmm", cmmReadSettings, MagickColors.White, 242, 352, 526, 236, 292, 474, 576, 358);
+                        magickImageHandler.AnnotateImage("cmm", cmmReadSettings, MagickColors.White, 242, 352, 526, 236, 292, 474, 576, 358);
                         break;
                     case Command.Condom:
-                        MagickImageHandler.OverlayImage("condom", 0, 381, 320, 381, 0, 702, 320, 702);
+                        magickImageHandler.OverlayImage("condom", 0, 381, 320, 381, 0, 702, 320, 702);
                         break;
                     case Command.ConvertToDiscordFriendly:
-                        MagickImageHandler.ConvertToDiscordFriendly();
+                        magickImageHandler.ConvertToDiscordFriendly();
                         break;
                     case Command.Daryl:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -117,31 +125,31 @@ namespace MariBot.Worker
                         });
                         break;
                     case Command.Dave:
-                        MagickImageHandler.OverlayImage("dave", 895, 258, 1234, 234, 894, 441, 1234, 447);
+                        magickImageHandler.OverlayImage("dave", 895, 258, 1234, 234, 894, 441, 1234, 447);
                         break;
                     case Command.DeepFry:
-                        MagickImageHandler.DeepfryImage();
+                        magickImageHandler.DeepfryImage();
                         break;
                     case Command.DkOldies:
-                        MagickImageHandler.OverlayImage("dkoldies", 190, 334, 264, 332, 193, 450, 265, 448);
+                        magickImageHandler.OverlayImage("dkoldies", 190, 334, 264, 332, 193, 450, 265, 448);
                         break;
                     case Command.DsKoopa:
-                        MagickImageHandler.OverlayImage("dskoopa", 60, 47, 262, 59, 126, 425, 336, 387);
+                        magickImageHandler.OverlayImage("dskoopa", 60, 47, 262, 59, 126, 425, 336, 387);
                         break;
                     case Command.Edges2Hentai:
                         // TODO: Implement
                         throw new NotImplementedException();
                     case Command.Herschel:
-                        MagickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
+                        magickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
                         break;
                     case Command.Kevin:
-                        MagickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
+                        magickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
                         break;
                     case Command.Kurisu:
                         var kurisuSettings = new MagickReadSettings
                         {
                             TextEncoding = Encoding.Unicode,
-                            FontFamily = MagickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
                             FontStyle = FontStyleType.Bold,
                             FillColor = MagickColors.Black,
                             BackgroundColor = MagickColors.White,
@@ -149,19 +157,19 @@ namespace MariBot.Worker
                             Height = 980
                         };
 
-                        MagickImageHandler.AnnotateImage("kurisu", kurisuSettings, MagickColors.White, 32, 74, 241, 74, 32, 280, 241, 280);
+                        magickImageHandler.AnnotateImage("kurisu", kurisuSettings, MagickColors.White, 32, 74, 241, 74, 32, 280, 241, 280);
                         break;
                     case Command.Makoto:
-                        MagickImageHandler.OverlayImage("makoto", 50, 332, 258, 246, 124, 505, 311, 402);
+                        magickImageHandler.OverlayImage("makoto", 50, 332, 258, 246, 124, 505, 311, 402);
                         break;
                     case Command.Miyamoto:
-                        MagickImageHandler.OverlayImage("miyamoto", 257, 281, 689, 356, 209, 553, 643, 624);
+                        magickImageHandler.OverlayImage("miyamoto", 257, 281, 689, 356, 209, 553, 643, 624);
                         break;
                     case Command.NineGag:
                         // TODO: This command has it's own implementation. Need to look into it more.
                         throw new NotImplementedException();
                     case Command.Nuke:
-                        MagickImageHandler.DeepfryImage(10);
+                        magickImageHandler.DeepfryImage(10);
                         break;
                     case Command.Obama:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -171,13 +179,13 @@ namespace MariBot.Worker
                         });
                         break;
                     case Command.Pence:
-                        MagickImageHandler.OverlayImage("pence", 615, 254, 663, 261, 566, 379, 618, 389);
+                        magickImageHandler.OverlayImage("pence", 615, 254, 663, 261, 566, 379, 618, 389);
                         break;
                     case Command.Queen:
                         var queenSettings = new MagickReadSettings
                         {
                             TextEncoding = Encoding.Unicode,
-                            FontFamily = MagickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
                             FontStyle = FontStyleType.Bold,
                             FillColor = MagickColors.Black,
                             BackgroundColor = MagickColors.White,
@@ -185,7 +193,7 @@ namespace MariBot.Worker
                             Height = 624
                         };
 
-                        MagickImageHandler.AnnotateImage("queen", queenSettings, MagickColors.White, 86, 175, 408, 177, 86, 342, 404, 353);
+                        magickImageHandler.AnnotateImage("queen", queenSettings, MagickColors.White, 86, 175, 408, 177, 86, 342, 404, 353);
                         break;
                     case Command.RadicalReggie:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -195,10 +203,10 @@ namespace MariBot.Worker
                         });
                         break;
                     case Command.Reagan:
-                        MagickImageHandler.OverlayImage("reagan", 46, 136, 547, 226, 100, 603, 614, 581);
+                        magickImageHandler.OverlayImage("reagan", 46, 136, 547, 226, 100, 603, 614, 581);
                         break;
                     case Command.RGT:
-                        MagickImageHandler.OverlayImage("rgt", 0, 66, 727, 26, 25, 531, 753, 490);
+                        magickImageHandler.OverlayImage("rgt", 0, 66, 727, 26, 25, 531, 753, 490);
                         break;
                     case Command.Scarecrow:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -212,26 +220,26 @@ namespace MariBot.Worker
                         var readSettings = new MagickReadSettings
                         {
                             TextEncoding = Encoding.Unicode,
-                            FontFamily = MagickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
                             FontStyle = FontStyleType.Bold,
                             FillColor = MagickColors.White,
                             BackgroundColor = MagickColors.Black,
                             Width = 980,
                             Height = 624
                         };
-                        MagickImageHandler.AnnotateImage("sonicsaystemplate", readSettings, MagickColors.Black, 41, 93, 539, 93, 41, 406, 539, 406);
+                        magickImageHandler.AnnotateImage("sonicsaystemplate", readSettings, MagickColors.Black, 41, 93, 539, 93, 41, 406, 539, 406);
                         break;
                     case Command.Spawnwave:
-                        MagickImageHandler.OverlayImage("spawnwave", 0, 0, 984, 0, 0, 719, 984, 719);
+                        magickImageHandler.OverlayImage("spawnwave", 0, 0, 984, 0, 0, 719, 984, 719);
                         break;
                     case Command.StableDiffusion:
-                        StableDiffusionTextVariantHandler.ExecuteStableDiffusion("stablediffusion-text");
+                        stableDiffusionTextVariantHandler.ExecuteStableDiffusion("stablediffusion-text");
                         break;
                     case Command.StableDiffusionPokemon:
-                        StableDiffusionTextVariantHandler.ExecuteStableDiffusion("pokemon");
+                        stableDiffusionTextVariantHandler.ExecuteStableDiffusion("pokemon");
                         break;
                     case Command.StableDiffusionWaifu:
-                        StableDiffusionTextVariantHandler.ExecuteStableDiffusion("waifudiffusion");
+                        stableDiffusionTextVariantHandler.ExecuteStableDiffusion("waifudiffusion");
                         break;
                     case Command.Trump:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
@@ -252,29 +260,33 @@ namespace MariBot.Worker
                 {
                     Message = ex.Message
                 };
+                logger.LogError(ex, "Failed to process job {}.", WorkerGlobals.Job.Id);
             }
 
             try
             {
+                logger.LogInformation("Ready to return job {} to {}", WorkerGlobals.Job.Id, WorkerGlobals.Job.ReturnHost);
                 var http = new HttpClient();
-                http.BaseAddress = returnAddress;
+                var returnAddress = new UriBuilder("http", WorkerGlobals.Job.ReturnHost, 8091);
+                http.BaseAddress = returnAddress.Uri;
                 var json = JsonConvert.SerializeObject(WorkerGlobals.Job);
-                http.PostAsync("/job", new StringContent(json));
+                http.PostAsync("/job", new StringContent(json, Encoding.UTF8, "application/json"));
+                logger.LogInformation("Processing of job {} is complete.", WorkerGlobals.Job.Id);
             }
-            catch
+            catch ( Exception ex )
             {
-                // TODO: Log this
+                logger.LogError(ex, "Failed to deliver job {}.", WorkerGlobals.Job.Id);
             }
 
             WorkerGlobals.WorkerStatus = WorkerStatus.Ready;
 
         }
 
-        public static void HandleRandomOverlay(List<Tuple<string, int[]>> files)
+        public void HandleRandomOverlay(List<Tuple<string, int[]>> files)
         {
             var pick = new Random().Next(0, files.Count);
             var source = files[pick];
-            MagickImageHandler.OverlayImage(source.Item1, source.Item2[0], source.Item2[1], source.Item2[2], source.Item2[3], source.Item2[4], source.Item2[5], source.Item2[6], source.Item2[7]);
+            magickImageHandler.OverlayImage(source.Item1, source.Item2[0], source.Item2[1], source.Item2[2], source.Item2[3], source.Item2[4], source.Item2[5], source.Item2[6], source.Item2[7]);
         }
     }
 }

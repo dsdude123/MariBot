@@ -104,7 +104,7 @@ namespace MariBot.Services
 
             foreach (TwitterSubscription user in subscriptions)
             {
-                List<Status> tweets = GetLatestUserTweets(user.Username);
+                List<Status> tweets = GetLatestUserTweets(user.Id);
                 List<Status> toPost = new List<Status>();
 
                 foreach (var tweet in tweets)

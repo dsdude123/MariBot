@@ -1,7 +1,9 @@
+using System.Web.Http.ExceptionHandling;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using MariBot.Core;
 using MariBot.Core.Services;
 using MariBot.Services;
 
@@ -15,6 +17,7 @@ var discordClient = new DiscordSocketClient(clientConfig);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddMvc();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -26,6 +29,7 @@ builder.Services.AddSingleton<DynamicConfigService>();
 builder.Services.AddSingleton<CommandService>();
 builder.Services.AddSingleton<CommandHandlingService>();
 builder.Services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
+builder.Services.AddSingleton(x => new TraceExceptionLogger());
 
 builder.Services.AddSingleton<BooruService>();
 builder.Services.AddSingleton<DataService>();
@@ -41,6 +45,12 @@ builder.Services.AddSingleton<WikipediaService>();
 builder.Services.AddSingleton<WolframAlphaService>();
 builder.Services.AddSingleton<WorkerManagerService>();
 builder.Services.AddSingleton<MediawikiSharp_API.Mediawiki>();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddDebug();
+builder.Logging.AddConsole();
+builder.Logging.AddFile("maribot.log");
+builder.Logging.AddEventLog();
 
 var app = builder.Build();
 

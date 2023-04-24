@@ -1,0 +1,43 @@
+﻿@model IEnumerable<MariBot.Common.Model.GpuWorker.Worker>
+
+@{
+    ViewBag.Title = "Workers";
+}
+
+<h2>Workers</h2>
+
+<table>
+    <tr>
+        <th>
+            Endpoint
+        </th>
+        <th>
+            Capabilities
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            Action
+        </th>
+    </tr>
+    
+    @foreach (var worker in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => worker.Endpoint)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => worker.Capabilities)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => worker.Status)
+            </td>
+            <td>
+                @Html.ActionLink("Hold", "Hold", new { endpoint = worker.Endpoint}, null) | 
+                @Html.ActionLink("Ready", "Ready", new { endpoint = worker.Endpoint}, null)
+            </td>
+        </tr>
+    }
+</table>

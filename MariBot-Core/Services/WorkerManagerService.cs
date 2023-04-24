@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization.Metadata;
+﻿using System.Text;
+using System.Text.Json.Serialization.Metadata;
 using Discord;
 using Discord.WebSocket;
 using MariBot.Common.Model.GpuWorker;
@@ -12,7 +13,8 @@ namespace MariBot.Core.Services
         private readonly ILogger<WorkerManagerService> logger;
         private readonly DiscordSocketClient discord;
 
-        private List<Worker> workers;
+        public List<Worker> Workers { get; set; }
+        public Dictionary<Guid, ulong> AcceptanceNotifications { get; set; }
         private List<WorkerJob> pendingJobs;
         private Timer jobDispatchTimer;
 
@@ -20,9 +22,10 @@ namespace MariBot.Core.Services
         {
             this.logger = logger;
             this.discord = discord;
+            AcceptanceNotifications = new Dictionary<Guid, ulong>();
 
-            workers = JsonConvert.DeserializeObject<List<Worker>>(File.ReadAllText("worker-config.json"));
-            foreach (var worker in workers)
+            Workers = JsonConvert.DeserializeObject<List<Worker>>(File.ReadAllText("worker-config.json"));
+            foreach (var worker in Workers)
             {
                 try
                 {
@@ -52,24 +55,24 @@ namespace MariBot.Core.Services
         /// </summary>
         /// <param name="job">Job to work on</param>
         /// <returns>Status message</returns>
-        public string EnqueueJob(WorkerJob job)
+        public Tuple<string, Guid?> EnqueueJob(WorkerJob job)
         {
             logger.LogInformation("Incoming worker request {} for {}", job.Id, job.Command.ToString());
             
             var neededCapability = CommandCapabilityMapping.NeededCapabilityDictionary[job.Command];
             logger.LogInformation("Job {} - Capability {} needed.", job.Id, neededCapability.ToString());
-            var workerMatch = workers.Any(w =>
+            var workerMatch = Workers.Any(w =>
                 w.Capabilities.Contains(neededCapability) && ((w.Status != WorkerStatus.Held) && (w.Status != WorkerStatus.Offline)));
 
             if (workerMatch)
             {
                 pendingJobs.Add(job);
-                return "Your request was accepted.";
+                return new Tuple<string, Guid?>("Your request was accepted.", job.Id);
             }
             else
             {
                 logger.LogWarning("Job {} - No workers are available that can satisfy this request.", job.Id);
-                return "No workers are available that can satisfy this request. Try again later.";
+                return new Tuple<string, Guid?>("No workers are available that can satisfy this request. Try again later.", null);
             }
         }
 
@@ -100,13 +103,57 @@ namespace MariBot.Core.Services
                 {
                     channel.SendMessageAsync(job.Result.Message, messageReference: new MessageReference(job.MessageId));
                 }
+
+                try
+                {
+                    var notificationToDelete = AcceptanceNotifications[job.Id];
+                    channel.DeleteMessagesAsync(new[] { notificationToDelete });
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError("Failed to clean up acceptance message for job {}. {}", job.Id, ex.Message);
+                }
             }
 
-            var assignedWorker = workers.Find(w => w.CurrentJob.Equals(job.Id));
+            var assignedWorker = Workers.Find(w => w.CurrentJob.Equals(job.Id));
             if (assignedWorker != null)
             {
                 assignedWorker.CurrentJob = Guid.Empty;
                 if (assignedWorker.Status != WorkerStatus.Held) assignedWorker.Status = WorkerStatus.Ready;
+            }
+        }
+
+        /// <summary>
+        /// Holds a worker with the matching endpoint.
+        /// </summary>
+        /// <param name="endpoint">Worker endpoint</param>
+        public void HoldWorker(string endpoint)
+        {
+            logger.LogInformation("Going to hold worker {}", endpoint);
+            foreach (var worker in Workers)
+            {
+                if (worker.Endpoint.Equals(endpoint))
+                {
+                    worker.Status = WorkerStatus.Held;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Puts worker with the matching endpoint in ready status.
+        /// </summary>
+        /// <param name="endpoint">Worker endpoint</param>
+        public void ReadyWorker(string endpoint)
+        {
+            logger.LogInformation("Going to ready worker {}", endpoint);
+            foreach (var worker in Workers)
+            {
+                if (worker.Endpoint.Equals(endpoint))
+                {
+                    worker.Status = WorkerStatus.Ready;
+                    return;
+                }
             }
         }
 
@@ -119,11 +166,11 @@ namespace MariBot.Core.Services
                     var job = pendingJobs[i];
                     var neededCapability = CommandCapabilityMapping.NeededCapabilityDictionary[job.Command];
 
-                    var availableWorker = workers.FirstOrDefault(w =>
+                    var availableWorker = Workers.FirstOrDefault(w =>
                         w.Capabilities.Contains(neededCapability) && w.Status.Equals(WorkerStatus.Ready), null);
-                    var busyWorker = workers.FirstOrDefault(w =>
+                    var busyWorker = Workers.FirstOrDefault(w =>
                         w.Capabilities.Contains(neededCapability) && w.Status.Equals(WorkerStatus.Working), null);
-                    var unavailableWorker = workers.FirstOrDefault(w =>
+                    var unavailableWorker = Workers.FirstOrDefault(w =>
                         w.Capabilities.Contains(neededCapability) && (w.Status.Equals(WorkerStatus.Held) || w.Status.Equals(WorkerStatus.Offline)), null);
 
                     if (availableWorker != null)
@@ -134,8 +181,8 @@ namespace MariBot.Core.Services
                         {
                             var http = new HttpClient();
                             http.BaseAddress = new Uri(availableWorker.Endpoint);
-                            // TODO: Update this to be the right endpoint
-                            await http.PostAsync("/api/worker", new StringContent(jsonString));
+                            var response = await http.PostAsync("/api/worker", new StringContent(jsonString, Encoding.UTF8, "application/json"));
+                            response.EnsureSuccessStatusCode();
                             availableWorker.Status = WorkerStatus.Working;
                             availableWorker.CurrentJob = job.Id;
                             pendingJobs.RemoveAt(i);
@@ -144,7 +191,7 @@ namespace MariBot.Core.Services
                         }
                         catch (Exception exception)
                         {
-                            logger.LogCritical("Worker at {} failed to accept job. Marking as offline. {}", exception.Message);
+                            logger.LogCritical("Worker at {} failed to accept job. Marking as offline. {}", availableWorker.Endpoint, exception.Message);
                             availableWorker.Status = WorkerStatus.Offline;
                             job.Result = new JobResult
                             {

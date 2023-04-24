@@ -16,26 +16,26 @@ namespace MariBot.Core.Services
     public class DataService
     {
         private readonly ILogger<DataService> logger;
+        private static LiteDatabase db = new LiteDatabase("data.db");
 
         public DataService(ILogger<DataService> logger)
         {
             this.logger = logger;
 
             logger.LogInformation("DB init in progress...");
-            using (var db = new LiteDatabase("data.db"))
-            {
-                var col = db.GetCollection<Message>("discordMessages");
-                col.EnsureIndex(x => x.Id);
-                col.EnsureIndex(x => x.GuildId);
-                col.EnsureIndex(x => x.ChannelId);
 
-                var staticTextCol = db.GetCollection<StaticTextResponse>("staticTextResponses");
-                staticTextCol.EnsureIndex(x => x.Id);
-                staticTextCol.EnsureIndex(x => x.IsGlobal);
+            var col = db.GetCollection<Message>("discordMessages");
+            col.EnsureIndex(x => x.Id);
+            col.EnsureIndex(x => x.GuildId);
+            col.EnsureIndex(x => x.ChannelId);
 
-                var chatGptCol = db.GetCollection<MessageHistory>("chatGptHistory");
-                chatGptCol.EnsureIndex(x => x.Id);
-            }
+            var staticTextCol = db.GetCollection<StaticTextResponse>("staticTextResponses");
+            staticTextCol.EnsureIndex(x => x.Id);
+            staticTextCol.EnsureIndex(x => x.IsGlobal);
+
+            var chatGptCol = db.GetCollection<MessageHistory>("chatGptHistory");
+            chatGptCol.EnsureIndex(x => x.Id);
+
         }
 
         // Discord Message Methods
@@ -58,12 +58,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<Message>("discordMessages");
-                    col.Insert(message);
-                }
-            } catch (Exception ex)
+                var col = db.GetCollection<Message>("discordMessages");
+                col.Insert(message);
+            }
+            catch (Exception ex)
             {
                 logger.LogCritical("Failed to write to DB. {}", ex.Message);
             }
@@ -81,14 +79,13 @@ namespace MariBot.Core.Services
 
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<Message>("discordMessages");
-                    return col.Query()
-                        .Limit(size)
-                        .Offset(page * size)
-                        .ToList();
-                }
+
+                var col = db.GetCollection<Message>("discordMessages");
+                return col.Query()
+                    .Limit(size)
+                    .Offset(page * size)
+                    .ToList();
+
             }
             catch (Exception ex)
             {
@@ -109,15 +106,14 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<Message>("discordMessages");
-                    return col.Query()
-                        .Where(x => x.AuthorId.Equals(id))
-                        .Limit(size)
-                        .Offset(page * size)
-                        .ToList();
-                }
+
+                var col = db.GetCollection<Message>("discordMessages");
+                return col.Query()
+                    .Where(x => x.AuthorId.Equals(id))
+                    .Limit(size)
+                    .Offset(page * size)
+                    .ToList();
+
             }
             catch (Exception ex)
             {
@@ -138,11 +134,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
-                    return col.FindById(id);
-                }
+
+                var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                return col.FindById(id);
+
             }
             catch (Exception ex)
             {
@@ -160,11 +155,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
-                    col.Insert(staticTextResponse);
-                }
+
+                var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                col.Insert(staticTextResponse);
+
             }
             catch (Exception ex)
             {
@@ -183,11 +177,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
-                    col.Upsert(staticTextResponse);
-                }
+
+                var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                col.Upsert(staticTextResponse);
+
             }
             catch (Exception ex)
             {
@@ -207,11 +200,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
-                    return col.Delete(staticTextResponse.Id);
-                }
+
+                var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                return col.Delete(staticTextResponse.Id);
+
             }
             catch (Exception ex)
             {
@@ -235,11 +227,10 @@ namespace MariBot.Core.Services
             logger.LogDebug("Trying to get chatgpt {}", id);
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<MessageHistory>("chatGptHistory");
-                    return col.FindById(id);
-                }
+
+                var col = db.GetCollection<MessageHistory>("chatGptHistory");
+                return col.FindById(id);
+
             }
             catch (Exception ex)
             {
@@ -257,11 +248,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<MessageHistory>("chatGptHistory");
-                    col.Upsert(messageHistory);
-                }
+
+                var col = db.GetCollection<MessageHistory>("chatGptHistory");
+                col.Upsert(messageHistory);
+
             }
             catch (Exception ex)
             {
@@ -285,15 +275,14 @@ namespace MariBot.Core.Services
             logger.LogDebug("Old id {}", oldId);
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<MessageHistory>("chatGptHistory");
-                    var history = col.FindById(oldId);
-                    history.MessageId = newMessageId;
-                    col.Delete(oldId);
-                    col.Insert(history);
-                    return true;
-                }
+
+                var col = db.GetCollection<MessageHistory>("chatGptHistory");
+                var history = col.FindById(oldId);
+                history.MessageId = newMessageId;
+                col.Delete(oldId);
+                col.Insert(history);
+                return true;
+
             }
             catch (Exception ex)
             {
@@ -313,11 +302,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
-                    return col.FindById(id);
-                }
+
+                var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                return col.FindById(id);
+
             }
             catch (Exception ex)
             {
@@ -334,11 +322,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
-                    return col.FindAll();
-                }
+
+                var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                return col.FindAll();
+
             }
             catch (Exception ex)
             {
@@ -356,11 +343,10 @@ namespace MariBot.Core.Services
         {
             try
             {
-                using (var db = new LiteDatabase("data.db"))
-                {
-                    var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
-                    col.Upsert(twitterSubscription);
-                }
+
+                var col = db.GetCollection<TwitterSubscription>("twitterSubscriptions");
+                col.Upsert(twitterSubscription);
+
             }
             catch (Exception ex)
             {

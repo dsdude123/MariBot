@@ -5,10 +5,16 @@ namespace MariBot.Worker.CommandHandlers
 {
     public class StableDiffusionTextVariantHandler
     {
-        public static ILogger<StableDiffusionTextVariantHandler> logger = new LoggerFactory()
-            .CreateLogger<StableDiffusionTextVariantHandler>();
+        private readonly ILogger<StableDiffusionTextVariantHandler> logger;
+        private readonly IConfiguration configuration;
 
-        public static void ExecuteStableDiffusion(string provider)
+        public StableDiffusionTextVariantHandler(ILogger<StableDiffusionTextVariantHandler> logger, IConfiguration configuration)
+        {
+            this.logger = logger;
+            this.configuration = configuration;
+        }
+
+        public void ExecuteStableDiffusion(string provider)
         {
             File.WriteAllText($".\\Python\\{WorkerGlobals.Job.Id}.txt", $"{WorkerGlobals.Job.SourceText}");
             
@@ -45,7 +51,7 @@ namespace MariBot.Worker.CommandHandlers
                 {
                     sw.WriteLine("C:\\ProgramData\\Anaconda3\\Scripts\\activate.bat");
                     sw.WriteLine("activate ldm");
-                    sw.WriteLine($"python .\\Python\\{provider}.py \"{WorkerGlobals.Job.Id}\"");
+                    sw.WriteLine($"python .\\Python\\{provider}.py \"{WorkerGlobals.Job.Id}\" \"{configuration["HuggingFaceToken"]}\"");
                 }
             }
 

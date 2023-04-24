@@ -11,6 +11,10 @@ namespace MariBot.Core.Controllers
     public class WorkerJobController : ControllerBase
     {
         private WorkerManagerService workerManagerService { get; set; }
+        public WorkerJobController(WorkerManagerService workerManagerService)
+        {
+            this.workerManagerService = workerManagerService;
+        }
 
         [HttpPost]
         public void Post([FromBody] WorkerJob job)

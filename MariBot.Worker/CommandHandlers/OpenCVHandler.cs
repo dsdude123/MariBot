@@ -5,7 +5,7 @@ namespace MariBot.Worker.CommandHandlers
     public class OpenCVHandler
     {
         public const string HaarCascade = "Data/Text/haarcascade_frontalface_default.xml";
-        public static Rect[] FindFaces()
+        public Rect[] FindFaces()
         {
             File.WriteAllBytes($"temp/{WorkerGlobals.Job.Id}.tmp", WorkerGlobals.Job.SourceImage);
             using var haarCascade = new CascadeClassifier(HaarCascade);

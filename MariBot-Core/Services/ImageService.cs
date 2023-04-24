@@ -128,7 +128,7 @@ namespace MariBot.Core.Services
         /// </summary>
         /// <param name="context">Discord context</param>
         /// <returns>String URL to the image</returns>
-        public async Task<string> GetImageUrl(SocketCommandContext context)
+        public async Task<string?> GetImageUrl(SocketCommandContext context)
         {
             // Check if the context is a mention indicating we want the users avatar
             if (!string.IsNullOrWhiteSpace(context.Message.Content))
@@ -153,7 +153,7 @@ namespace MariBot.Core.Services
             }
 
             // Search for the most recently sent image
-            var sortedMessages = context.Channel.GetMessagesAsync().FlattenAsync().Result.OrderBy(m => m.Timestamp);
+            var sortedMessages = context.Channel.GetMessagesAsync().FlattenAsync().Result.OrderByDescending(m => m.Timestamp);
             foreach (var message in sortedMessages)
             {
                 if (!message.Type.Equals(MessageType.Default) && !message.Type.Equals(MessageType.Reply) &&
@@ -168,7 +168,9 @@ namespace MariBot.Core.Services
                         }
                             
                     }
-                } else if (!string.IsNullOrWhiteSpace(message.Content))
+                } 
+                
+                if (!string.IsNullOrWhiteSpace(message.Content))
                 {
                     foreach (var part in message.Content.Split(' '))
                     {
@@ -192,7 +194,9 @@ namespace MariBot.Core.Services
                             }
                         } catch {}
                     }
-                } else if (message.Embeds != null)
+                } 
+                
+                if (message.Embeds != null)
                 {
                     foreach (var embed in message.Embeds)
                     {
@@ -251,7 +255,7 @@ namespace MariBot.Core.Services
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36");
                 var response = await client.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-                return response.Headers.GetValues("Content-Type").Any(x => x.StartsWith("image/"));
+                return response.Content.Headers.GetValues("Content-Type").Any(x => x.StartsWith("image/"));
             }
             catch
             {
