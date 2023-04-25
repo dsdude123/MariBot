@@ -29,6 +29,11 @@ namespace MariBot.Worker.Controllers
         {
             value.ReturnHost = HttpContext.Connection.RemoteIpAddress.ToString();
 
+            if (value.ReturnHost.Equals("::1"))
+            {
+                value.ReturnHost = "localhost";
+            }
+
             if (WorkerGlobals.WorkerStatus != WorkerStatus.Ready)
             {
                 return StatusCode(503);
