@@ -1,6 +1,9 @@
-﻿using MariBot.Core.Models.ChatGPT;
+﻿using Discord;
+using Discord.Commands;
+using MariBot.Core.Models.ChatGPT;
 using OpenAI.GPT3;
 using OpenAI.GPT3.ObjectModels.RequestModels;
+using MessageType = MariBot.Core.Models.ChatGPT.MessageType;
 
 namespace MariBot.Core.Services
 {
@@ -252,6 +255,39 @@ namespace MariBot.Core.Services
             else
             {
                 throw new ApplicationException($"{completionResult.Error.Code}: {completionResult.Error.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handler for replies to ChatGPT responses
+        /// </summary>
+        /// <param name="arg">Discord socket context</param>
+        /// <returns>Completed task</returns>
+        public async Task HandleReply(SocketCommandContext replyContext)
+        {
+            if (replyContext.Message.Type == Discord.MessageType.Reply && CheckIfChatGpt(replyContext.Guild.Id,
+                    replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id))
+            {
+                try
+                {
+                    var result = await ExecuteChatGptQuery(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id, replyContext.Message.Content);
+                    var sentMessage = replyContext.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(replyContext.Message.Id)).Result;
+                    if (!dataService.UpdateChatGptMessageHistoryId(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id,
+                            sentMessage.Id))
+                    {
+                        throw new ApplicationException(
+                            "Failed to save message history to DB. ChatGPT context will be lost.");
+                    };
+                }
+                catch (ArgumentException)
+                {
+                    await replyContext.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(replyContext.Message.Id));
+
+                }
+                catch (ApplicationException ex)
+                {
+                    await replyContext.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(replyContext.Message.Id));
+                }
             }
         }
     }

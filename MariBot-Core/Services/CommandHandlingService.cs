@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using CSharpMath.Rendering.FrontEnd;
 using CSharpMath.SkiaSharp;
+using MariBot.Core.Modules.Text;
 using SkiaSharp;
 
 namespace MariBot.Core.Services
@@ -19,13 +20,14 @@ namespace MariBot.Core.Services
         private readonly DynamicConfigService dynamicConfigService;
         private readonly ImageService imageService;
         private readonly InteractionService interactionService;
+        private readonly OpenAiService openAiService;
         private readonly Regex keepOnlyAlphaNum = new("[^a-zA-Z0-9 -]");
         private readonly Regex latexDetector = new("\\$[^$]+\\$");
         private readonly ILogger<CommandHandlingService> logger;
         private readonly IServiceProvider serviceProvider;
         private readonly StaticTextResponseService staticTextResponseService;
 
-        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService)
+        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService, OpenAiService openAiService)
         {
             this.dataService = dataService;
             this.dynamicConfigService = dynamicConfigService;
@@ -37,6 +39,7 @@ namespace MariBot.Core.Services
             this.configuration = configuration;
             this.staticTextResponseService = staticTextResponseService;
             this.imageService = imageService;
+            this.openAiService = openAiService;
         }
 
         public async Task InitializeAsync()
@@ -151,6 +154,9 @@ namespace MariBot.Core.Services
                             await context.Channel.SendMessageAsync(result.ToString());
                         }
                     }
+                } else if (message.Type == MessageType.Reply)
+                {
+                    openAiService.HandleReply(context);
                 }
                 else
                 {

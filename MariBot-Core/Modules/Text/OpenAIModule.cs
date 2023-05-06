@@ -14,20 +14,10 @@ namespace MariBot.Core.Modules.Text
         private readonly DataService dataService;
         private readonly OpenAiService openAiService;
 
-        // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private List<string> acceptedReplyIds;
-        // ReSharper disable once FieldCanBeMadeReadOnly.Local
-        private DiscordSocketClient discord;
-
-
-        public OpenAiModule(OpenAiService openAIService, DiscordSocketClient discord, DataService dataService)
+        public OpenAiModule(OpenAiService openAIService, DataService dataService)
         {
             this.openAiService = openAIService;
-            this.discord = discord;
             this.dataService = dataService;
-
-            acceptedReplyIds = new List<string>();
-            discord.MessageReceived += MessageReceived;
         }
 
         /// <summary>
@@ -127,68 +117,6 @@ namespace MariBot.Core.Modules.Text
             {
                 await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
             }
-        }
-
-        /// <summary>
-        /// Message handler for replies to ChatGPT responses
-        /// </summary>
-        /// <param name="arg">Discord socket message</param>
-        /// <returns>Completed task</returns>
-        private async Task MessageReceived(SocketMessage arg)
-        {
-            if (!(arg is SocketUserMessage message)) return;
-            if (message.Source != MessageSource.User) return;
-            var replyContext = new SocketCommandContext(discord, message);
-            switch (replyContext.Message.Type)
-            {
-                case MessageType.Reply when IsAlreadyWorking(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id):
-                    return;
-                case MessageType.Reply when openAiService.CheckIfChatGpt(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id):
-                    try
-                    {
-                        var result = await openAiService.ExecuteChatGptQuery(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id, replyContext.Message.Content);
-                        var sentMessage = replyContext.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(replyContext.Message.Id)).Result;
-                        if (!dataService.UpdateChatGptMessageHistoryId(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id,
-                                sentMessage.Id))
-                        {
-                            throw new ApplicationException(
-                                "Failed to save message history to DB. ChatGPT context will be lost.");
-                        };
-                    }
-                    catch (ArgumentException)
-                    {
-                        await replyContext.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(replyContext.Message.Id));
-
-                    }
-                    catch (ApplicationException ex)
-                    {
-                        await replyContext.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(replyContext.Message.Id));
-                    }
-                    ClearWorkingFlag(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id);
-                    break;
-            }
-
-            return;
-        }
-
-        private bool IsAlreadyWorking(ulong guildId, ulong channelId, ulong messageId)
-        {
-            var id = $"{guildId}-{channelId}-{messageId}";
-            if (acceptedReplyIds.Contains(id))
-            {
-                return true;
-            }
-            else
-            {
-                acceptedReplyIds.Add(id);
-                return false;
-            }
-        }
-
-        private void ClearWorkingFlag(ulong guildId, ulong channelId, ulong messageId)
-        {
-            var id = $"{guildId}-{channelId}-{messageId}";
-            acceptedReplyIds.Remove(id);
         }
     }
 }
