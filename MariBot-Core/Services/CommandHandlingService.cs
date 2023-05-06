@@ -134,24 +134,21 @@ namespace MariBot.Core.Services
                         return;
                     }
 
-                    // Execute the command.
-                    var result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
-
-                    if (result.Error.HasValue &&
-                        result.Error.Value != CommandError.UnknownCommand)
+                    var staticResponse = staticTextResponseService.GetResponse(requestedCommand, context.Guild.Id);
+                    if (staticResponse != null)
                     {
-                        logger.LogError("Command encountered an error. {}", result.ToString());
-                        await context.Channel.SendMessageAsync(result.ToString());
+                        logger.LogInformation("Found matching static text response for {}", requestedCommand);
+                        await context.Channel.SendMessageAsync(staticResponse);
                     }
                     else
                     {
-                        // Static Text Handling
+                        var result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
 
-                        var staticResponse = staticTextResponseService.GetResponse(requestedCommand, context.Guild.Id);
-                        if (staticResponse != null)
+                        if (result.Error.HasValue &&
+                            result.Error.Value != CommandError.UnknownCommand)
                         {
-                            logger.LogInformation("Found matching static text response for {}", requestedCommand);
-                            await context.Channel.SendMessageAsync(staticResponse);
+                            logger.LogError("Command encountered an error. {}", result.ToString());
+                            await context.Channel.SendMessageAsync(result.ToString());
                         }
                     }
                 }
