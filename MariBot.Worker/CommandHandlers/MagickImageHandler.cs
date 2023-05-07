@@ -704,13 +704,7 @@ namespace MariBot.Worker.CommandHandlers
                             singleFace.Crop(faceGeometry);
                             singleFace.Implode(implodeAmount, PixelInterpolateMethod.Average);
 
-                            var xOffset = x - (result.Width / 2);
-                            var yOffset = y - (result.Height / 2);
-                            var geometryPositiveX = xOffset >= 0 ? "+" : "";
-                            var geometryPositiveY = yOffset >= 0 ? "+" : "";
-                            result.Composite(singleFace, CompositeOperator.SrcOver,
-                                $"-geometry {geometryPositiveX}{xOffset}{geometryPositiveY}{yOffset}");
-                            //result.Composite(singleFace, new PointD(x, y), CompositeOperator.SrcOver);
+                            result.Composite(singleFace, faceGeometry.X, faceGeometry.Y, CompositeOperator.SrcOver);
                         }
                     }
                     // image.Dispose();
