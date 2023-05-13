@@ -33,6 +33,7 @@ namespace MariBot.Services
             ApiKeySecret = configuration["DiscordSettings:TwitterApiKeySecret"];
             this.dataService = dataService;
             this.discord = discord;
+            CheckTimer.Elapsed += HandleTimer;
         }
 
         public User GetTwitterUser(string username)
