@@ -184,6 +184,9 @@
     <None Update="Python\Environments\ldm.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Python\moderation.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Python\pokemon.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

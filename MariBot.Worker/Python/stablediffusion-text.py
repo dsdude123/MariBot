@@ -1,15 +1,8 @@
 import torch
-import random
 import sys
-from diffusers import StableDiffusionPipeline
-from diffusers.pipelines.stable_diffusion.safety_checker import (
-    StableDiffusionSafetyChecker,
-)
-from torch.cuda.amp import autocast
+from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
 
-# Could probably use an inline lambda for this
-def dummy(images, **kwargs):
-    return images, False
+model_id = "stabilityai/stable-diffusion-2-1"
 
 # Read parameters from command line
 request_guid = sys.argv[1]
@@ -20,16 +13,11 @@ file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
 prompt = file.read()
 file.close()
 
-# I only have 8GB of VRAM on my 3070, so in order to fit the model in memory 
-# we create the pipeline using float16, rather than the default of float32.
-pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",
-                                                revision="fp16",
-                                                torch_dtype=torch.float16,
-                                                use_auth_token=hf_token,
-                                                cache_dir=".\cache")
-pipe.to("cuda")                 # Run on GPU
-#pipe.safety_checker = dummy    # Disable NSFW check
+# Use the DPMSolverMultistepScheduler (DPM-Solver++) scheduler here instead
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, use_auth_token=hf_token, cache_dir=".\cache")
+pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+pipe = pipe.to("cuda")
 
-with autocast(True):
-	image = pipe(prompt).images[0]
-	image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')
+image = pipe(prompt).images[0]
+    
+image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')
