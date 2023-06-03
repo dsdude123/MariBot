@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using MariBot.Common.Model.GpuWorker;
+using MariBot.Common.Util;
 using MariBot.Worker.Model;
 using Newtonsoft.Json;
 
@@ -10,7 +11,11 @@ namespace MariBot.Worker.CommandHandlers
         private readonly ILogger<StableDiffusionTextVariantHandler> logger;
         private readonly IConfiguration configuration;
 
-        private readonly float moderationThreshold = 0.5f;
+        private readonly string[] errorText = new string[]
+            { "error", "exception", "traceback", "failed", "winerror", "not recognized", "NotFound" };
+
+        private readonly string[] warnText = new string[] { "warn", "warning" };
+        private readonly float moderationThreshold = 0.7f;
 
         public StableDiffusionTextVariantHandler(ILogger<StableDiffusionTextVariantHandler> logger, IConfiguration configuration)
         {
@@ -20,6 +25,8 @@ namespace MariBot.Worker.CommandHandlers
 
         public void ExecuteStableDiffusion(string provider)
         {
+            string consoleLogs = "";
+
             File.WriteAllText($".\\Python\\{WorkerGlobals.Job.Id}.txt", $"{WorkerGlobals.Job.SourceText}");
 
             var contentModeration = Process.Start(new ProcessStartInfo
@@ -36,14 +43,22 @@ namespace MariBot.Worker.CommandHandlers
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    logger.LogInformation(e.Data);
+                    consoleLogs += e.Data;
+                    if (!e.Data.EndsWith('\n'))
+                    {
+                        consoleLogs += '\n';
+                    }
                 }
             });
             contentModeration.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    logger.LogError(e.Data);
+                    consoleLogs += e.Data;
+                    if (!e.Data.EndsWith('\n'))
+                    {
+                        consoleLogs += '\n';
+                    }
                 }
             });
             contentModeration.BeginOutputReadLine();
@@ -64,6 +79,7 @@ namespace MariBot.Worker.CommandHandlers
             var moderationResult = JsonConvert.DeserializeObject<ToxicityResult>(File.ReadAllText($".\\Python\\{WorkerGlobals.Job.Id}-moderation.json"));
 
             if (moderationResult.toxicity.Any(t => t >= moderationThreshold)) {
+                LogAllConsoleText(consoleLogs);
                 WorkerGlobals.Job.Result = new JobResult()
                 {
                     Message = "Input prompt failed safety check."
@@ -84,14 +100,22 @@ namespace MariBot.Worker.CommandHandlers
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        logger.LogInformation(e.Data);
+                        consoleLogs += e.Data;
+                        if (!e.Data.EndsWith('\n'))
+                        {
+                            consoleLogs += '\n';
+                        }
                     }
                 });
                 generator.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        logger.LogError(e.Data);
+                        consoleLogs += e.Data;
+                        if (!e.Data.EndsWith('\n'))
+                        {
+                            consoleLogs += '\n';
+                        }
                     }
                 });
                 generator.BeginOutputReadLine();
@@ -109,6 +133,8 @@ namespace MariBot.Worker.CommandHandlers
 
                 generator.WaitForExit();
 
+                LogAllConsoleText(consoleLogs);
+
                 WorkerGlobals.Job.Result = new JobResult()
                 {
                     FileName = "result.png",
@@ -120,6 +146,32 @@ namespace MariBot.Worker.CommandHandlers
 
             File.Delete($".\\Python\\{WorkerGlobals.Job.Id}.txt");
             File.Delete($".\\Python\\{WorkerGlobals.Job.Id}-moderation.json");
+        }
+
+        public void LogAllConsoleText(string text)
+        {
+            string[] eventLogParts = text.Chunk(31839).Select(s => new string(s)).ToArray();
+            if (text.ContainsAny(errorText, StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var log in eventLogParts)
+                {
+                    logger.LogError(log);
+                }
+
+            } else if (text.ContainsAny(warnText, StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var log in eventLogParts)
+                {
+                    logger.LogWarning(log);
+                }
+            }
+            else
+            {
+                foreach (var log in eventLogParts)
+                {
+                    logger.LogInformation(log);
+                }
+            }
         }
     }
 }
