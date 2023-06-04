@@ -14,6 +14,7 @@ builder.Services.AddSingleton<JobHandler>();
 builder.Services.AddSingleton<MagickImageHandler>();
 builder.Services.AddSingleton<OpenCVHandler>();
 builder.Services.AddSingleton<StableDiffusionTextVariantHandler>();
+builder.Services.AddSingleton<EasyOcrHandler>();
 builder.Services.AddSingleton(x => new TraceExceptionLogger());
 
 builder.Logging.ClearProviders();

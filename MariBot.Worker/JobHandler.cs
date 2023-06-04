@@ -11,12 +11,14 @@ namespace MariBot.Worker
         private readonly ILogger<JobHandler> logger;
         private readonly StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler;
         private readonly MagickImageHandler magickImageHandler;
+        private readonly EasyOcrHandler ocrHandler;
 
-        public JobHandler(ILogger<JobHandler> logger, StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler, MagickImageHandler magickImageHandler)
+        public JobHandler(ILogger<JobHandler> logger, StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler, MagickImageHandler magickImageHandler, EasyOcrHandler ocrHandler)
         {
             this.logger = logger;
             this.stableDiffusionTextVariantHandler = stableDiffusionTextVariantHandler;
             this.magickImageHandler = magickImageHandler;
+            this.ocrHandler = ocrHandler;
         }
 
         public void HandleJob()
@@ -177,6 +179,9 @@ namespace MariBot.Worker
                             new("obama", new []{501, 86, 829, 80, 503, 270, 831, 273}),
                             new("obama2", new []{416, 54, 899, 51, 414, 313, 887, 329})
                         });
+                        break;
+                    case Command.Ocr:
+                        ocrHandler.ExecuteOcr();
                         break;
                     case Command.Pence:
                         magickImageHandler.OverlayImage("pence", 615, 254, 663, 261, 566, 379, 618, 389);

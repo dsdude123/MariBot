@@ -41,6 +41,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.Makoto, WorkerCapability.CPU},
                 { Command.Miyamoto, WorkerCapability.CPU},
                 { Command.Nuke, WorkerCapability.CPU},
+                { Command.Ocr, WorkerCapability.ConsumerGPU},
                 { Command.Obama, WorkerCapability.CPU},
                 { Command.Pence, WorkerCapability.CPU},
                 { Command.Queen, WorkerCapability.CPU},

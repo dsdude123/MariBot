@@ -184,6 +184,15 @@
     <None Update="Python\Environments\ldm.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Python\Environments\SetupDetoxify.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Python\Environments\SetupOcr.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Python\Environments\SetupStableDiffusion.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Python\moderation.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

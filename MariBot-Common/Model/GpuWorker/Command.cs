@@ -39,6 +39,7 @@ namespace MariBot.Common.Model.GpuWorker
         Miyamoto,
         Nuke,
         Obama,
+        Ocr,
         Pence,
         Queen,
         RadicalReggie,

@@ -242,6 +242,32 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Obama);
         }
 
+        [Command("ocr", RunMode = RunMode.Async)]
+        public async Task Ocr([Remainder] string text = null)
+        {
+            var imageUrl = await imageService.GetImageUrl(Context);
+            if (imageUrl == null)
+            {
+                await Context.Channel.SendMessageAsync("Failed to find a valid link.",
+                    messageReference: new MessageReference(Context.Message.Id));
+                return;
+            }
+
+            var image = await imageService.GetWebResource(imageUrl);
+
+            var job = BuildImageJob(Context, Command.Ocr, image);
+            job.SourceText = text;
+            var serviceResult = workerManagerService.EnqueueJob(job);
+
+            var notification = await Context.Channel.SendMessageAsync(serviceResult.Item1,
+                messageReference: new MessageReference(Context.Message.Id));
+
+            if (serviceResult.Item2.HasValue)
+            {
+                workerManagerService.AcceptanceNotifications.Add(serviceResult.Item2.Value, notification.Id);
+            }
+        }
+
         [Command("pence", RunMode = RunMode.Async)]
         public async Task Pence([Remainder] string text = null)
         {
