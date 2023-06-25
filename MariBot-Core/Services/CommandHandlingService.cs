@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Globalization;
+using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -6,6 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using CSharpMath.Rendering.FrontEnd;
 using CSharpMath.SkiaSharp;
+using MariBot.Common.Model.GpuWorker;
 using MariBot.Core.Modules.Text;
 using SkiaSharp;
 
@@ -26,8 +28,9 @@ namespace MariBot.Core.Services
         private readonly ILogger<CommandHandlingService> logger;
         private readonly IServiceProvider serviceProvider;
         private readonly StaticTextResponseService staticTextResponseService;
+        private readonly WorkerManagerService workerManagerService;
 
-        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService, OpenAiService openAiService)
+        public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService, OpenAiService openAiService, WorkerManagerService workerManagerService)
         {
             this.dataService = dataService;
             this.dynamicConfigService = dynamicConfigService;
@@ -40,6 +43,7 @@ namespace MariBot.Core.Services
             this.staticTextResponseService = staticTextResponseService;
             this.imageService = imageService;
             this.openAiService = openAiService;
+            this.workerManagerService = workerManagerService;
         }
 
         public async Task InitializeAsync()
@@ -160,6 +164,33 @@ namespace MariBot.Core.Services
                 }
                 else
                 {
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-image-conversion"))
+                    {
+                        if (message.Attachments.Count > 0)
+                        {
+                            foreach (var attachment in message.Attachments)
+                            {
+                                if (attachment.Filename.EndsWith(".avif", true, CultureInfo.InvariantCulture) ||
+                                    attachment.Filename.EndsWith(".jfif", true, CultureInfo.InvariantCulture))
+                                {
+                                    logger.LogInformation("Queueing automatic image conversion");
+                                    var image = imageService.GetWebResource(attachment.Url).Result as MemoryStream;
+                                    image.Seek(0, SeekOrigin.Begin);
+
+                                    var conversionJob = new WorkerJob();
+                                    conversionJob.Id = Guid.NewGuid();
+                                    conversionJob.GuildId = context.Guild.Id;
+                                    conversionJob.ChannelId = context.Channel.Id;
+                                    conversionJob.MessageId = context.Message.Id;
+                                    conversionJob.SourceImage = image.ToArray();
+                                    conversionJob.Command = Command.ConvertToDiscordFriendly;
+
+                                    workerManagerService.EnqueueJob(conversionJob);
+                                }
+                            }
+                        }
+                    }
+
                     // LaTeX handling
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "latex"))
                     {

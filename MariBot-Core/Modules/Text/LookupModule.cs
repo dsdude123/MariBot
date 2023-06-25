@@ -225,7 +225,7 @@ namespace MariBot.Core.Modules.Text
                 eb.WithColor(Color.Red);
                 eb.WithDescription("No results were found.");
             }
-            await Context.Channel.SendMessageAsync(embed: eb.Build());
+            await Context.Channel.SendMessageAsync(embed: eb.Build(), messageReference: new MessageReference(Context.Message.Id));
         }
 
         [Command("wa", RunMode = RunMode.Async)]

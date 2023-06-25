@@ -22,7 +22,7 @@ namespace MariBot.Core.Modules.Text
             discordClient.ReactionAdded += ReactionAddedHandler;
         }
 
-        [Command("uwu")]
+        [Command("uwu", RunMode = RunMode.Async)]
         public async Task UwuifyAsync([Remainder] string input = null)
         {
             if (input == null)
@@ -36,6 +36,26 @@ namespace MariBot.Core.Modules.Text
             input = UwuifyText(input);
 
             await Context.Channel.SendMessageAsync(input);
+        }
+
+        [Command("spongebob", RunMode = RunMode.Async)]
+        public async Task Spongbobify([Remainder] string input = null)
+        {
+            if (input == null)
+            {
+                input = (await Context.Channel.GetMessagesAsync(2, Discord.CacheMode.AllowDownload)
+                        .FlattenAsync())
+                    .ToArray()
+                    .OrderBy(message => message.Timestamp)
+                    .First().Content;
+            }
+            var result = MockSpongebobText(input);
+
+            var eb = new EmbedBuilder();
+            eb.WithDescription(result);
+            eb.WithImageUrl("http://nerv.jpn.com/discord/mocking-spongebob.jpg");
+
+            await Context.Channel.SendMessageAsync(embed: eb.Build());
         }
 
         private Task ReactionAddedHandler(Cacheable<IUserMessage, ulong> userMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
@@ -67,6 +87,33 @@ namespace MariBot.Core.Modules.Text
             input = Regex.Replace(input, "N([AEIOU])", "NY$1");
             input = Regex.Replace(input, "ove", "uv");
             return input;
+        }
+
+        private string MockSpongebobText(string input)
+        {
+            var result = "";
+
+            var lastCapped = new Random().Next() > (int.MaxValue / 2);
+
+            foreach (var character in input.ToCharArray())
+            {
+                if (char.IsLetter(character) && lastCapped)
+                {
+                    result += character.ToString().ToLower();
+                    lastCapped = false;
+                }
+                else if (char.IsLetter(character) && !lastCapped)
+                {
+                    result += character.ToString().ToUpper();
+                    lastCapped = true;
+                }
+                else
+                {
+                    result += character;
+                }
+            }
+
+            return result;
         }
     }
 }

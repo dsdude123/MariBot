@@ -167,6 +167,20 @@ namespace MariBot.Worker
                     case Command.Miyamoto:
                         magickImageHandler.OverlayImage("miyamoto", 257, 281, 689, 356, 209, 553, 643, 624);
                         break;
+                    case Command.Mugi:
+                        var mugiSettings = new MagickReadSettings
+                        {
+                            TextEncoding = Encoding.Unicode,
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontStyle = FontStyleType.Bold,
+                            FillColor = MagickColors.Black,
+                            BackgroundColor = MagickColors.White,
+                            Width = 355,
+                            Height = 507
+                        };
+
+                        magickImageHandler.AnnotateImage("mugi", mugiSettings, MagickColors.White, 191, 354, 546, 354, 191, 861, 546, 861);
+                        break;
                     case Command.NineGag:
                         // TODO: This command has it's own implementation. Need to look into it more.
                         throw new NotImplementedException();
@@ -185,6 +199,9 @@ namespace MariBot.Worker
                         break;
                     case Command.Pence:
                         magickImageHandler.OverlayImage("pence", 615, 254, 663, 261, 566, 379, 618, 389);
+                        break;
+                    case Command.Popcorn:
+                        magickImageHandler.OverlayImage("popcorn", 0, -25, 182, 59, 0, 178, 170, 157);
                         break;
                     case Command.Queen:
                         var queenSettings = new MagickReadSettings
@@ -218,7 +235,9 @@ namespace MariBot.Worker
                         {
                             new("scarecrow", new []{1168, 278, 1897, 37, 1159, 567, 1773, 585}),
                             new("scarecrow2",new []{1021, 408, 1957, 291, 1003, 757, 1806, 909}),
-                            new("scarecrow3", new []{226, 1330, 1164, 1378, 216, 2185, 1087, 2284})
+                            new("scarecrow3", new []{226, 1330, 1164, 1378, 216, 2185, 1087, 2284}),
+                            new("scarecrow4", new []{279, 819, 735, 820, 215, 1465, 746, 1481}),
+                            new("scarecrow5", new []{132, 942, 595, 824, 318, 1691, 782, 1577})
                         });
                         break;
                     case Command.SonicSays:
@@ -252,7 +271,8 @@ namespace MariBot.Worker
                             new("trump", new []{49, 472, 651, 472, 26, 767, 667, 767}),
                             new("trump2", new []{352, 59, 732, 80, 349, 276, 738, 290}),
                             new("trump3", new []{1188, 399, 1667, 473, 1119, 1024, 1627, 1103}),
-                            new("trump4", new []{1433, 234, 1755, 248, 1413, 567, 1737, 577})
+                            new("trump4", new []{1433, 234, 1755, 248, 1413, 567, 1737, 577}),
+                            new("trump5", new []{112, 216, 335, 234, 104, 485, 300, 500})
                         });
                         break;
                     default:

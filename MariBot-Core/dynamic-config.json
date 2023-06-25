@@ -3,12 +3,12 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers"]
+      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion" ]
     },
     {
       "Id": 410597263363276801,
       "Name": "CSMTestingFacility",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers"],
+      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion" ],
       "AutoReactions": [
         {
           "TriggerWords": [ "testemojitrigger" ],
@@ -20,25 +20,13 @@
     {
       "Id": 297485054836342786,
       "Name": "CSS",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "latex", "emoji-triggers" ],
+      "EnabledFeatures": [ "auto-image-conversion", "latex", "emoji-triggers" ],
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt", "gpt4"]
-    },
-    {
-      "Id": 564645677586710548,
-      "Name": "Mecha",
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h"],
-      "AutoReactions": [
-        {
-          "TriggerWords": [ "skyrim" ],
-          "TriggerUsers": [ 316822516889026560 ],
-          "Emoji": "<:thunk:764195150045511720>"
-        }
-      ]
     },
     {
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
-      "EnabledFeatures": [ "auto-jfif-to-jpeg", "emoji-triggers"],
+      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion" ],
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere"],
       "AutoReactions": [
         {

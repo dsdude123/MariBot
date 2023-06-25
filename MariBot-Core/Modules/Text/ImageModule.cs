@@ -236,6 +236,13 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Miyamoto);
         }
 
+        [Command("mugi", RunMode = RunMode.Async)]
+        public async Task Mugi([Remainder] string text)
+        {
+            HandleCommonTextScenario(Command.Mugi, text);
+        }
+
+
         [Command("obama", RunMode = RunMode.Async)]
         public async Task Obama([Remainder] string text = null)
         {
@@ -272,6 +279,12 @@ namespace MariBot.Core.Modules.Text
         public async Task Pence([Remainder] string text = null)
         {
             HandleCommonImageScenario(Command.Pence);
+        }
+
+        [Command("popcorn", RunMode = RunMode.Async)]
+        public async Task Popcorn([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.Popcorn);
         }
 
         [Command("queen", RunMode = RunMode.Async)]
