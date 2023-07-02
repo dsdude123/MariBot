@@ -21,7 +21,7 @@ namespace MariBot.Services
 
         private DataService dataService { get; set; }
         
-        private System.Timers.Timer CheckTimer = new Timer { AutoReset = true, Enabled = true, Interval = 60000 };
+        private System.Timers.Timer CheckTimer = new Timer { AutoReset = true, Enabled = false, Interval = 60000 };
 
         private static EmbedFooterBuilder TwitterFooter = new EmbedFooterBuilder()
             .WithText("Twitter")
@@ -33,7 +33,7 @@ namespace MariBot.Services
             ApiKeySecret = configuration["DiscordSettings:TwitterApiKeySecret"];
             this.dataService = dataService;
             this.discord = discord;
-            CheckTimer.Elapsed += HandleTimer;
+            //CheckTimer.Elapsed += HandleTimer;
         }
 
         public User GetTwitterUser(string username)

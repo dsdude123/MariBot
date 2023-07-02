@@ -3,12 +3,12 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion" ]
+      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion", "auto-vxtwitter" ]
     },
     {
       "Id": 410597263363276801,
       "Name": "CSMTestingFacility",
-      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion" ],
+      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion", "auto-vxtwitter" ],
       "AutoReactions": [
         {
           "TriggerWords": [ "testemojitrigger" ],
@@ -26,8 +26,8 @@
     {
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
-      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion" ],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere"],
+      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion", "auto-vxtwitter" ],
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere" ],
       "AutoReactions": [
         {
           "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],
@@ -45,6 +45,11 @@
           "Emoji": "<:patriotscopium:1033168813274959914>"
         }
       ]
+    },
+    {
+      "Id": 1004662899756769371,
+      "Name": "booba",
+      "EnabledFeatures": [ "auto-vxtwitter" ]
     }
   ]
 }

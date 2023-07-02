@@ -164,6 +164,28 @@ namespace MariBot.Core.Services
                 }
                 else
                 {
+                    // Anti-Elon Feature
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtwitter"))
+                    {
+                        var vxParts = context.Message.Content.Split(" ");
+
+                        foreach (var text in vxParts)
+                        {
+                            try
+                            {
+                                var url = new Uri(text);
+
+                                if (url.Host.Equals("twitter.com", StringComparison.InvariantCultureIgnoreCase) ||
+                                    url.Host.Equals("www.twitter.com", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var urlBuilder = new UriBuilder(url);
+                                    urlBuilder.Host = "vxtwitter.com";
+                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                }
+                            } catch { }
+                        }
+                    }
+
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-image-conversion"))
                     {
                         if (message.Attachments.Count > 0)
