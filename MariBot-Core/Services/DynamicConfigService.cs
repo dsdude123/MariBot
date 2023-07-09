@@ -150,7 +150,7 @@ namespace MariBot.Core.Services
                 {
                     // Try to download latest config
                     logger.LogInformation("Updating dynamic config.");
-                    client.DownloadFile("https://raw.githubusercontent.com/dsdude123/MariBot/master/src/DiscordBot/dynamic-config.json", "dynamic-config-temp.json");
+                    client.DownloadFile("https://raw.githubusercontent.com/dsdude123/MariBot/master/MariBot-Core/dynamic-config.json", "dynamic-config-temp.json");
                     dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
                         File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config-temp.json"));
                 }

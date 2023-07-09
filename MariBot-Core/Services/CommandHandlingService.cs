@@ -178,6 +178,17 @@ namespace MariBot.Core.Services
                                 if (url.Host.Equals("twitter.com", StringComparison.InvariantCultureIgnoreCase) ||
                                     url.Host.Equals("www.twitter.com", StringComparison.InvariantCultureIgnoreCase))
                                 {
+                                    try
+                                    {
+                                        await context.Message.ModifyAsync(message =>
+                                        {
+                                            message.Flags = MessageFlags.SuppressEmbeds;
+                                        });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogWarning("Couldn't remove Twitter embed, are permissions or the embed missing?");
+                                    }
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtwitter.com";
                                     await context.Channel.SendMessageAsync(urlBuilder.ToString());
