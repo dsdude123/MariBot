@@ -49,7 +49,7 @@
     {
       "Id": 1004662899756769371,
       "Name": "booba",
-      "EnabledFeatures": [ ]
+      "EnabledFeatures": [ "auto-vxtwitter" ]
     }
   ]
 }
