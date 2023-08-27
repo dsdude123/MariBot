@@ -5,16 +5,22 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Timers;
 using CSharpMath.Rendering.FrontEnd;
 using CSharpMath.SkiaSharp;
 using MariBot.Common.Model.GpuWorker;
 using MariBot.Core.Modules.Text;
 using SkiaSharp;
+using Timer = System.Timers.Timer;
 
 namespace MariBot.Core.Services
 {
     public class CommandHandlingService
     {
+        private static readonly string[] twitterDomains = new string[] { "twitter.com", "x.com", "www.twitter.com", "www.x.com" };
+        private static readonly Regex keepOnlyAlphaNum = new("[^a-zA-Z0-9 -]");
+        private static readonly Regex latexDetector = new("\\$[^$]+\\$");
+
         private readonly IConfiguration configuration;
         private readonly CommandService commandService;
         private readonly DataService dataService;
@@ -23,12 +29,13 @@ namespace MariBot.Core.Services
         private readonly ImageService imageService;
         private readonly InteractionService interactionService;
         private readonly OpenAiService openAiService;
-        private readonly Regex keepOnlyAlphaNum = new("[^a-zA-Z0-9 -]");
-        private readonly Regex latexDetector = new("\\$[^$]+\\$");
         private readonly ILogger<CommandHandlingService> logger;
         private readonly IServiceProvider serviceProvider;
         private readonly StaticTextResponseService staticTextResponseService;
         private readonly WorkerManagerService workerManagerService;
+
+        private Dictionary<string, int> failedEmbedRemoves = new Dictionary<string, int>();
+        private System.Timers.Timer twitterCleanup = new Timer { AutoReset = true, Enabled = false, Interval = 5000 };
 
         public CommandHandlingService(DataService dataService, DynamicConfigService dynamicConfigService, ILogger<CommandHandlingService> logger, IServiceProvider serviceProvider, DiscordSocketClient discord, CommandService commandService, InteractionService interactionService, IConfiguration configuration, StaticTextResponseService staticTextResponseService, ImageService imageService, OpenAiService openAiService, WorkerManagerService workerManagerService)
         {
@@ -44,6 +51,8 @@ namespace MariBot.Core.Services
             this.imageService = imageService;
             this.openAiService = openAiService;
             this.workerManagerService = workerManagerService;
+
+            twitterCleanup.Elapsed += HandleTimer;
         }
 
         public async Task InitializeAsync()
@@ -175,8 +184,7 @@ namespace MariBot.Core.Services
                             {
                                 var url = new Uri(text);
 
-                                if (url.Host.Equals("twitter.com", StringComparison.InvariantCultureIgnoreCase) ||
-                                    url.Host.Equals("www.twitter.com", StringComparison.InvariantCultureIgnoreCase))
+                                if (twitterDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtwitter.com";
@@ -188,10 +196,17 @@ namespace MariBot.Core.Services
                                         {
                                             message.Flags = MessageFlags.SuppressEmbeds;
                                         });
+
+                                        var modified = await context.Channel.GetMessageAsync(context.Message.Id);
+                                        if (modified.Embeds.Count > 0)
+                                        {
+                                            throw new Exception("Failed to remove embed");
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
                                         logger.LogWarning("Couldn't remove Twitter embed, are permissions or the embed missing?");
+                                        failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
                                     }
                                 }
                             } catch { }
@@ -266,6 +281,71 @@ namespace MariBot.Core.Services
                     }
                 }
             }
+        }
+
+        private async void HandleTimer(object source, ElapsedEventArgs arg)
+        {
+            List<string> toRemove = new List<string>();
+            foreach (var message in failedEmbedRemoves)
+            {
+                if (message.Value >= 3)
+                {
+                    toRemove.Add(message.Key);
+                }
+                else
+                {
+                    string[] parts = message.Key.Split('-');
+                    try
+                    {
+                        IGuild guild = FindServer(Convert.ToUInt64(parts[0]));
+                        ITextChannel channel = FindTextChannel(guild, Convert.ToUInt64(parts[1]));
+                        IMessage discordMessage = channel.GetMessageAsync(Convert.ToUInt64(parts[2])).Result;
+
+                        if (discordMessage.Embeds.Count > 0)
+                        {
+                            await channel.ModifyMessageAsync(discordMessage.Id, properties =>
+                            {
+                                properties.Flags = MessageFlags.SuppressEmbeds;
+                            });
+
+                            var modified = await channel.GetMessageAsync(Convert.ToUInt64(parts[2]));
+                            if (modified.Embeds.Count > 0)
+                            {
+                                throw new Exception("Failed to remove embed");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        failedEmbedRemoves[message.Key]++;
+                    }
+                }
+            }
+
+            foreach (var message in toRemove)
+            {
+                failedEmbedRemoves.Remove(message);
+            }
+        }
+
+        private IGuild FindServer(ulong id)
+        {
+            foreach (IGuild server in discord.Guilds)
+            {
+                if (server.Id == id)
+                    return server;
+            }
+            return null;
+        }
+
+        private ITextChannel FindTextChannel(IGuild server, ulong id)
+        {
+            foreach (ITextChannel channel in server.GetTextChannelsAsync().Result)
+            {
+                if (channel.Id == id)
+                    return channel;
+            }
+            return null;
         }
     }
 }
