@@ -82,7 +82,9 @@ namespace MariBot.Worker
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
                         {
                             new("biden", new []{50, 72, 341, 117, 42, 627, 339, 587}),
-                            new("biden2", new []{ 66, 255, 442, 284, 75, 830, 446, 641})
+                            new("biden2", new []{ 66, 255, 442, 284, 75, 830, 446, 641}),
+                            new("biden3", new []{264, 117, 728, 110, 264, 437, 716, 457}),
+                            new("biden4", new []{67, 161, 580, 148, 70, 727, 574, 769})
                         });
                         break;
                     case Command.Binoculars:

@@ -67,6 +67,12 @@
     <None Update="Content\biden2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\biden3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\biden4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\binoculars.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
