@@ -167,12 +167,13 @@ namespace MariBot.Core.Services
                             await context.Channel.SendMessageAsync(result.ToString());
                         }
                     }
-                } else if (message.Type == MessageType.Reply)
-                {
-                    openAiService.HandleReply(context);
-                }
+                } 
                 else
                 {
+                    if (message.Type == MessageType.Reply)
+                    {
+                        openAiService.HandleReply(context);
+                    }
                     // Anti-Elon Feature
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtwitter"))
                     {

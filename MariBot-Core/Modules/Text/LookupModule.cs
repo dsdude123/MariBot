@@ -330,7 +330,7 @@ namespace MariBot.Core.Modules.Text
 
         private string ConvertSearchToMessage(Result result)
         {
-            return "**" + result.Title + "**\n" + result.Link + "\n";
+            return $"**{result.Title}**\n{result.Link}\n*{result.Snippet}*\n";
         }
 
         private string ConvertKnowledgeGraphEntityToMessage(Entity entity)

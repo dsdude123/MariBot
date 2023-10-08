@@ -31,7 +31,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await openAiService.ExecuteChatGptQuery(Context.Guild.Id, Context.Channel.Id, Context.Message.Id, input);
-                var sentMessage = Context.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(Context.Message.Id)).Result;
+                var sentMessage = Context.Channel.SendMessageAsync($"```\n{result.Replace("```","")}\n```", messageReference: new MessageReference(Context.Message.Id)).Result;
                 if (!dataService.UpdateChatGptMessageHistoryId(Context.Guild.Id, Context.Channel.Id, Context.Message.Id,
                         sentMessage.Id))
                 {
@@ -84,7 +84,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await openAiService.ExecuteGpt3Query(input);
-                await Context.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ArgumentException)
             {
@@ -107,7 +107,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await openAiService.ExecuteGpt4Query(input);
-                await Context.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ArgumentException)
             {
