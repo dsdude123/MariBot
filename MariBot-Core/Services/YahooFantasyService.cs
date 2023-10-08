@@ -57,6 +57,7 @@ namespace MariBot.Core.Services
             CheckTimer.Elapsed += HandleTimer;
 
             #if DEBUG
+            CheckTimer.Enabled = false;
             CheckTimer.Interval = 60000;
             EarliestTransaction = -43200;
             #endif

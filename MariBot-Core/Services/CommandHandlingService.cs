@@ -228,7 +228,7 @@ namespace MariBot.Core.Services
                                 {
                                     var url = new Uri(text);
 
-                                    if (url.Host.Equals("instagram.com", StringComparison.InvariantCultureIgnoreCase))
+                                    if (url.Host.EndsWith("instagram.com", StringComparison.InvariantCultureIgnoreCase))
                                     {
                                         var urlBuilder = new UriBuilder(url);
                                         urlBuilder.Host = "ddinstagram.com";
@@ -268,7 +268,7 @@ namespace MariBot.Core.Services
                             {
                                 var url = new Uri(text);
 
-                                if (url.Host.Equals("reddit.com", StringComparison.InvariantCultureIgnoreCase))
+                                if (url.Host.EndsWith("reddit.com", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "rxddit.com";
@@ -308,7 +308,7 @@ namespace MariBot.Core.Services
                             {
                                 var url = new Uri(text);
 
-                                if (url.Host.Equals("tiktok.com", StringComparison.InvariantCultureIgnoreCase))
+                                if (url.Host.EndsWith("tiktok.com", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtiktok.com";
@@ -329,7 +329,7 @@ namespace MariBot.Core.Services
                                     }
                                     catch (Exception ex)
                                     {
-                                        logger.LogWarning("Couldn't remove Tiktok embed, are permissions or the embed missing?");
+                                        logger.LogWarning("Couldn't remove Reddit embed, are permissions or the embed missing?");
                                         failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
                                     }
                                 }

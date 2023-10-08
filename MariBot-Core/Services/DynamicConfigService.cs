@@ -25,6 +25,10 @@ namespace MariBot.Core.Services
             dynamicConfigUpdate.Elapsed += UpdateConfig;
             dynamicConfigUpdate.AutoReset = true;
             dynamicConfigUpdate.Enabled = true;
+
+            #if DEBUG
+            dynamicConfigUpdate.Enabled = false;
+            #endif
         }
 
         /// <summary>
