@@ -30,62 +30,68 @@ namespace MariBot.Core.Modules.Text
         //    await Context.Channel.SendFileAsync(file, "textresponse.json");
         //}
 
+        //TODO: Figure out how we can have optional text if we have attachments. Discord.NET built in Optional class is broken in ASP.NET. 
+
         [RequireOwner]
-        [Command("addglobal")]
-        public Task addGlobal(string key, [Remainder] string text)
+        [Command("addglobal", RunMode = RunMode.Async)]
+        public async Task addGlobal(string key, [Remainder] string text = "")
         {
             try
             {
-                var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, true);
-                return Context.Channel.SendMessageAsync(result);
+                var attachmentsList = Context.Message.Attachments != null ? Context.Message.Attachments.ToList() : null;
+                var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, attachmentsList, true);
+                await Context.Channel.SendMessageAsync(result.Result);
             }
             catch (InvalidOperationException ex)
             {
-                return Context.Channel.SendMessageAsync(ex.Message);
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
-        [Command("add")]
-        public Task add(string key, [Remainder] string text)
+        [Command("add", RunMode = RunMode.Async)]
+        public async Task add(string key, [Remainder] string text = "")
         {
             try
             {
-               var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, false);
-               return Context.Channel.SendMessageAsync(result);
+                var attachmentsList = Context.Message.Attachments != null ? Context.Message.Attachments.ToList() : null;
+                var result = staticTextResponseService.AddNewResponse(key, text, Context.Guild.Id, attachmentsList, false);
+               await Context.Channel.SendMessageAsync(result.Result);
             }
             catch (InvalidOperationException ex)
             {
-                return Context.Channel.SendMessageAsync(ex.Message);
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
             
         }
 
         [RequireOwner]
-        [Command("updateglobal")]
-        public Task updateGlobal(string key, [Remainder] string text)
+        [Command("updateglobal", RunMode = RunMode.Async)]
+        public async Task updateGlobal(string key, [Remainder] string text)
         {
             try
-            { 
-                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, true);
-                return Context.Channel.SendMessageAsync(result);
+            {
+                var attachmentsList = Context.Message.Attachments != null ? Context.Message.Attachments.ToList() : null;
+                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, attachmentsList, true);
+                await Context.Channel.SendMessageAsync(result.Result);
             }
             catch (InvalidOperationException ex)
             {
-                return Context.Channel.SendMessageAsync(ex.Message);
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
-        [Command("update")]
-        public Task update(string key, [Remainder] string text)
+        [Command("update", RunMode = RunMode.Async)]
+        public async Task update(string key, [Remainder] string text)
         {
             try
             {
-                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, false);
-                return Context.Channel.SendMessageAsync(result);
+                var attachmentsList = Context.Message.Attachments != null ? Context.Message.Attachments.ToList() : null;
+                var result = staticTextResponseService.UpdateResponse(key, text, Context.Guild.Id, attachmentsList, false);
+                await Context.Channel.SendMessageAsync(result.Result);
             }
             catch (InvalidOperationException ex)
             {
-                return Context.Channel.SendMessageAsync(ex.Message);
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -130,6 +136,13 @@ namespace MariBot.Core.Modules.Text
         public Task Migrate()
         {
             return Context.Channel.SendMessageAsync(staticTextResponseService.MigrateResponses(Context.Guild.Id, false));
+        }
+
+        [Command("upgrade", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task Upgrade()
+        {
+            await Context.Channel.SendMessageAsync(staticTextResponseService.UpgradeAttachments().Result);
         }
     }
 }

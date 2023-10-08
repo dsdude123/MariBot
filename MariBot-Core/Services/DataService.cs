@@ -126,6 +126,26 @@ namespace MariBot.Core.Services
         // Static Text Response Methods
 
         /// <summary>
+        /// Gets all static text responses
+        /// </summary>
+        /// <returns>All static text responses</returns>
+        public List<StaticTextResponse>? GetStaticTextResponse()
+        {
+            try
+            {
+
+                var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
+                return col.FindAll().ToList();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets a static text response
         /// </summary>
         /// <param name="id">Id to find</param>

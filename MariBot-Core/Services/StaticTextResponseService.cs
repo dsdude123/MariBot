@@ -1,5 +1,7 @@
-﻿using MariBot.Core.Models;
+﻿using Discord;
+using MariBot.Core.Models;
 using Newtonsoft.Json;
+using RestSharp.Extensions;
 
 namespace MariBot.Core.Services
 {
@@ -12,6 +14,9 @@ namespace MariBot.Core.Services
 
         private readonly DataService dataService;
 
+        private static readonly string UserAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
+
         public StaticTextResponseService(DataService dataService)
         {
             this.dataService = dataService;
@@ -23,14 +28,14 @@ namespace MariBot.Core.Services
         /// <param name="command">Command</param>
         /// <param name="guild">Guild ID</param>
         /// <returns>Static text response or null if not found</returns>
-        public string? GetResponse(string command, ulong guild)
+        public StaticTextResponse? GetResponse(string command, ulong guild)
         {
             var globalId = GenerateId(command);
             var guildId = GenerateId(command, guild);
 
             var response = dataService.GetStaticTextResponse(globalId) ?? dataService.GetStaticTextResponse(guildId);
 
-            return response?.Message;
+            return response;
         }
 
         /// <summary>
@@ -41,12 +46,65 @@ namespace MariBot.Core.Services
         /// <param name="guild">Guild ID</param>
         /// <param name="isGlobal">Should the command be registered as global</param>
         /// <returns>Status message</returns>
-        public string AddNewResponse(string command, string text, ulong guild, bool isGlobal)
+        public async Task<string> AddNewResponse(string command, string text, ulong guild, List<Attachment>? discordAttachments, bool isGlobal)
         {
+            var stringParts = text.Split(" ");
+            var attachments = new Dictionary<string, byte[]>();
+            var partsToRemove = new List<string>();
+
+            foreach (var part in stringParts)
+            {
+                try
+                {
+                    var uri = new Uri(part);
+                    if (uri.Host.EndsWith("cdn.discordapp.com", StringComparison.InvariantCultureIgnoreCase) || uri.Host.EndsWith("media.discordapp.com", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var filename = uri.AbsolutePath.Split("/").Last();
+                        var client = new HttpClient();
+                        var request = new HttpRequestMessage()
+                        {
+                            RequestUri = uri,
+                            Method = HttpMethod.Get
+                        };
+                        request.Headers.Add("User-Agent", UserAgent);
+                        var response = await client.SendAsync(request);
+                        response.EnsureSuccessStatusCode();
+                        var file =  await response.Content.ReadAsByteArrayAsync();
+                        attachments[filename] = file;
+                        partsToRemove.Add(part);
+                    }
+                } catch {}
+            }
+
+            foreach (var part in partsToRemove)
+            {
+                text = text.Replace(part, "");
+            }
+
+            if (discordAttachments != null)
+            {
+                foreach (var discordFile in discordAttachments)
+                {
+                    var client = new HttpClient();
+                    var request = new HttpRequestMessage()
+                    {
+                        RequestUri = new Uri(discordFile.Url),
+                        Method = HttpMethod.Get
+                    };
+                    request.Headers.Add("User-Agent", UserAgent);
+                    var response = await client.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    var file = await response.Content.ReadAsByteArrayAsync();
+                    attachments.Add(discordFile.Filename, file);
+                }
+            }
+
+
             var newResponse = new StaticTextResponse
             {
                 Command = command,
-                Message = text
+                Message = text,
+                Attachments = attachments
             };
 
             // Set values depending if global or not
@@ -91,12 +149,65 @@ namespace MariBot.Core.Services
         /// <param name="guild">Guild ID</param>
         /// <param name="isGlobal">Is the existing command global</param>
         /// <returns>Status message</returns>
-        public string UpdateResponse(string command, string text, ulong guild, bool isGlobal)
+        public async Task<string> UpdateResponse(string command, string text, ulong guild, List<Attachment>? discordAttachments, bool isGlobal)
         {
+            var stringParts = text.Split(" ");
+            var attachments = new Dictionary<string, byte[]>();
+            var partsToRemove = new List<string>();
+
+            foreach (var part in stringParts)
+            {
+                try
+                {
+                    var uri = new Uri(part);
+                    if (uri.Host.EndsWith("cdn.discordapp.com", StringComparison.InvariantCultureIgnoreCase) || uri.Host.EndsWith("media.discordapp.com", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var filename = uri.AbsolutePath.Split("/").Last();
+                        var client = new HttpClient();
+                        var request = new HttpRequestMessage()
+                        {
+                            RequestUri = uri,
+                            Method = HttpMethod.Get
+                        };
+                        request.Headers.Add("User-Agent", UserAgent);
+                        var response = await client.SendAsync(request);
+                        response.EnsureSuccessStatusCode();
+                        var file = await response.Content.ReadAsByteArrayAsync();
+                        attachments[filename] = file;
+                        partsToRemove.Add(part);
+                    }
+                }
+                catch { }
+            }
+
+            foreach (var part in partsToRemove)
+            {
+                text = text.Replace(part, "");
+            }
+
+            if (discordAttachments != null)
+            {
+                foreach (var discordFile in discordAttachments)
+                {
+                    var client = new HttpClient();
+                    var request = new HttpRequestMessage()
+                    {
+                        RequestUri = new Uri(discordFile.Url),
+                        Method = HttpMethod.Get
+                    };
+                    request.Headers.Add("User-Agent", UserAgent);
+                    var response = await client.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    var file = await response.Content.ReadAsByteArrayAsync();
+                    attachments.Add(discordFile.Filename, file);
+                }
+            }
+
             var newResponse = new StaticTextResponse
             {
                 Command = command,
-                Message = text
+                Message = text,
+                Attachments = attachments
             };
 
             // Set values depending if global or not
@@ -212,6 +323,66 @@ namespace MariBot.Core.Services
                 }
 
                 return "Migration complete.";
+            }
+
+        }
+
+        public async Task<string> UpgradeAttachments()
+        {
+            try
+            {
+                var existingResponses = dataService.GetStaticTextResponse();
+
+                foreach (var newResponse in existingResponses)
+                {
+                    if (newResponse.Attachments != null && newResponse.Attachments.Count > 0)
+                    {
+                        continue;
+                    }
+                    var stringParts = newResponse.Message.Split(" ");
+                    var attachments = new Dictionary<string, byte[]>();
+                    var partsToRemove = new List<string>();
+
+                    foreach (var part in stringParts)
+                    {
+                        try
+                        {
+                            var uri = new Uri(part);
+                            if (uri.Host.EndsWith("cdn.discordapp.com", StringComparison.InvariantCultureIgnoreCase) || uri.Host.EndsWith("media.discordapp.net", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var filename = uri.AbsolutePath.Split("/").Last();
+                                var client = new HttpClient();
+                                var request = new HttpRequestMessage()
+                                {
+                                    RequestUri = uri,
+                                    Method = HttpMethod.Get
+                                };
+                                request.Headers.Add("User-Agent", UserAgent);
+                                var response = await client.SendAsync(request);
+                                response.EnsureSuccessStatusCode();
+                                var file = await response.Content.ReadAsByteArrayAsync();
+                                attachments[filename] = file;
+                                partsToRemove.Add(part);
+                            }
+                        }
+                        catch { }
+                    }
+
+                    foreach (var part in partsToRemove)
+                    {
+                        newResponse.Message = newResponse.Message.Replace(part, "");
+                    }
+
+                    newResponse.Attachments = attachments;
+
+                    dataService.UpdateStaticTextResponse(newResponse);
+                }
+
+                return "Upgrade complete.";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message + "\n" + ex.StackTrace;
             }
 
         }

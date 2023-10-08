@@ -8,6 +8,8 @@
         public bool IsGlobal { get; set; }
         public string Message { get; set; }
 
+        public Dictionary<string, byte[]> Attachments { get; set; }
+
         private string GenerateId()
         {
             return IsGlobal ? $"{Command.ToLower()}:global" : $"{Command.ToLower()}:{GuildId}";

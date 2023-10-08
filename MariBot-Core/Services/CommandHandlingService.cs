@@ -154,7 +154,21 @@ namespace MariBot.Core.Services
                     if (staticResponse != null)
                     {
                         logger.LogInformation("Found matching static text response for {}", requestedCommand);
-                        await context.Channel.SendMessageAsync(staticResponse);
+                        if (staticResponse.Attachments != null && staticResponse.Attachments.Count > 0)
+                        {
+                            var files = new List<FileAttachment>();
+                            foreach (var file in staticResponse.Attachments)
+                            {
+                                var attachment = new FileAttachment(new MemoryStream(file.Value), file.Key);
+                                files.Add(attachment);
+                            }
+                            await context.Channel.SendFilesAsync(files, staticResponse.Message);
+                        }
+                        else
+                        {
+                            await context.Channel.SendMessageAsync(staticResponse.Message);
+                        }
+                        
                     }
                     else
                     {
