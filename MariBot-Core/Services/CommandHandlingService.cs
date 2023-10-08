@@ -205,11 +205,136 @@ namespace MariBot.Core.Services
                                     }
                                     catch (Exception ex)
                                     {
-                                        logger.LogWarning("Couldn't remove Twitter embed, are permissions or the embed missing?");
+                                        logger.LogWarning(
+                                            "Couldn't remove Twitter embed, are permissions or the embed missing?");
+                                        failedEmbedRemoves.Add(
+                                            $"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-ddinstagram"))
+                    {
+                            var ddParts = context.Message.Content.Split(" ");
+
+                            foreach (var text in ddParts)
+                            {
+                                try
+                                {
+                                    var url = new Uri(text);
+
+                                    if (url.Host.Equals("instagram.com", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        var urlBuilder = new UriBuilder(url);
+                                        urlBuilder.Host = "ddinstagram.com";
+                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+
+                                        try
+                                        {
+                                            await context.Message.ModifyAsync(message =>
+                                            {
+                                                message.Flags = MessageFlags.SuppressEmbeds;
+                                            });
+
+                                            var modified = await context.Channel.GetMessageAsync(context.Message.Id);
+                                            if (modified.Embeds.Count > 0)
+                                            {
+                                                throw new Exception("Failed to remove embed");
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            logger.LogWarning("Couldn't remove Instagram embed, are permissions or the embed missing?");
+                                            failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+                    }
+
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-rxddit"))
+                    {
+                        var ddParts = context.Message.Content.Split(" ");
+
+                        foreach (var text in ddParts)
+                        {
+                            try
+                            {
+                                var url = new Uri(text);
+
+                                if (url.Host.Equals("reddit.com", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var urlBuilder = new UriBuilder(url);
+                                    urlBuilder.Host = "rxddit.com";
+                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+
+                                    try
+                                    {
+                                        await context.Message.ModifyAsync(message =>
+                                        {
+                                            message.Flags = MessageFlags.SuppressEmbeds;
+                                        });
+
+                                        var modified = await context.Channel.GetMessageAsync(context.Message.Id);
+                                        if (modified.Embeds.Count > 0)
+                                        {
+                                            throw new Exception("Failed to remove embed");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogWarning("Couldn't remove Reddit embed, are permissions or the embed missing?");
                                         failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
                                     }
                                 }
-                            } catch { }
+                            }
+                            catch { }
+                        }
+                    }
+
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtiktok"))
+                    {
+                        var ddParts = context.Message.Content.Split(" ");
+
+                        foreach (var text in ddParts)
+                        {
+                            try
+                            {
+                                var url = new Uri(text);
+
+                                if (url.Host.Equals("tiktok.com", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var urlBuilder = new UriBuilder(url);
+                                    urlBuilder.Host = "vxtiktok.com";
+                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+
+                                    try
+                                    {
+                                        await context.Message.ModifyAsync(message =>
+                                        {
+                                            message.Flags = MessageFlags.SuppressEmbeds;
+                                        });
+
+                                        var modified = await context.Channel.GetMessageAsync(context.Message.Id);
+                                        if (modified.Embeds.Count > 0)
+                                        {
+                                            throw new Exception("Failed to remove embed");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogWarning("Couldn't remove Tiktok embed, are permissions or the embed missing?");
+                                        failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
+                                    }
+                                }
+                            }
+                            catch { }
                         }
                     }
 
