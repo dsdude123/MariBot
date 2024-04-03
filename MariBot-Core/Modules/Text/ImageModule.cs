@@ -151,25 +151,6 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Daryl);
         }
 
-        [Command("dalle", RunMode = RunMode.Async)]
-        [RequireOwner]
-        public async Task dalle([Remainder] string prompt)
-        {
-            try
-            {
-                string imageUrl = openAiService.ExecuteDalleQuery(prompt).Result;
-                await Context.Channel.SendMessageAsync($"{imageUrl}", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ArgumentException)
-            {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ApplicationException ex)
-            {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
-            }
-        }
-
         [Command("dave", RunMode = RunMode.Async)]
         public async Task dave([Remainder] string text = null)
         {

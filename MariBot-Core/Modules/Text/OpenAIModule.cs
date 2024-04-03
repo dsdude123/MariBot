@@ -13,11 +13,13 @@ namespace MariBot.Core.Modules.Text
     {
         private readonly DataService dataService;
         private readonly OpenAiService openAiService;
+        private readonly ImageService imageService;
 
-        public OpenAiModule(OpenAiService openAIService, DataService dataService)
+        public OpenAiModule(OpenAiService openAIService, DataService dataService, ImageService imageService)
         {
             this.openAiService = openAIService;
             this.dataService = dataService;
+            this.imageService = imageService;
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteChatGptQuery(Context.Guild.Id, Context.Channel.Id, Context.Message.Id, input);
+                var result = await openAiService.ExecuteChatGptQuery(Context.Guild.Id, Context.Channel.Id, Context.Message.Id, input, Context.User.Id.ToString());
                 var sentMessage = Context.Channel.SendMessageAsync($"```\n{result.Replace("```","")}\n```", messageReference: new MessageReference(Context.Message.Id)).Result;
                 if (!dataService.UpdateChatGptMessageHistoryId(Context.Guild.Id, Context.Channel.Id, Context.Message.Id,
                         sentMessage.Id))
@@ -54,22 +56,55 @@ namespace MariBot.Core.Modules.Text
         /// </summary>
         /// <param name="prompt">Input prompt</param>
         /// <returns></returns>
-        [RequireOwner]
         [Command("dalle", RunMode = RunMode.Async)]
         public async Task Dalle([Remainder] string prompt)
         {
             try
             {
-                var imageUrl = openAiService.ExecuteDalleQuery(prompt).Result;
-                await Context.Channel.SendMessageAsync($"{imageUrl}", messageReference: new MessageReference(Context.Message.Id));
+                var imageUrl = openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "standard").Result;
+                var stream = await imageService.GetWebResource(imageUrl);
+                await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ArgumentException)
             {
                 await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (ApplicationException ex)
+            catch (AggregateException ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+                if (ex.InnerException.GetType() == typeof(ApplicationException))
+                {
+                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}", messageReference: new MessageReference(Context.Message.Id));
+                }
+                else
+                {
+                    throw ex.InnerException;
+                }
+            }
+        }
+
+        [Command("dallehd", RunMode = RunMode.Async)]
+        public async Task DalleHd([Remainder] string prompt)
+        {
+            try
+            {
+                var imageUrl = openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "hd").Result;
+                var stream = await imageService.GetWebResource(imageUrl);
+                await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (ArgumentException)
+            {
+                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (AggregateException ex)
+            {
+                if (ex.InnerException.GetType() == typeof(ApplicationException))
+                {
+                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}", messageReference: new MessageReference(Context.Message.Id));
+                }
+                else
+                {
+                    throw ex.InnerException;
+                }
             }
         }
 
@@ -83,7 +118,7 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGpt3Query(input);
+                var result = await openAiService.ExecuteGpt3Query(input, Context.User.Id.ToString());
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ArgumentException)
@@ -106,7 +141,7 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGpt4Query(input);
+                var result = await openAiService.ExecuteGpt4Query(input, Context.User.Id.ToString());
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ArgumentException)
