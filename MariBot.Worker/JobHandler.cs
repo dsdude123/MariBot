@@ -180,8 +180,8 @@ namespace MariBot.Worker
                             FontStyle = FontStyleType.Bold,
                             FillColor = MagickColors.Black,
                             BackgroundColor = MagickColors.White,
-                            Width = 355,
-                            Height = 507
+                            Width = 980,
+                            Height = 1024
                         };
 
                         magickImageHandler.AnnotateImage("mugi", mugiSettings, MagickColors.White, 191, 354, 546, 354, 191, 861, 546, 861);
