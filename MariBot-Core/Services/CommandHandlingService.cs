@@ -151,7 +151,20 @@ namespace MariBot.Core.Services
                     }
 
                     var staticResponse = staticTextResponseService.GetResponse(requestedCommand, context.Guild.Id);
-                    if (staticResponse != null)
+
+
+                    var result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
+
+                    if (result.Error.HasValue &&
+                        result.Error.Value != CommandError.UnknownCommand)
+                    {
+                        logger.LogError("Command encountered an error. {}", result.ToString());
+                        await context.Channel.SendMessageAsync(result.ToString());
+                    }
+
+
+                    if (staticResponse != null && result.Error.HasValue &&
+                        result.Error.Value != CommandError.UnknownCommand)
                     {
                         logger.LogInformation("Found matching static text response for {}", requestedCommand);
                         if (staticResponse.Attachments != null && staticResponse.Attachments.Count > 0)
@@ -169,17 +182,6 @@ namespace MariBot.Core.Services
                             await context.Channel.SendMessageAsync(staticResponse.Message);
                         }
                         
-                    }
-                    else
-                    {
-                        var result = await commandService.ExecuteAsync(context, argPos, serviceProvider);
-
-                        if (result.Error.HasValue &&
-                            result.Error.Value != CommandError.UnknownCommand)
-                        {
-                            logger.LogError("Command encountered an error. {}", result.ToString());
-                            await context.Channel.SendMessageAsync(result.ToString());
-                        }
                     }
                 } 
                 else
