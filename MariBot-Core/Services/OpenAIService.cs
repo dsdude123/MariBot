@@ -1,8 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
 using MariBot.Core.Models.ChatGPT;
-using OpenAI.GPT3;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.Interfaces;
+using OpenAI.ObjectModels.RequestModels;
+using ApplicationException = System.ApplicationException;
 using MessageType = MariBot.Core.Models.ChatGPT.MessageType;
 
 namespace MariBot.Core.Services
@@ -12,19 +13,15 @@ namespace MariBot.Core.Services
     /// </summary>
     public class OpenAiService
     {
-        private readonly OpenAI.GPT3.Managers.OpenAIService apiClient;
+        private readonly IOpenAIService apiClient;
         private readonly DataService dataService;
         private readonly ILogger<OpenAiService> logger;
 
-        public OpenAiService(IConfiguration configuration, ILogger<OpenAiService> logger, DataService dataService)
+        public OpenAiService(IConfiguration configuration, ILogger<OpenAiService> logger, DataService dataService, IOpenAIService apiClient)
         {
             this.logger = logger;
             this.dataService = dataService;
-            apiClient = new OpenAI.GPT3.Managers.OpenAIService(
-                new OpenAiOptions()
-                {
-                    ApiKey = configuration["DiscordSettings:OpenAiApiKey"]
-                });
+            this.apiClient = apiClient;
         }
 
         /// <summary>
@@ -46,10 +43,10 @@ namespace MariBot.Core.Services
         /// <returns>Url to the image</returns>
         /// <exception cref="ArgumentException">Input fails safety checks</exception>
         /// <exception cref="ApplicationException">API error</exception>
-        public async Task<string> ExecuteDalleQuery(string input)
+        public async Task<string> ExecuteDalleQuery(string input, string userId, string quality)
         {
             // Perform safety checks
-            var moderationResult = await apiClient.CreateModeration(new CreateModerationRequest()
+            var moderationResult = await apiClient.Moderation.CreateModeration(new CreateModerationRequest()
             {
                 Input = input,
                 Model = "text-moderation-latest"
@@ -61,11 +58,14 @@ namespace MariBot.Core.Services
             }
 
             // Call OpenAI
-            var imageResult = await apiClient.CreateImage(new ImageCreateRequest()
+            var imageResult = await apiClient.Image.CreateImage(new ImageCreateRequest()
             {
                 Prompt = input,
                 Size = "1024x1024",
-                N = 1 // Generate N images
+                N = 1, // Generate N images,
+                User = userId,
+                Model = "dall-e-3",
+                Quality = quality
             });
 
             // Return result
@@ -86,10 +86,10 @@ namespace MariBot.Core.Services
         /// <returns>Response text</returns>
         /// <exception cref="ArgumentException">Input fails safety checks</exception>
         /// <exception cref="ApplicationException">API error</exception>
-        public async Task<string> ExecuteGpt3Query(string input)
+        public async Task<string> ExecuteGpt3Query(string input, string userId)
         {
             // Perform safety checks
-            var moderationResult = await apiClient.CreateModeration(new CreateModerationRequest()
+            var moderationResult = await apiClient.Moderation.CreateModeration(new CreateModerationRequest()
             {
                 Input = input,
                 Model = "text-moderation-latest"
@@ -101,16 +101,18 @@ namespace MariBot.Core.Services
             }
 
             // Call OpenAI
-            var textResult = await apiClient.CreateCompletion(new CompletionCreateRequest()
+            var textResult = await apiClient.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest()
             {
-                Prompt = input,
-                MaxTokens = 500
-            }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV3);
+                Messages = new[] { new ChatMessage("user", input) },
+                MaxTokens = 500,
+                Model = "gpt-3.5-turbo-1106",
+                User = userId
+            });
 
             // Return result
             if (textResult.Successful)
             {
-                var text = textResult.Choices.FirstOrDefault().Text;
+                var text = textResult.Choices.FirstOrDefault().Message.Content;
 
                 // Trim to meet Discord message length limits
                 if (text.Length > 1992)
@@ -133,10 +135,10 @@ namespace MariBot.Core.Services
         /// <returns>Response text</returns>
         /// <exception cref="ArgumentException">Input fails safety checks</exception>
         /// <exception cref="ApplicationException">API error</exception>
-        public async Task<string> ExecuteGpt4Query(string input)
+        public async Task<string> ExecuteGpt4Query(string input, string userId)
         {
             // Perform safety checks
-            var moderationResult = await apiClient.CreateModeration(new CreateModerationRequest()
+            var moderationResult = await apiClient.Moderation.CreateModeration(new CreateModerationRequest()
             {
                 Input = input,
                 Model = "text-moderation-latest"
@@ -151,9 +153,11 @@ namespace MariBot.Core.Services
             var completionResult = await apiClient.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest()
             {
                 Messages = new[] {new ChatMessage("user", input)},
-                MaxTokens = 500
+                MaxTokens = 500,
+                Model = "gpt-4-1106-preview",
+                User = userId
 
-            }, OpenAI.GPT3.ObjectModels.Models.Gpt4); // TODO: Upgrade to 32k when available
+            });
 
             // Return result
             if (completionResult.Successful)
@@ -185,11 +189,11 @@ namespace MariBot.Core.Services
         /// <exception cref="NotImplementedException">Message type not supported</exception>
         /// <exception cref="ArgumentException">Input failed safety checks</exception>
         /// <exception cref="ApplicationException">API error</exception>
-        public async Task<string> ExecuteChatGptQuery(ulong guildId, ulong channelId, ulong messageId, string input)
+        public async Task<string> ExecuteChatGptQuery(ulong guildId, ulong channelId, ulong messageId, string input, string userId)
         {
 
             // Perform safety checks
-            var moderationResult = await apiClient.CreateModeration(new CreateModerationRequest()
+            var moderationResult = await apiClient.Moderation.CreateModeration(new CreateModerationRequest()
             {
                 Input = input,
                 Model = "text-moderation-latest"
@@ -233,7 +237,8 @@ namespace MariBot.Core.Services
             {
                 Messages = messages,
                 MaxTokens = 500,
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo
+                Model = "gpt-4-1106-preview",
+                User = userId
             });
 
             // Save new message history and return result
@@ -270,7 +275,7 @@ namespace MariBot.Core.Services
             {
                 try
                 {
-                    var result = await ExecuteChatGptQuery(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id, replyContext.Message.Content);
+                    var result = await ExecuteChatGptQuery(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id, replyContext.Message.Content, replyContext.User.Id.ToString());
                     var sentMessage = replyContext.Channel.SendMessageAsync($"```\n{result}\n```", messageReference: new MessageReference(replyContext.Message.Id)).Result;
                     if (!dataService.UpdateChatGptMessageHistoryId(replyContext.Guild.Id, replyContext.Channel.Id, replyContext.Message.ReferencedMessage.Id,
                             sentMessage.Id))

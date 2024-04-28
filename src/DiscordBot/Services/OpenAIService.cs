@@ -1,5 +1,5 @@
 ﻿using MariBot.Models.ChatGPT;
-using OpenAI.GPT3;
+using OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.RequestModels;
 
 namespace MariBot.Services
 {
@@ -16,11 +16,11 @@ namespace MariBot.Services
         private static string globalPath = Environment.CurrentDirectory + "\\data\\global\\chatgpt.json";
         private static readonly string ApiKey = MariBot.Program.config["openAiApiKey"];
         private MessageStore messageStore;
-        private OpenAI.GPT3.Managers.OpenAIService apiClient;
+        private OpenAI.Managers.OpenAIService apiClient;
 
         public OpenAIService()
         {
-            apiClient = new OpenAI.GPT3.Managers.OpenAIService(new OpenAiOptions() { ApiKey = ApiKey });
+            apiClient = new OpenAI.Managers.OpenAIService(new OpenAiOptions() { ApiKey = ApiKey });
 
             if (File.Exists(globalPath))
             {
@@ -89,7 +89,7 @@ namespace MariBot.Services
             {
                 Prompt = input,
                 MaxTokens = 500
-            }, OpenAI.GPT3.ObjectModels.Models.TextDavinciV3);
+            }, OpenAI.ObjectModels.Models.TextDavinciV3);
 
             if (textResult.Successful)
             {
@@ -117,7 +117,7 @@ namespace MariBot.Services
                 switch (message.Item1)
                 {
                     case MessageType.Assistant:
-                        messages.Add(ChatMessage.FromAssistance(message.Item2));
+                        messages.Add(ChatMessage.FromAssistant(message.Item2));
                         break;
                     case MessageType.User:
                         messages.Add(ChatMessage.FromUser(message.Item2));
@@ -131,7 +131,7 @@ namespace MariBot.Services
             var completionResult = await apiClient.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
             {
                 Messages = messages,
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo
+                Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo
             });
 
             if (completionResult.Successful)

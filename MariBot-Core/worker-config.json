@@ -1,9 +1,5 @@
 ﻿[
   {
-    "Endpoint": "http://localhost:8092",
-    "Capabilities": [ "CPU" ]
-  },
-  {
     "Endpoint": "http://tokyo-2.nerv.jpn.com:8092",
     "Capabilities": [ "CPU", "ConsumerGPU" ]
   },

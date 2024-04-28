@@ -60,7 +60,7 @@ namespace MariBot.Worker.CommandHandlers
             
         }
 
-        public void OverlayImage(string filename, double overlayWidthPercentage = .75, double overlayHeightPercentage = .75, bool ignoreAspectRatio = false)
+        public void OverlayImage(string filename, double overlayWidthPercentage = .75, double overlayHeightPercentage = .75, bool ignoreAspectRatio = false, Gravity gravity = Gravity.Center)
         {
 
             bool isAnimated = IsAnimated(WorkerGlobals.Job.SourceImage);
@@ -82,7 +82,7 @@ namespace MariBot.Worker.CommandHandlers
                             overlay.Resize(geometry);
                             foreach (var frame in baseCollection)
                             {
-                                frame.Composite(overlay, Gravity.Center, CompositeOperator.Over);
+                                frame.Composite(overlay, gravity, CompositeOperator.Over);
                                 frame.GifDisposeMethod = GifDisposeMethod.None;
                                 outputCollection.Add(frame);
                             }
@@ -146,7 +146,7 @@ namespace MariBot.Worker.CommandHandlers
                             (int)(baseImage.Height * overlayHeightPercentage));
                         geometry.IgnoreAspectRatio = ignoreAspectRatio;
                         overlay.Resize(geometry);
-                        baseImage.Composite(overlay, Gravity.Center, CompositeOperator.Over);
+                        baseImage.Composite(overlay, gravity, CompositeOperator.Over);
                         baseImage.Write(outgoingImage, MagickFormat.Png);
                         outgoingImage.Seek(0, SeekOrigin.Begin);
                     }

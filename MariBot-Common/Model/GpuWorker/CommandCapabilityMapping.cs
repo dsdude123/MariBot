@@ -34,6 +34,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.DkOldies, WorkerCapability.CPU},
                 { Command.DsKoopa, WorkerCapability.CPU},
                 { Command.Edges2Hentai, WorkerCapability.ConsumerGPU},
+                { Command.Expert, WorkerCapability.CPU },
                 { Command.Herschel, WorkerCapability.CPU},
                 { Command.Kevin, WorkerCapability.CPU},
                 { Command.Kurisu, WorkerCapability.CPU},

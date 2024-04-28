@@ -13,8 +13,8 @@ using MariBot.Models;
 using MariBot.Modules;
 using MariBot.Services;
 using Newtonsoft.Json;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.Managers;
+using OpenAI.ObjectModels.RequestModels;
 
 namespace MariBot.Modules
 {
