@@ -18,8 +18,8 @@ using Xabe.FFmpeg;
 using Xabe.FFmpeg.Downloader;
 using ImageMagick;
 using Discord.Interactions;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3;
+using OpenAI.Managers;
+using OpenAI;
 
 namespace MariBot
 {
