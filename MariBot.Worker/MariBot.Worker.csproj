@@ -187,6 +187,9 @@
     <None Update="Content\spawnwave.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\tmobileexpert.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\trump.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

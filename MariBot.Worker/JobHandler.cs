@@ -143,6 +143,9 @@ namespace MariBot.Worker
                     case Command.Edges2Hentai:
                         // TODO: Implement
                         throw new NotImplementedException();
+                    case Command.Expert:
+                        magickImageHandler.OverlayImage("tmobileexpert", gravity: Gravity.Southwest);
+                        break;
                     case Command.Herschel:
                         magickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
                         break;

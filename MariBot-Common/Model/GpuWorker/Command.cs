@@ -31,6 +31,7 @@ namespace MariBot.Common.Model.GpuWorker
         DkOldies,
         DsKoopa,
         Edges2Hentai,
+        Expert,
         Herschel,
         Kevin,
         Kurisu,
