@@ -164,7 +164,7 @@ namespace MariBot.Core.Services
 
 
                     if (staticResponse != null && result.Error.HasValue &&
-                        result.Error.Value != CommandError.UnknownCommand)
+                        result.Error.Value == CommandError.UnknownCommand)
                     {
                         logger.LogInformation("Found matching static text response for {}", requestedCommand);
                         if (staticResponse.Attachments != null && staticResponse.Attachments.Count > 0)
