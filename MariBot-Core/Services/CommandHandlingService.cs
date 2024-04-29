@@ -18,6 +18,8 @@ namespace MariBot.Core.Services
     public class CommandHandlingService
     {
         private static readonly string[] twitterDomains = new string[] { "twitter.com", "x.com", "www.twitter.com", "www.x.com" };
+        private static readonly string[] instagramDomains = new string[] { "instagram.com", "www.instagram.com"};
+        private static readonly string[] tiktokDomains = new string[] { "tiktok.com", "www.tiktok.com" };
         private static readonly Regex keepOnlyAlphaNum = new("[^a-zA-Z0-9 -]");
         private static readonly Regex latexDetector = new("\\$[^$]+\\$");
 
@@ -245,7 +247,7 @@ namespace MariBot.Core.Services
                                 {
                                     var url = new Uri(text);
 
-                                    if (url.Host.EndsWith("instagram.com", StringComparison.InvariantCultureIgnoreCase))
+                                    if (instagramDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                     {
                                         var urlBuilder = new UriBuilder(url);
                                         urlBuilder.Host = "ddinstagram.com";
@@ -325,7 +327,7 @@ namespace MariBot.Core.Services
                             {
                                 var url = new Uri(text);
 
-                                if (url.Host.EndsWith("tiktok.com", StringComparison.InvariantCultureIgnoreCase))
+                                if (tiktokDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtiktok.com";
