@@ -181,6 +181,12 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Nuke);
         }
 
+        [Command("expert", RunMode = RunMode.Async)]
+        public async Task Expert([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.Expert);
+        }
+
         [Command("e2h", RunMode = RunMode.Async)]
         public async Task Edges2Hentai([Remainder] string text = null)
         {
