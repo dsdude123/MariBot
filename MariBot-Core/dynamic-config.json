@@ -3,7 +3,7 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion", "auto-vxtwitter", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ]
+      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ]
     },
     {
       "Id": 410597263363276801,
@@ -20,13 +20,13 @@
     {
       "Id": 297485054836342786,
       "Name": "CSS",
-      "EnabledFeatures": [ "auto-image-conversion", "latex", "emoji-triggers", "auto-vxtwitter", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ],
+      "EnabledFeatures": [ "auto-image-conversion", "latex", "emoji-triggers", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ],
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt", "gpt4", "dalle", "dallehd" ]
     },
     {
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
-      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion", "auto-vxtwitter", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ],
+      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion",  "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ],
       "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere"],
       "AutoReactions": [
         {
@@ -49,7 +49,7 @@
     {
       "Id": 1004662899756769371,
       "Name": "booba",
-      "EnabledFeatures": [ "auto-vxtwitter", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ]
+      "EnabledFeatures": [  "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ]
     }
   ]
 }
