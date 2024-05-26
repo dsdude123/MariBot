@@ -295,3 +295,7 @@ __pycache__/
 /MariBot-Core/data.db
 *.db
 /MariBot-Core/yahoo-auth.json
+
+# AI Stuff
+*.pb
+*.onnx
