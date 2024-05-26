@@ -195,19 +195,28 @@ namespace MariBot.Core.Services
                     // Anti-Elon Feature
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtwitter"))
                     {
-                        var vxParts = context.Message.Content.Split(" ");
+                        var vxParts = context.Message.Content.Split(new char[] { ' ', '\n' });
 
                         foreach (var text in vxParts)
                         {
                             try
                             {
-                                var url = new Uri(text);
+                                var trimmed = text.Trim('|');
+                                var url = new Uri(trimmed);
 
                                 if (twitterDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtwitter.com";
-                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    urlBuilder.Query = null;
+                                    if (IsInSpoiler(trimmed, context.Message.Content))
+                                    {
+                                        await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
+                                    } else
+                                    {
+                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    }
+                                    
 
                                     try
                                     {
@@ -239,21 +248,29 @@ namespace MariBot.Core.Services
 
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-ddinstagram"))
                     {
-                            var ddParts = context.Message.Content.Split(" ");
+                            var ddParts = context.Message.Content.Split(new char[] {' ', '\n'});
 
                             foreach (var text in ddParts)
                             {
                                 try
                                 {
-                                    var url = new Uri(text);
+                                    var trimmed = text.Trim('|');
+                                    var url = new Uri(trimmed);
 
                                     if (instagramDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                     {
                                         var urlBuilder = new UriBuilder(url);
                                         urlBuilder.Host = "ddinstagram.com";
-                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                        if (IsInSpoiler(trimmed, context.Message.Content))
+                                        {
+                                            await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
+                                        }
+                                        else
+                                        {
+                                            await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                        }
 
-                                        try
+                                    try
                                         {
                                             await context.Message.ModifyAsync(message =>
                                             {
@@ -279,19 +296,27 @@ namespace MariBot.Core.Services
 
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-rxddit"))
                     {
-                        var ddParts = context.Message.Content.Split(" ");
+                        var ddParts = context.Message.Content.Split(new char[] { ' ', '\n' });
 
                         foreach (var text in ddParts)
                         {
                             try
                             {
-                                var url = new Uri(text);
+                                var trimmed = text.Trim('|');
+                                var url = new Uri(trimmed);
 
                                 if (url.Host.EndsWith("reddit.com", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "rxddit.com";
-                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    if (IsInSpoiler(trimmed, context.Message.Content))
+                                    {
+                                        await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
+                                    }
+                                    else
+                                    {
+                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    }
 
                                     try
                                     {
@@ -319,19 +344,27 @@ namespace MariBot.Core.Services
 
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtiktok"))
                     {
-                        var ddParts = context.Message.Content.Split(" ");
+                        var ddParts = context.Message.Content.Split(new char[] {' ', '\n'});
 
                         foreach (var text in ddParts)
                         {
                             try
                             {
-                                var url = new Uri(text);
+                                var trimmed = text.Trim('|');
+                                var url = new Uri(trimmed);
 
                                 if (tiktokDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
                                     urlBuilder.Host = "vxtiktok.com";
-                                    await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    if (IsInSpoiler(trimmed, context.Message.Content))
+                                    {
+                                        await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
+                                    }
+                                    else
+                                    {
+                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    }
 
                                     try
                                     {
@@ -490,6 +523,13 @@ namespace MariBot.Core.Services
                     return channel;
             }
             return null;
+        }
+
+        private bool IsInSpoiler(string section, string source)
+        {
+            string pattern = $"\\|\\|\\s*{section}\\s*\\|\\|";
+
+            return Regex.IsMatch(source, pattern);
         }
     }
 }
