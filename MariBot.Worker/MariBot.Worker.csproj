@@ -205,6 +205,9 @@
     <None Update="Content\trump5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\trump6.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Python\Environments\ldm.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
