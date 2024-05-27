@@ -152,6 +152,9 @@ namespace MariBot.Worker
                     case Command.Kevin:
                         magickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
                         break;
+                    case Command.KingPortrait:
+                        magickImageHandler.ReverseOverlayImage("kingportrait", 181, 31, 340, 26, 180, 253, 340, 255);
+                        break;
                     case Command.Kurisu:
                         var kurisuSettings = new MagickReadSettings
                         {

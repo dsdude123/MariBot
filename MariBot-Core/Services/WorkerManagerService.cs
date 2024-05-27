@@ -80,8 +80,9 @@ namespace MariBot.Core.Services
         /// Handles a returned result from a worker
         /// </summary>
         /// <param name="job">Completed job</param>
-        public void ReturnResult(WorkerJob job)
+        public async Task ReturnResultAsync(WorkerJob job)
         {
+            logger.LogInformation("Job {} is being returned.", job.Id.ToString());
             if (job.Result != null)
             {
                 IGuild guild = FindServer(job.GuildId);
@@ -89,9 +90,11 @@ namespace MariBot.Core.Services
 
                 if (job.Result.FileName != null && job.Result.Data != null)
                 {
+                    logger.LogInformation($"Job file name is {job.Result.FileName}");
+                    logger.LogInformation($"Job file size is {job.Result.Data.Length} bytes");
                     try
                     {
-                        channel.SendFileAsync(new MemoryStream(job.Result.Data), job.Result.FileName,
+                        await channel.SendFileAsync(new MemoryStream(job.Result.Data), job.Result.FileName,
                             job.Result.Message, messageReference: new MessageReference(job.MessageId));
                     }
                     catch (Exception ex)
@@ -101,13 +104,14 @@ namespace MariBot.Core.Services
                 }
                 else
                 {
-                    channel.SendMessageAsync(job.Result.Message, messageReference: new MessageReference(job.MessageId));
+                    logger.LogWarning("FileName or Data was null. Message {}", job.Result.Message);
+                    await channel.SendMessageAsync(job.Result.Message, messageReference: new MessageReference(job.MessageId));
                 }
 
                 try
                 {
                     var notificationToDelete = AcceptanceNotifications[job.Id];
-                    channel.DeleteMessagesAsync(new[] { notificationToDelete });
+                    await channel.DeleteMessagesAsync(new[] { notificationToDelete });
                 }
                 catch (Exception ex)
                 {
@@ -197,7 +201,7 @@ namespace MariBot.Core.Services
                             {
                                 Message = "An error occurred while sending your request to a worker."
                             };
-                            ReturnResult(job);
+                            ReturnResultAsync(job);
                             pendingJobs.RemoveAt(i);
                             jobDispatchTimer.Enabled = true;
                             return;
@@ -212,7 +216,7 @@ namespace MariBot.Core.Services
                         {
                             Message = "The required worker was marked out of service before your request could be processed. Please try again later."
                         };
-                        ReturnResult(job);
+                        ReturnResultAsync(job);
                         pendingJobs.RemoveAt(i);
                         jobDispatchTimer.Enabled = true;
                         return;

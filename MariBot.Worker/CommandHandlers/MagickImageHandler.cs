@@ -8,7 +8,7 @@ namespace MariBot.Worker.CommandHandlers
 {
     public class MagickImageHandler
     {
-        private static readonly int EIGHT_MB = 8000000;
+        private static readonly int SIZE_LIMIT_BYTES = 25000000;
 
         private readonly OpenCVHandler openCvHandler;
 
@@ -92,7 +92,7 @@ namespace MariBot.Worker.CommandHandlers
                     }
                 }
 
-                if (outgoingImage.Length > EIGHT_MB)
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                 {
                     double[] scales = new double[] { 75, 50, 25 };
                     for (int i = 0; i < 3; i++)
@@ -110,7 +110,7 @@ namespace MariBot.Worker.CommandHandlers
                             MemoryStream newResized = new MemoryStream();
                             outputDownscale.Write(newResized, MagickFormat.Gif);
 
-                            if (newResized.Length < EIGHT_MB)
+                            if (newResized.Length < SIZE_LIMIT_BYTES)
                             {
                                 outgoingImage = new MemoryStream();
                                 newResized.Seek(0, SeekOrigin.Begin);
@@ -120,7 +120,7 @@ namespace MariBot.Worker.CommandHandlers
                         }
                     }
                 }
-                if (outgoingImage.Length > EIGHT_MB)
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                 {
                     WorkerGlobals.Job.Result = new JobResult
                     {
@@ -230,7 +230,7 @@ namespace MariBot.Worker.CommandHandlers
                     }
 
                     outgoingImage.Seek(0, SeekOrigin.Begin);
-                    if (outgoingImage.Length > EIGHT_MB)
+                    if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                     {
                         double[] scales = new double[] { 75, 50, 25 };
                         for (int i = 0; i < 3; i++)
@@ -248,7 +248,7 @@ namespace MariBot.Worker.CommandHandlers
                                 MemoryStream newResized = new MemoryStream();
                                 outputDownscale.Write(newResized, MagickFormat.Gif);
 
-                                if (newResized.Length < EIGHT_MB)
+                                if (newResized.Length < SIZE_LIMIT_BYTES)
                                 {
                                     outgoingImage = new MemoryStream();
                                     newResized.Seek(0, SeekOrigin.Begin);
@@ -259,7 +259,7 @@ namespace MariBot.Worker.CommandHandlers
                         }
                     }
                 }
-                if (outgoingImage.Length > EIGHT_MB)
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                 {
                     WorkerGlobals.Job.Result = new JobResult
                     {
@@ -334,7 +334,7 @@ namespace MariBot.Worker.CommandHandlers
                     }
                 }
 
-                if (outgoingImage.Length > EIGHT_MB)
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                 {
                     double[] scales = new double[] { 75, 50, 25 };
                     for (int i = 0; i < 3; i++)
@@ -352,7 +352,7 @@ namespace MariBot.Worker.CommandHandlers
                             MemoryStream newResized = new MemoryStream();
                             outputDownscale.Write(newResized, MagickFormat.Gif);
 
-                            if (newResized.Length < EIGHT_MB)
+                            if (newResized.Length < SIZE_LIMIT_BYTES)
                             {
                                 outgoingImage = new MemoryStream();
                                 newResized.Seek(0, SeekOrigin.Begin);
@@ -362,7 +362,7 @@ namespace MariBot.Worker.CommandHandlers
                         }
                     }
                 }
-                if (outgoingImage.Length > EIGHT_MB)
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                 {
                     WorkerGlobals.Job.Result = new JobResult
                     {
@@ -506,7 +506,7 @@ namespace MariBot.Worker.CommandHandlers
                     }
 
                     outgoingImage.Seek(0, SeekOrigin.Begin);
-                    if (outgoingImage.Length > EIGHT_MB)
+                    if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                     {
                         double[] scales = new double[] { 75, 50, 25 };
                         for (int i = 0; i < 3; i++)
@@ -524,7 +524,7 @@ namespace MariBot.Worker.CommandHandlers
                                 MemoryStream newResized = new MemoryStream();
                                 outputDownscale.Write(newResized, MagickFormat.Gif);
 
-                                if (newResized.Length < EIGHT_MB)
+                                if (newResized.Length < SIZE_LIMIT_BYTES)
                                 {
                                     outgoingImage = new MemoryStream();
                                     newResized.Seek(0, SeekOrigin.Begin);
@@ -534,7 +534,7 @@ namespace MariBot.Worker.CommandHandlers
                             }
                         }
                     }
-                    if (outgoingImage.Length > EIGHT_MB)
+                    if (outgoingImage.Length > SIZE_LIMIT_BYTES)
                     {
                         WorkerGlobals.Job.Result = new JobResult
                         {
@@ -752,6 +752,145 @@ namespace MariBot.Worker.CommandHandlers
                 }
             }
 
+        }
+
+        public void ReverseOverlayImage(string filename,
+    int x1Dest, int y1Dest, int x2Dest, int y2Dest, int x3Dest, int y3Dest, int x4Dest, int y4Dest)
+        {
+            int[] xCoords = new int[] { x1Dest, x2Dest, x3Dest, x4Dest };
+            int minimumOverlayWidth = xCoords.Max();
+            int[] yCoords = new int[] { y1Dest, y2Dest, y3Dest, y4Dest };
+            int minimumOverlayHeight = yCoords.Max();
+
+            bool isAnimated = IsAnimated(WorkerGlobals.Job.SourceImage);
+
+            MemoryStream outgoingImage = new MemoryStream();
+
+            if (isAnimated)
+            {
+                using (var baseImage = new MagickImageCollection(Environment.CurrentDirectory + "\\Content\\" + filename + ".gif"))
+                {
+                    using (var outputCollection = new MagickImageCollection())
+                    {
+                        using (var overlayCollection = new MagickImageCollection(WorkerGlobals.Job.SourceImage))
+                        {
+                            baseImage.Coalesce();
+                            overlayCollection.Coalesce();
+
+                            var overlayEnumerator = overlayCollection.GetEnumerator();
+
+                            foreach (var baseFrame in baseImage)
+                            {
+                                if (!overlayEnumerator.MoveNext())
+                                {
+                                    overlayEnumerator = overlayCollection.GetEnumerator();
+                                    overlayEnumerator.MoveNext();
+                                }
+                                MagickImage frame = new MagickImage(overlayEnumerator.Current);
+
+                                while (frame.Width < minimumOverlayWidth || frame.Height < minimumOverlayHeight)
+                                {
+                                    frame.Scale(new Percentage(110), new Percentage(110));
+                                }
+                                int xMax = frame.Width - 1;
+                                int yMax = frame.Height - 1;
+                                frame.ColorAlpha(new MagickColor(0, 0, 0));
+                                frame.VirtualPixelMethod = VirtualPixelMethod.Transparent;
+                                frame.Distort(DistortMethod.Perspective, new double[] { 0, 0, x1Dest, y1Dest, xMax, 0, x2Dest, y2Dest, 0, yMax, x3Dest, y3Dest, xMax, yMax, x4Dest, y4Dest });
+                                frame.GifDisposeMethod = GifDisposeMethod.None;
+                                frame.Crop(baseFrame.Width, baseFrame.Height);
+                                MagickImage newBase = new MagickImage(baseFrame);
+                                newBase.Composite(frame, CompositeOperator.DstOver);
+                                outputCollection.Add(new MagickImage(newBase));
+                            }
+                        }
+                        outputCollection.OptimizeTransparency();
+                        outputCollection.Write(outgoingImage, MagickFormat.Gif);
+                    }
+
+                    outgoingImage.Seek(0, SeekOrigin.Begin);
+                    if (outgoingImage.Length > SIZE_LIMIT_BYTES)
+                    {
+                        double[] scales = new double[] { 75, 50, 25 };
+                        for (int i = 0; i < 3; i++)
+                        {
+                            using (var outputDownscale = new MagickImageCollection())
+                            {
+                                using (var inputImage = new MagickImageCollection(outgoingImage))
+                                {
+                                    foreach (var frame in inputImage)
+                                    {
+                                        frame.Resize(new Percentage(scales[i]));
+                                        outputDownscale.Add(new MagickImage(frame));
+                                    }
+                                }
+                                MemoryStream newResized = new MemoryStream();
+                                outputDownscale.Write(newResized, MagickFormat.Gif);
+
+                                if (newResized.Length < SIZE_LIMIT_BYTES)
+                                {
+                                    outgoingImage = new MemoryStream();
+                                    newResized.Seek(0, SeekOrigin.Begin);
+                                    newResized.CopyTo(outgoingImage);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (outgoingImage.Length > SIZE_LIMIT_BYTES)
+                {
+                    WorkerGlobals.Job.Result = new JobResult
+                    {
+                        Message = "Failed to process request. Input was too big."
+                    };
+                }
+                else
+                {
+                    WorkerGlobals.Job.Result = new JobResult
+                    {
+                        FileName = "result.gif",
+                        Data = outgoingImage.ToArray()
+                    };
+                }
+            }
+            else
+            {
+                using (var baseImage = new MagickImageCollection(Environment.CurrentDirectory + "\\Content\\" + filename + ".gif"))
+                {
+                    using (var outputCollection = new MagickImageCollection())
+                    {
+                        using (var overlayImage = new MagickImage(WorkerGlobals.Job.SourceImage))
+                        {
+                            while (overlayImage.Width < minimumOverlayWidth || overlayImage.Height < minimumOverlayHeight)
+                            {
+                                overlayImage.Scale(new Percentage(110), new Percentage(110));
+                            }
+                            int xMax = overlayImage.Width - 1;
+                            int yMax = overlayImage.Height - 1;
+                            overlayImage.ColorAlpha(new MagickColor(0, 0, 0));
+                            overlayImage.VirtualPixelMethod = VirtualPixelMethod.Transparent;
+                            overlayImage.Distort(DistortMethod.Perspective, new double[] { 0, 0, x1Dest, y1Dest, xMax, 0, x2Dest, y2Dest, 0, yMax, x3Dest, y3Dest, xMax, yMax, x4Dest, y4Dest });
+                            foreach (var frame in baseImage)
+                            {
+                                MagickImage newBase = new MagickImage(frame);
+                                newBase.GifDisposeMethod = GifDisposeMethod.None;
+                                newBase.Composite(overlayImage, CompositeOperator.DstOver);
+                                outputCollection.Add(newBase);
+                            }
+
+                        }
+                        outputCollection.OptimizeTransparency();
+                        outputCollection.Write(outgoingImage, MagickFormat.Gif);
+                    }
+
+                }
+                WorkerGlobals.Job.Result = new JobResult
+                {
+                    FileName = "result.gif",
+                    Data = outgoingImage.ToArray()
+                };
+            }
         }
 
         /// <summary>

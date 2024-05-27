@@ -17,9 +17,9 @@ namespace MariBot.Core.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] WorkerJob job)
+        public async void Post([FromBody] WorkerJob job)
         {
-            workerManagerService.ReturnResult(job);
+            await workerManagerService.ReturnResultAsync(job);
         }
     }
 }

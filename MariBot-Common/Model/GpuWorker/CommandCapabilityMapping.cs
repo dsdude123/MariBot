@@ -37,6 +37,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.Expert, WorkerCapability.CPU },
                 { Command.Herschel, WorkerCapability.CPU},
                 { Command.Kevin, WorkerCapability.CPU},
+                { Command.KingPortrait, WorkerCapability.CPU},
                 { Command.Kurisu, WorkerCapability.CPU},
                 { Command.NineGag, WorkerCapability.CPU},
                 { Command.Makoto, WorkerCapability.CPU},

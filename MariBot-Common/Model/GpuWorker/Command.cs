@@ -34,6 +34,7 @@ namespace MariBot.Common.Model.GpuWorker
         Expert,
         Herschel,
         Kevin,
+        KingPortrait,
         Kurisu,
         NineGag,
         Makoto,
