@@ -229,6 +229,9 @@
     <None Update="Python\pokemon.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Python\stablediffusion3-text.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Python\stablediffusion-text.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -265,7 +265,7 @@ namespace MariBot.Worker
                         magickImageHandler.OverlayImage("spawnwave", 0, 0, 984, 0, 0, 719, 984, 719);
                         break;
                     case Command.StableDiffusion:
-                        stableDiffusionTextVariantHandler.ExecuteStableDiffusion("stablediffusion-text");
+                        stableDiffusionTextVariantHandler.ExecuteStableDiffusion("stablediffusion3-text");
                         break;
                     case Command.StableDiffusionPokemon:
                         stableDiffusionTextVariantHandler.ExecuteStableDiffusion("pokemon");

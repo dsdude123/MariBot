@@ -55,7 +55,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.Scarecrow, WorkerCapability.CPU},
                 { Command.SonicSays, WorkerCapability.CPU},
                 { Command.Spawnwave, WorkerCapability.CPU},
-                { Command.StableDiffusion, WorkerCapability.ConsumerGPU},
+                { Command.StableDiffusion, WorkerCapability.DatacenterGPU},
                 { Command.StableDiffusionPokemon, WorkerCapability.ConsumerGPU},
                 { Command.StableDiffusionWaifu, WorkerCapability.ConsumerGPU},
                 { Command.Trump, WorkerCapability.CPU},
