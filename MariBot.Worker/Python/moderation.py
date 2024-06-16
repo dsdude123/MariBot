@@ -12,6 +12,7 @@ request_guid = sys.argv[1]
 # Load text prompt into file
 file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
 prompt = file.read()
+prompt = prompt.replace('"', '')
 file.close()
 
 results = Detoxify('multilingual', device='cuda').predict([prompt])
