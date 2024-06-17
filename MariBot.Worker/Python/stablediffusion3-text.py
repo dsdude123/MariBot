@@ -12,7 +12,7 @@ hf_token = sys.argv[2]
 login(token=hf_token)
 
 # Load text prompt into file
-file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt")
+file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt","r",encoding='utf-8')
 prompt = file.read()
 file.close()
 
