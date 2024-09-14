@@ -150,7 +150,11 @@ namespace MariBot.Worker
                         magickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
                         break;
                     case Command.Kevin:
-                        magickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
+                        HandleRandomOverlay(new List<Tuple<string, int[]>>()
+                        {
+                            new("kevin", new []{1119, 363, 1960, 163, 1123, 674, 1831, 749}),
+                            new("kevin2", new []{675, 7, 1343, 66, 688, 296, 1341, 289})
+                        });
                         break;
                     case Command.KingPortrait:
                         magickImageHandler.ReverseOverlayImage("kingportrait", 181, 31, 340, 26, 180, 253, 340, 255);
