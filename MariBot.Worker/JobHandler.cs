@@ -150,6 +150,9 @@ namespace MariBot.Worker
                     case Command.Herschel:
                         magickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
                         break;
+                    case Command.Kamala:
+                        magickImageHandler.OverlayImage("kamala", 177, 188, 553, 288, 83, 627, 462, 677);
+                        break
                     case Command.Kevin:
                         HandleRandomOverlay(new List<Tuple<string, int[]>>()
                         {
