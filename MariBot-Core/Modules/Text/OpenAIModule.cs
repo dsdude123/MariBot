@@ -61,7 +61,7 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var imageUrl = openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "standard").Result;
+                var imageUrl = await openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "standard");
                 var stream = await imageService.GetWebResource(imageUrl);
                 await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
             }
@@ -87,7 +87,7 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var imageUrl = openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "hd").Result;
+                var imageUrl = await openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "hd");
                 var stream = await imageService.GetWebResource(imageUrl);
                 await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
             }
