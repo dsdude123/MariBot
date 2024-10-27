@@ -1,0 +1,16 @@
+﻿namespace MariBot.Core.Models.Election
+{
+    public class Ballot
+    {
+        public string Id => GenerateId();
+        public ulong ElectorId { get; set; }
+        public string PollId { get; set; }
+        public int Vote {  get; set; }
+
+        public string GenerateId()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+    }
+}

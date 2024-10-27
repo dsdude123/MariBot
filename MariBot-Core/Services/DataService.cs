@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using System.Text;
 using MariBot.Core.Models;
 using MariBot.Core.Models.ChatGPT;
+using Discord;
+using MariBot.Core.Models.Election;
 
 namespace MariBot.Core.Services
 {
@@ -154,11 +156,11 @@ namespace MariBot.Core.Services
         {
             try
             {
-
+ 
                 var col = db.GetCollection<StaticTextResponse>("staticTextResponses");
                 return col.FindById(id);
 
-            }
+        }
             catch (Exception ex)
             {
                 logger.LogCritical("Failed to read from DB. {}", ex.Message);
@@ -374,6 +376,109 @@ namespace MariBot.Core.Services
                 return false;
             }
             return true;
+        }
+
+        public Models.Election.Poll GetPoll(string id)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Models.Election.Poll>("polls");
+                return col.FindById(id);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        public IEnumerable<Models.Election.Poll> GetPollsByStatus(PollStatus status)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Models.Election.Poll>("polls");
+                return col.Query()
+                    .Where(x => x.Status == status)
+                    .ToList();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        public bool UpdatePoll(Models.Election.Poll poll)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Models.Election.Poll>("polls");
+                col.Upsert(poll);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public List<Ballot> GetBallots(ulong electorId, string pollId) 
+        {
+            try
+            {
+
+                var col = db.GetCollection<Ballot>("ballots");
+                return col.Query()
+                    .Where(x => x.PollId.Equals(pollId))
+                    .Where(x => x.ElectorId.Equals(electorId))
+                    .ToList();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        public bool UpdateBallot(Ballot ballot)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Ballot>("ballots");
+                col.Upsert(ballot);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteBallot(Ballot ballot)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Ballot>("ballots");
+                return col.Delete(ballot.Id);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
         }
 
     }

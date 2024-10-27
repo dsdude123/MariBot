@@ -29,6 +29,7 @@
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.49.0.2084" />
     <PackageReference Include="Google.Apis.Kgsearch.v1" Version="1.60.0.2143" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="IGDB" Version="5.1.0" />
     <PackageReference Include="linqtotwitter" Version="5.0.0" />
     <PackageReference Include="LiteDB" Version="5.0.16" />
     <PackageReference Include="MathParser.org-mXparser" Version="5.2.1" />
