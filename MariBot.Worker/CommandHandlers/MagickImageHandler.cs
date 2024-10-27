@@ -8,7 +8,7 @@ namespace MariBot.Worker.CommandHandlers
 {
     public class MagickImageHandler
     {
-        private static readonly int SIZE_LIMIT_BYTES = 25000000;
+        private static readonly int SIZE_LIMIT_BYTES = 10000000;
 
         private readonly OpenCVHandler openCvHandler;
 

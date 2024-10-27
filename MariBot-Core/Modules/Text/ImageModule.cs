@@ -205,6 +205,12 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.JohnRiggs);
         }
 
+        [Command("kamala", RunMode = RunMode.Async)]
+        public async Task kamala([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.Kamala);
+        }
+
         [Command("kevin", RunMode = RunMode.Async)]
         public async Task kevin([Remainder] string text = null)
         {

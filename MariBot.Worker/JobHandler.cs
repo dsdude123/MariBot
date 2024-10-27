@@ -125,7 +125,8 @@ namespace MariBot.Worker
                             new("daryl6", new []{822, 1347, 882, 1338, 829, 1389, 890, 1379}),
                             new("daryl7", new []{1648, 1528, 2426, 1495, 1655, 2288, 2542, 2264}),
                             new("daryl8", new []{1126, 501, 1940, 311, 1135, 801, 1914, 862}),
-                            new("daryl9", new []{1098, 448, 1903, 268, 1100, 754, 1846, 809})
+                            new("daryl9", new []{1098, 448, 1903, 268, 1100, 754, 1846, 809}),
+                            new("daryl10", new []{235, 832, 778, 776, 278, 1282, 829, 1197})
                         });
                         break;
                     case Command.Dave:
@@ -152,8 +153,15 @@ namespace MariBot.Worker
                     case Command.JohnRiggs:
                         magickImageHandler.OverlayImage("johnriggs", 509, 232, 838, 204, 542, 617, 872, 574);
                         break;
+                    case Command.Kamala:
+                        magickImageHandler.OverlayImage("kamala", 177, 188, 553, 288, 83, 627, 462, 677);
+                        break;
                     case Command.Kevin:
-                        magickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
+                        HandleRandomOverlay(new List<Tuple<string, int[]>>()
+                        {
+                            new("kevin", new []{1119, 363, 1960, 163, 1123, 674, 1831, 749}),
+                            new("kevin2", new []{675, 7, 1343, 66, 688, 296, 1341, 289})
+                        });
                         break;
                     case Command.KingPortrait:
                         magickImageHandler.ReverseOverlayImage("kingportrait", 181, 31, 340, 26, 180, 253, 340, 255);
@@ -284,7 +292,8 @@ namespace MariBot.Worker
                             new("trump3", new []{1188, 399, 1667, 473, 1119, 1024, 1627, 1103}),
                             new("trump4", new []{1433, 234, 1755, 248, 1413, 567, 1737, 577}),
                             new("trump5", new []{112, 216, 335, 234, 104, 485, 300, 500}),
-                            new("trump6", new[]{47, 421, 519, 493, 7, 1028, 480, 1091})
+                            new("trump6", new[]{47, 421, 519, 493, 7, 1028, 480, 1091}),
+                            new("trump7", new[]{246, 169, 1031, 162, 260, 607, 1020, 531})
                         });
                         break;
                     case Command.TransactionDenied:
