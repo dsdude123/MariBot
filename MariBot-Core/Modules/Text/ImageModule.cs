@@ -322,6 +322,8 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Trump);
         }
 
+
+
         private async void HandleCommonImageScenario(Command command)
         {
             var imageUrl = await imageService.GetImageUrl(Context);

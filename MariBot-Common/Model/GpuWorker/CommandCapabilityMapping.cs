@@ -59,6 +59,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.StableDiffusionPokemon, WorkerCapability.ConsumerGPU},
                 { Command.StableDiffusionWaifu, WorkerCapability.ConsumerGPU},
                 { Command.Trump, WorkerCapability.CPU},
+                { Command.TransactionDenied, WorkerCapability.CPU }
             };
     }
 }

@@ -284,6 +284,21 @@ namespace MariBot.Worker
                             new("trump6", new[]{47, 421, 519, 493, 7, 1028, 480, 1091})
                         });
                         break;
+                    case Command.TransactionDenied:
+                        var tdReadSettings = new MagickReadSettings
+                        {
+                            TextEncoding = Encoding.Unicode,
+                            FontFamily = magickImageHandler.GetBestFont(WorkerGlobals.Job.SourceText),
+                            FontStyle = FontStyleType.Bold,
+                            FillColor = MagickColors.Gray,
+                            BackgroundColor = MagickColors.White,
+                            TextGravity = Gravity.Center,
+                            Width = 980,
+                            Height = 624
+                        };
+
+                        magickImageHandler.AnnotateImage("transactiondenied", tdReadSettings, MagickColors.White, 142, 220, 390, 220, 142, 311, 390, 311);
+                        break;
                     default:
                         throw new ArgumentException("Command type does not have a handler.");
                 }

@@ -55,6 +55,7 @@ namespace MariBot.Common.Model.GpuWorker
         StableDiffusion,
         StableDiffusionPokemon,
         StableDiffusionWaifu,
+        TransactionDenied,
         Trump
     }
 }
