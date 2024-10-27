@@ -199,6 +199,12 @@ namespace MariBot.Core.Modules.Text
             HandleCommonImageScenario(Command.Herschel);
         }
 
+        [Command("johnriggs", RunMode = RunMode.Async)]
+        public async Task JohnRiggs([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.JohnRiggs);
+        }
+
         [Command("kevin", RunMode = RunMode.Async)]
         public async Task kevin([Remainder] string text = null)
         {
@@ -323,6 +329,11 @@ namespace MariBot.Core.Modules.Text
         }
 
 
+        [Command("transactiondenied", RunMode = RunMode.Async)]
+        public async Task TransactionDenied([Remainder] string text = null)
+        {
+            HandleCommonTextScenario(Command.TransactionDenied, text);
+        }
 
         private async void HandleCommonImageScenario(Command command)
         {

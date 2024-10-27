@@ -33,6 +33,7 @@ namespace MariBot.Common.Model.GpuWorker
         Edges2Hentai,
         Expert,
         Herschel,
+        JohnRiggs,
         Kevin,
         KingPortrait,
         Kurisu,

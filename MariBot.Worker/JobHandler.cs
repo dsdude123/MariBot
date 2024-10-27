@@ -149,6 +149,9 @@ namespace MariBot.Worker
                     case Command.Herschel:
                         magickImageHandler.OverlayImage("herschel", 597, 215, 1279, 228, 563, 696, 1279, 748);
                         break;
+                    case Command.JohnRiggs:
+                        magickImageHandler.OverlayImage("johnriggs", 509, 232, 838, 204, 542, 617, 872, 574);
+                        break;
                     case Command.Kevin:
                         magickImageHandler.OverlayImage("kevin", 1119, 363, 1960, 163, 1123, 674, 1831, 749);
                         break;
