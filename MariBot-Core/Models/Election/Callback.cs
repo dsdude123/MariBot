@@ -4,6 +4,6 @@
     {
         NotSet,
         ValidateIGDB,
-        AnnounceBookClubFinal
+        BookClubSubmission
     }
 }

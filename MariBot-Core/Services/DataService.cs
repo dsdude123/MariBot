@@ -429,6 +429,40 @@ namespace MariBot.Core.Services
             return true;
         }
 
+        public bool DeletePoll(Models.Election.Poll poll)
+        {
+            try
+            {
+
+                var col = db.GetCollection< Models.Election.Poll> ("polls");
+                return col.Delete(poll.Id);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+        }
+
+        public List<Ballot> GetBallots(string pollId)
+        {
+            try
+            {
+
+                var col = db.GetCollection<Ballot>("ballots");
+                return col.Query()
+                    .Where(x => x.PollId.Equals(pollId))
+                    .ToList();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
         public List<Ballot> GetBallots(ulong electorId, string pollId) 
         {
             try

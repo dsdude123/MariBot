@@ -3,6 +3,7 @@
     public class PollOptions
     {
         public bool CanVoteMultipleTimes { get; set; }
+        public int MultipleVoteLimit { get; set; } 
         public bool CanChangeVote {  get; set; }
         public bool RunoffEnabled {  get; set; }
         public int Seats { get; set; }
