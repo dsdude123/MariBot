@@ -25,8 +25,7 @@ namespace MariBot.Core.Services
         ⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢻⣿⡇⠄⠄⠄⢹⣧⠄⠄⠄⠄⠄⠄⠄⠄⠘
          */
 
-        // TODO: Use Quartz.Net to schedule the next submission period
-        private static System.Timers.Timer CheckTimer = new System.Timers.Timer { AutoReset = true, Enabled = true, Interval = 600000 };
+        private static System.Timers.Timer CheckTimer = new System.Timers.Timer { AutoReset = true, Enabled = true, Interval = 60000 };
         private static ulong VideoGameBookClubGuild = 829910467622338580;
         private static ulong VideoGameBookClubChannel = 1012515251998162974;
         private static ulong TestVideoGameBookClubGuild = 829910467622338580;
@@ -295,11 +294,16 @@ namespace MariBot.Core.Services
 
             foreach (var poll in activePolls)
             {
+                if (DateTime.Now < poll.CloseTime)
+                {
+                    continue;
+                }
                 var votes = dataService.GetBallots(poll.Id)
                     .Select(ballot => ballot.Vote)
                     .GroupBy(vote => vote)
                     .Select(group => new Result { Canidate = group.Key, Votes = group.Count() })
-                    .OrderByDescending(top => top.Votes);
+                    .OrderByDescending(top => top.Votes)
+                    .ToList();
 
                 poll.Results = votes;
                 poll.Status = PollStatus.Closed;
@@ -308,7 +312,7 @@ namespace MariBot.Core.Services
             }
         }
 
-        private List<int> DetermineRunoffCanidates(IOrderedEnumerable<Result> results, int seats)
+        private List<int> DetermineRunoffCanidates(List<Result> results, int seats)
         {
             // Inverse and regroup the results to get list of canidates for a set number of votes
             // i.e. Group 1 is Canidate A with 12 votes. Group 2 is Canidates B and C with 5 votes each, a tie
@@ -363,8 +367,8 @@ namespace MariBot.Core.Services
                 description += "Write-in votes accepted.\n";
             }
 
-            description += $"Voting closed at {poll.CloseTime.ToString("f")} Pacific\n\n";
-            description += $"Vote using command `z vote {poll.PollKey} <choice>`";
+            description += $"Voting closes at {poll.CloseTime.ToString("f")} Pacific\n\n";
+            description += $"Vote using command: `z vote {poll.PollKey} <choice>`";
 
             eb.WithDescription(description);
 

@@ -467,11 +467,11 @@ namespace MariBot.Core.Services
         {
             try
             {
+                var voteId = $"{pollId}:{electorId}";
 
                 var col = db.GetCollection<Ballot>("ballots");
                 return col.Query()
-                    .Where(x => x.PollId.Equals(pollId))
-                    .Where(x => x.ElectorId.Equals(electorId))
+                    .Where(x => x.VoteId.Equals(voteId))
                     .ToList();
 
             }

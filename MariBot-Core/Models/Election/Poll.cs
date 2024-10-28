@@ -13,7 +13,7 @@
         public DateTime CloseTime { get; set; }
         public PollOptions Config { get; set; }
         public PollStatus Status { get; set; }
-        public IOrderedEnumerable<Result>? Results { get; set; }
+        public List<Result>? Results { get; set; }
 
         public string GenerateId()
         {
