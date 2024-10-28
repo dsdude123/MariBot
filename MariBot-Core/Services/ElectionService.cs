@@ -1,4 +1,5 @@
 ﻿using CSharpMath;
+using Discord.WebSocket;
 using MariBot.Core.Models.Election;
 using System.Timers;
 
@@ -28,13 +29,21 @@ namespace MariBot.Core.Services
         private static System.Timers.Timer CheckTimer = new System.Timers.Timer { AutoReset = true, Enabled = true, Interval = 600000 };
         private static ulong VideoGameBookClubGuild = 829910467622338580;
         private static ulong VideoGameBookClubChannel = 1012515251998162974;
+        private static ulong TestVideoGameBookClubGuild = 829910467622338580;
+        private static ulong TestVideoGameBookClubChannel = 1033157890623676426;
+        private static DateTime NextSubmissionPeriod;
 
-        private DataService dataService;
-        private IgdbService igdbService;
+        private readonly DataService dataService;
+        private readonly IgdbService igdbService;
+        private readonly DiscordSocketClient discord;
 
-        public ElectionService(DataService dataService)
+        public ElectionService(DataService dataService, IgdbService igdbService, DiscordSocketClient discord)
         {
             this.dataService = dataService;
+            this.igdbService = igdbService;
+            this.discord = discord;
+            CheckTimer.Elapsed += CheckPolls;
+            NextSubmissionPeriod = GetNextVideoGameBookClub();
         }
 
         public void CreatePoll(string pollKey, ulong guildId, ulong channelId, string title, string question, List<string> canidates, DateTime closeTime, PollOptions pollOptions)
@@ -85,7 +94,9 @@ namespace MariBot.Core.Services
             string testHeader = isTest ? "[TEST] " : "";
             string testKey = isTest ? "test" : "";
             string productionNotify = isTest ? "" : " <@&1299851348761645136>";
-            CreatePoll($"vgbc{testKey}", VideoGameBookClubGuild, VideoGameBookClubChannel,
+            CreatePoll($"vgbc{testKey}", 
+                isTest ? TestVideoGameBookClubGuild : VideoGameBookClubGuild, 
+                isTest? TestVideoGameBookClubChannel : VideoGameBookClubChannel,
                 $"{testHeader}Video Game Book Club Submission Period",
                 $"Submit what game you would potentially like to see in the upcoming video game book club!{productionNotify}", new List<string>(),
                 DateTime.Today.AddDays(1),
@@ -275,6 +286,11 @@ namespace MariBot.Core.Services
 
         private async void CheckPolls(object? sender, ElapsedEventArgs e)
         {
+            if (DateTime.Now >= NextSubmissionPeriod)
+            {
+                CreateBookClubSubmissionPoll();
+                NextSubmissionPeriod = GetNextVideoGameBookClub();
+            }
             var activePolls = dataService.GetPollsByStatus(PollStatus.Open);
 
             foreach (var poll in activePolls)
@@ -316,12 +332,102 @@ namespace MariBot.Core.Services
 
         private void DispatchNewPollToDiscord(Poll poll)
         {
-            // TODO: Finish me
+            var eb = new Discord.EmbedBuilder();
+            eb.WithTitle(poll.Title);
+
+            string description = "";
+            description += poll.Question;
+            description += "\n\n";
+            if (poll.Canidates.Any())
+            {
+                description += "Canidates:\n";
+                for (int i = 0; i < poll.Canidates.Count; i++)
+                {
+                    description += $"{i} - {poll.Canidates[i]}\n";
+                }
+                description += "\n\n";
+            }
+
+            if (poll.Config.CanVoteMultipleTimes)
+            {
+                description += $"Multiple votes allowed, limit {poll.Config.MultipleVoteLimit}.\n";
+            } 
+
+            if (poll.Config.CanChangeVote)
+            {
+                description += "Vote change allowed.\n";
+            }
+
+            if (poll.Config.CanWriteIn)
+            {
+                description += "Write-in votes accepted.\n";
+            }
+
+            description += $"Voting closed at {poll.CloseTime.ToString("f")} Pacific\n\n";
+            description += $"Vote using command `z vote {poll.PollKey} <choice>`";
+
+            eb.WithDescription(description);
+
+            var guild = FindServer(poll.GuildId);
+            var destination = FindTextChannel(guild, poll.ChannelId);
+
+            destination.SendMessageAsync(embed: eb.Build());
         }
 
         private void DispatchResultsToDiscord(Poll poll)
         {
-            // TODO: Finish me
+            var eb = new Discord.EmbedBuilder();
+            eb.WithTitle($"[POLL RESULTS] {poll.Title}");
+
+            string description = "";
+
+            foreach(Result result in poll.Results)
+            {
+                description += $"{result.Votes} votes - {result.Canidate}\n";
+            }
+
+            eb.WithDescription(description);
+
+            var guild = FindServer(poll.GuildId);
+            var destination = FindTextChannel(guild, poll.ChannelId);
+
+            destination.SendMessageAsync(embed: eb.Build());
+        }
+
+        private Discord.IGuild FindServer(ulong id)
+        {
+            foreach (Discord.IGuild server in discord.Guilds)
+            {
+                if (server.Id == id)
+                    return server;
+            }
+            return null;
+        }
+
+        private Discord.ITextChannel FindTextChannel(Discord.IGuild server, ulong id)
+        {
+            foreach (Discord.ITextChannel channel in server.GetTextChannelsAsync().Result)
+            {
+                if (channel.Id == id)
+                    return channel;
+            }
+            return null;
+        }
+
+        private DateTime GetNextVideoGameBookClub()
+        {
+            DateTime now = DateTime.Now;
+            DateTime endOfMonth = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
+            DateTime sevenDaysBeforeEndOfMonth = endOfMonth.AddDays(-7);
+
+            if (now >= sevenDaysBeforeEndOfMonth) {
+                now = now.AddDays(14);
+                endOfMonth = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
+                return endOfMonth.AddDays(-7);
+            } else
+            {
+                return sevenDaysBeforeEndOfMonth;
+            }
         }
     }
 }
