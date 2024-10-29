@@ -1,6 +1,8 @@
 ﻿using CSharpMath;
 using Discord.WebSocket;
+using LinqToTwitter;
 using MariBot.Core.Models.Election;
+using RestSharp.Validation;
 using System.Timers;
 
 namespace MariBot.Core.Services
@@ -35,12 +37,14 @@ namespace MariBot.Core.Services
         private readonly DataService dataService;
         private readonly IgdbService igdbService;
         private readonly DiscordSocketClient discord;
+        private readonly ILogger<ElectionService> logger;
 
-        public ElectionService(DataService dataService, IgdbService igdbService, DiscordSocketClient discord)
+        public ElectionService(DataService dataService, IgdbService igdbService, DiscordSocketClient discord, ILogger<ElectionService> logger)
         {
             this.dataService = dataService;
             this.igdbService = igdbService;
             this.discord = discord;
+            this.logger = logger;
             CheckTimer.Elapsed += CheckPolls;
             NextSubmissionPeriod = GetNextVideoGameBookClub();
         }
@@ -65,24 +69,50 @@ namespace MariBot.Core.Services
                 Status = PollStatus.Open
             };
 
+            logger.LogInformation($"New poll ID is: {newPoll.Id}");
+
             var existingPoll = dataService.GetPoll(newPoll.Id);
 
-            if (existingPoll != null && existingPoll.Status != PollStatus.Closed)
+            if (existingPoll != null && existingPoll.Status != PollStatus.Closed && !pollKey.ToLower().Equals("vgbctest"))
             {
-                throw new InvalidOperationException("A poll under this key is already open.");
+                logger.LogWarning("A poll under this key is already open.");
+                return;
             } else if (existingPoll != null)
             {
+                logger.LogInformation("Cleaning up old poll");
                 if (!dataService.DeletePoll(existingPoll))
                 {
-                    throw new Exception("Failed to clean up old poll key!");
+                    logger.LogCritical("Failed to delete old poll");
+                    return;
                 }
                 existingPoll.PollKey += Guid.NewGuid().ToString();
                 dataService.UpdatePoll(existingPoll);
+
+                var oldBallots = dataService.GetBallots(newPoll.Id);
+                foreach ( var ballot in oldBallots )
+                {
+                    logger.LogInformation($"Cleaning up ballot {ballot.Id}");
+                    if (!dataService.DeleteBallot(ballot))
+                    {
+                        logger.LogCritical("Failed to migrate old vote during cleanup phase.");
+                        return;
+                    }
+
+                    ballot.PollId = existingPoll.Id;
+
+                    if (!dataService.UpdateBallot(ballot))
+                    {
+                        logger.LogCritical("Failed to migrate old vote during republish phase.");
+                        return;
+                    }
+
+                }
             }
 
             if (!dataService.UpdatePoll(newPoll))
             {
-                throw new Exception("Failed to create poll!");
+                logger.LogError("Failed to create poll!");
+                return;
             }
 
             DispatchNewPollToDiscord(newPoll);
@@ -119,6 +149,8 @@ namespace MariBot.Core.Services
             // Get the poll
             pollKey = pollKey.ToLower();
             string dbId = $"{pollKey}:{guildId}:{channelId}";
+
+            logger.LogInformation($"Incoming vote for poll {dbId}. Vote {vote}. Elector {userId}");
 
             Poll poll = dataService.GetPoll(dbId);
             if (poll == null)
@@ -206,6 +238,30 @@ namespace MariBot.Core.Services
             return resultMessage;
         }
 
+        public Poll CheckResults(string pollKey, ulong guildId, ulong channelId)
+        {
+            // Get the poll
+            pollKey = pollKey.ToLower();
+            string dbId = $"{pollKey}:{guildId}:{channelId}";
+            logger.LogInformation($"Getting poll results for {dbId}");
+
+            Poll poll = dataService.GetPoll(dbId);
+            if (poll == null)
+            {
+                return null;
+            }
+
+            var votes = dataService.GetBallots(poll.Id)
+                .Select(ballot => ballot.Vote)
+                .GroupBy(vote => vote)
+                .Select(group => new Result { Canidate = group.Key, Votes = group.Count() })
+                .OrderByDescending(top => top.Votes)
+                .ToList();
+
+            poll.Results = votes;
+            return poll;
+        }
+
         public Tuple<string,string> MatchVote(Callback callback, string vote)
         {
             switch (callback)
@@ -218,7 +274,7 @@ namespace MariBot.Core.Services
                     {
                         throw new ArgumentException("Couldn't match game to IGDB");
                     }
-                    return new Tuple<string, string>(game.Name, $"Matched input to {game.Name} in IGDB");
+                    return new Tuple<string, string>(game.Name, $"Matched input to {game.Name} in IGDB.\n");
                 default:
                     throw new NotImplementedException();
             }
@@ -261,6 +317,11 @@ namespace MariBot.Core.Services
                     string testHeader = isTest ? "[TEST] " : "";
                     string testKey = isTest ? "test" : "";
                     string productionNotify = isTest ? "" : " <@&1299851348761645136>";
+
+                    if (poll.Canidates.Count() < 1)
+                    {
+                        return;
+                    }
 
                     CreatePoll($"vgbc{testKey}",
                         poll.GuildId, poll.ChannelId,
@@ -367,8 +428,8 @@ namespace MariBot.Core.Services
                 description += "Write-in votes accepted.\n";
             }
 
-            description += $"Voting closes at {poll.CloseTime.ToString("f")} Pacific\n\n";
-            description += $"Vote using command: `z vote {poll.PollKey} <choice>`";
+            description += $"Voting closes at {poll.CloseTime.ToString("f")} Pacific.\n\n";
+            description += $"Vote using command: `z vote {poll.PollKey} <choice>`\nCheck poll results using command: `z voteresults {poll.PollKey}`";
 
             eb.WithDescription(description);
 
@@ -387,7 +448,7 @@ namespace MariBot.Core.Services
 
             foreach(Result result in poll.Results)
             {
-                description += $"{result.Votes} votes - {result.Canidate}\n";
+                description += $"{result.Votes} votes - {poll.Canidates[result.Canidate]}\n";
             }
 
             eb.WithDescription(description);
