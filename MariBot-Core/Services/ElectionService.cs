@@ -210,7 +210,7 @@ namespace MariBot.Core.Services
                         return "Failed to update poll.";
                     }
                 }
-            } else
+            } else if (!validNumber)
             {
                return "Invalid canidate number.";
             }
@@ -488,9 +488,12 @@ namespace MariBot.Core.Services
             if (now >= sevenDaysBeforeEndOfMonth) {
                 now = now.AddDays(14);
                 endOfMonth = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
-                return endOfMonth.AddDays(-7);
+                var nextMonth = endOfMonth.AddDays(-7);
+                logger.LogInformation($"Next Video Game Book Club Submission Period is {nextMonth.ToString("f")}");
+                return nextMonth;
             } else
             {
+                logger.LogInformation($"Next Video Game Book Club Submission Period is {sevenDaysBeforeEndOfMonth.ToString("f")}");
                 return sevenDaysBeforeEndOfMonth;
             }
         }
