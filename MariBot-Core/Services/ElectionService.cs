@@ -388,7 +388,10 @@ namespace MariBot.Core.Services
 
             while (seats > 0 && groupEnumerator.MoveNext())
             {
-                winningCanidates.AddRange((IEnumerable<int>)groupEnumerator.Current.Canidates);
+                foreach (Result result in  groupEnumerator.Current.Canidates)
+                {
+                    winningCanidates.Add(result.Canidate);
+                }
                 seats -= groupEnumerator.Current.Canidates.Count;
             }
 
