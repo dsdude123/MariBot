@@ -47,6 +47,7 @@ builder.Services.AddSingleton<UrbanDictionaryService>();
 builder.Services.AddSingleton<WikipediaService>();
 builder.Services.AddSingleton<WolframAlphaService>();
 builder.Services.AddSingleton<WorkerManagerService>();
+builder.Services.AddSingleton<YouTubeDlService>();
 builder.Services.AddSingleton<YahooFantasyService>();
 builder.Services.AddSingleton<MediawikiSharp_API.Mediawiki>();
 builder.Services.AddOpenAIService(settings => {

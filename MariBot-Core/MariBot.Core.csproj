@@ -42,6 +42,7 @@
     <PackageReference Include="UrbanDictionaryDex" Version="1.0.3" />
     <PackageReference Include="WikipediaNet" Version="2.0.0" />
     <PackageReference Include="WolframAlphaNET" Version="2.0.0" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>

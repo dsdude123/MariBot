@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Web;
 using Discord;
 using Discord.Commands;
 using Genbox.WolframAlpha.Responses;
@@ -27,8 +28,9 @@ namespace MariBot.Core.Modules.Text
         private UrbanDictionaryService UrbanDictionaryService { get; set; }
         private WikipediaService WikipediaService { get; set; }
         private WolframAlphaService wolframAlphaService { get; set; }
+        private YouTubeDlService youTubeDlService { get; set; }
 
-        public LookupModule(PricechartingService pricechartingService, GoogleService googleService, ImageService imageService, UrbanDictionaryService urbanDictionaryService, WikipediaService wikipediaService, WolframAlphaService wolframAlphaService)
+        public LookupModule(PricechartingService pricechartingService, GoogleService googleService, ImageService imageService, UrbanDictionaryService urbanDictionaryService, WikipediaService wikipediaService, WolframAlphaService wolframAlphaService, YouTubeDlService youTubeDlService)
         {
             this.pricechartingService = pricechartingService;
             GoogleService = googleService;
@@ -36,6 +38,7 @@ namespace MariBot.Core.Modules.Text
             UrbanDictionaryService = urbanDictionaryService;
             WikipediaService = wikipediaService;
             this.wolframAlphaService = wolframAlphaService;
+            this.youTubeDlService = youTubeDlService;
         }
 
         [Command("pricecharting", RunMode = RunMode.Async)]
@@ -309,6 +312,23 @@ namespace MariBot.Core.Modules.Text
             {
                 Context.Channel.SendMessageAsync("Sorry there was an issue talking to Wolfram Alpha.");
             }
+        }
+
+        [Command("downloadvideo", RunMode = RunMode.Async)]
+        public async Task DownloadVideo(string url)
+        {
+            var video = await youTubeDlService.DownloadVideo(url);
+
+            if (video.Success)
+            {
+                var filename = HttpUtility.UrlPathEncode(video.Data.Split('\\').Last());
+                await Context.Channel.SendMessageAsync(text: $"http://nerv.jpn.com/transfer/temp/{filename}", messageReference: new MessageReference(Context.Message.Id));
+
+            } else
+            {
+                await Context.Channel.SendMessageAsync(text: $"Failed to download video.", messageReference: new MessageReference(Context.Message.Id));
+            }
+            
         }
 
         private String trimToLength(String text, int maxLength)
