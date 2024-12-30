@@ -170,7 +170,7 @@ namespace MariBot.Core.Services
             if (ballots.Any() && (!poll.Config.CanVoteMultipleTimes && !poll.Config.CanChangeVote))
             {
                 return "You have already voted.";
-                
+
             }
 
             if (poll.Config.CanVoteMultipleTimes && (ballots.Count() > poll.Config.MultipleVoteLimit))
@@ -179,7 +179,7 @@ namespace MariBot.Core.Services
             }
 
             // Perform vote validation
-            Tuple<string,string> correctedVote = MatchVote(poll.Config.VoteValidationCallback, vote);
+            Tuple<string, string> correctedVote = MatchVote(poll.Config.VoteValidationCallback, vote);
             resultMessage += correctedVote.Item2;
 
             int voteIndex = 0;
@@ -190,17 +190,21 @@ namespace MariBot.Core.Services
                 return "You have already voted for this canidate.";
             }
 
+            var canidateIndex = poll.Canidates.IndexOf(correctedVote.Item1);
+
             if (!validNumber && poll.Config.CanWriteIn)
             {
-                var canidateIndex = poll.Canidates.IndexOf(correctedVote.Item1);
+
                 if (canidateIndex > -1 && poll.Config.UniqueWriteInOnly)
                 {
                     return "Canidate already submitted.";
-                } else if (canidateIndex > -1)
+                }
+                else if (canidateIndex > -1)
                 {
                     // Found a matching canidate from write in
                     voteIndex = canidateIndex;
-                } else
+                }
+                else
                 {
                     // Perform write in and set new index
                     poll.Canidates.Add(correctedVote.Item1);
@@ -210,9 +214,10 @@ namespace MariBot.Core.Services
                         return "Failed to update poll.";
                     }
                 }
-            } else if (!validNumber)
+            }
+            else if (!validNumber || voteIndex < 0 || voteIndex >= poll.Canidates.Count)
             {
-               return "Invalid canidate number.";
+                return "Invalid canidate number.";
             }
 
             // Cast Vote
@@ -262,12 +267,12 @@ namespace MariBot.Core.Services
             return poll;
         }
 
-        public Tuple<string,string> MatchVote(Callback callback, string vote)
+        public Tuple<string, string> MatchVote(Callback callback, string vote)
         {
             switch (callback)
             {
                 case Callback.NotSet:
-                    return new Tuple<string,string>(vote,"");
+                    return new Tuple<string, string>(vote, "");
                 case Callback.ValidateIGDB:
                     var game = igdbService.SearchGame(vote).Result;
                     if (game == null || game.Name.IsEmpty())
@@ -299,11 +304,13 @@ namespace MariBot.Core.Services
                             CreatePoll(poll.PollKey, poll.GuildId, poll.ChannelId,
                                 $"[RUNOFF] {poll.Title}", poll.Question, runoffCanidates, DateTime.Today.AddDays(1),
                                 poll.Config);
-                        } else
+                        }
+                        else
                         {
                             DispatchResultsToDiscord(poll);
                         }
-                    } else
+                    }
+                    else
                     {
                         DispatchResultsToDiscord(poll);
                     }
@@ -388,7 +395,7 @@ namespace MariBot.Core.Services
 
             while (seats > 0 && groupEnumerator.MoveNext())
             {
-                foreach (Result result in  groupEnumerator.Current.Canidates)
+                foreach (Result result in groupEnumerator.Current.Canidates)
                 {
                     winningCanidates.Add(result.Canidate);
                 }
@@ -419,7 +426,7 @@ namespace MariBot.Core.Services
             if (poll.Config.CanVoteMultipleTimes)
             {
                 description += $"Multiple votes allowed, limit {poll.Config.MultipleVoteLimit}.\n";
-            } 
+            }
 
             if (poll.Config.CanChangeVote)
             {
@@ -449,7 +456,7 @@ namespace MariBot.Core.Services
 
             string description = "";
 
-            foreach(Result result in poll.Results)
+            foreach (Result result in poll.Results)
             {
                 description += $"{result.Votes} votes - {poll.Canidates[result.Canidate]}\n";
             }
