@@ -299,3 +299,5 @@ __pycache__/
 # AI Stuff
 *.pb
 *.onnx
+/MariBot-Core/yt-dlp.exe
+/MariBot-Core/ffmpeg.exe
