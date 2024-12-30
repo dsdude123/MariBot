@@ -35,6 +35,7 @@ builder.Services.AddSingleton(x => new TraceExceptionLogger());
 builder.Services.AddSingleton<BooruService>();
 builder.Services.AddSingleton<DataService>();
 builder.Services.AddSingleton<ElectionService>();
+builder.Services.AddSingleton<FluxService>();
 builder.Services.AddSingleton<GoogleService>();
 builder.Services.AddSingleton<IgdbService>();
 builder.Services.AddSingleton<ImageService>();

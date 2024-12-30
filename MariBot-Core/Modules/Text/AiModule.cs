@@ -7,19 +7,23 @@ using MariBot.Core.Services;
 namespace MariBot.Core.Modules.Text
 {
     /// <summary>
-    /// Module for commands related to OpenAI services.
+    /// Module for commands related to cloud AI services.
     /// </summary>
-    public class OpenAiModule : ModuleBase<SocketCommandContext>
+    public class AiModule : ModuleBase<SocketCommandContext>
     {
         private readonly DataService dataService;
         private readonly OpenAiService openAiService;
         private readonly ImageService imageService;
+        private readonly FluxService fluxService;
+        private readonly ILogger<AiModule> logger;
 
-        public OpenAiModule(OpenAiService openAIService, DataService dataService, ImageService imageService)
+        public AiModule(OpenAiService openAIService, DataService dataService, ImageService imageService, FluxService fluxService, ILogger<AiModule> logger)
         {
             this.openAiService = openAIService;
             this.dataService = dataService;
             this.imageService = imageService;
+            this.fluxService = fluxService;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -151,6 +155,27 @@ namespace MariBot.Core.Modules.Text
             catch (ApplicationException ex)
             {
                 await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+            }
+        }
+
+        /// <summary>
+        /// Black Forest Labs Flux Image Generation
+        /// </summary>
+        /// <param name="input">Input prompt</param>
+        /// <returns></returns>
+        [Command("flux", RunMode= RunMode.Async)]
+        public async Task FluxImageGeneration([Remainder] string input)
+        {
+            try
+            {
+                var result = await fluxService.GenerateFlux(input);
+                var eb = new EmbedBuilder();
+                eb.WithDescription(result.prompt);
+                eb.WithImageUrl(result.sample);
+                await Context.Channel.SendMessageAsync(embed: eb.Build(), messageReference: new MessageReference(Context.Message.Id));
+            } catch (Exception ex) {
+                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+                logger.LogCritical(ex, "Unhandled service exception");
             }
         }
     }
