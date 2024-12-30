@@ -21,7 +21,7 @@
       "Id": 297485054836342786,
       "Name": "CSS",
       "EnabledFeatures": [ "auto-image-conversion", "latex", "emoji-triggers", "auto-vxtwitter", "auto-ddinstagram", "auto-vxtiktok", "auto-rxddit" ],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt", "gpt4", "dalle", "dallehd" ]
+      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt", "gpt4", "dalle", "dallehd", "flux" ]
     },
     {
       "Id": 829910467622338580,

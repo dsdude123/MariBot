@@ -34,7 +34,10 @@ builder.Services.AddSingleton(x => new TraceExceptionLogger());
 
 builder.Services.AddSingleton<BooruService>();
 builder.Services.AddSingleton<DataService>();
+builder.Services.AddSingleton<ElectionService>();
+builder.Services.AddSingleton<FluxService>();
 builder.Services.AddSingleton<GoogleService>();
+builder.Services.AddSingleton<IgdbService>();
 builder.Services.AddSingleton<ImageService>();
 builder.Services.AddSingleton<OpenAiService>();
 builder.Services.AddSingleton<PricechartingService>();
@@ -45,6 +48,7 @@ builder.Services.AddSingleton<UrbanDictionaryService>();
 builder.Services.AddSingleton<WikipediaService>();
 builder.Services.AddSingleton<WolframAlphaService>();
 builder.Services.AddSingleton<WorkerManagerService>();
+builder.Services.AddSingleton<YouTubeDlService>();
 builder.Services.AddSingleton<YahooFantasyService>();
 builder.Services.AddSingleton<MediawikiSharp_API.Mediawiki>();
 builder.Services.AddOpenAIService(settings => {
