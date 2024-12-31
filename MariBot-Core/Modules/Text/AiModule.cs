@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using MariBot.Core.Services;
+using RestSharp.Extensions;
 
 namespace MariBot.Core.Modules.Text
 {
@@ -171,8 +172,12 @@ namespace MariBot.Core.Modules.Text
                 var result = await fluxService.GenerateFlux(input);
                 var eb = new EmbedBuilder();
                 eb.WithDescription(result.prompt);
-                eb.WithImageUrl(result.sample);
-                await Context.Channel.SendMessageAsync(embed: eb.Build(), messageReference: new MessageReference(Context.Message.Id));
+                var stream = await imageService.GetWebResource(result.sample);
+                var filename = $"{Guid.NewGuid().ToString()}.jpeg";
+                eb.WithImageUrl($"attachment://{filename}");
+                await File.WriteAllBytesAsync(filename, stream.ReadAsBytes());
+                await Context.Channel.SendFileAsync(filename, embed: eb.Build(), messageReference: new MessageReference(Context.Message.Id));
+                File.Delete(filename);
             } catch (Exception ex) {
                 await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}", messageReference: new MessageReference(Context.Message.Id));
                 logger.LogCritical(ex, "Unhandled service exception");

@@ -46,6 +46,8 @@ namespace MariBot.Core.Services
                 logger.LogInformation("BFL Body {Body}", initialResponse.Content.ToString());
             }
 
+            Thread.Sleep(5);
+
             rest = new RestRequest("https://api.bfl.ml/v1/get_result", Method.GET);
             rest.AddQueryParameter("id", initialResponse.Data.id);
             var imageResult = await client.ExecuteAsync<ImageResponse>(rest);
