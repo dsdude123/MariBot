@@ -429,7 +429,7 @@ namespace MariBot.Core.Services
                                     }
                                     catch (Exception ex)
                                     {
-                                        logger.LogWarning("Couldn't remove Reddit embed, are permissions or the embed missing?");
+                                        logger.LogWarning("Couldn't remove Bluesky embed, are permissions or the embed missing?");
                                         failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
                                     }
                                 }
