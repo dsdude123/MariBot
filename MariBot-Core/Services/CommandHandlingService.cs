@@ -390,6 +390,54 @@ namespace MariBot.Core.Services
                         }
                     }
 
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-fxbsky"))
+                    {
+                        var ddParts = context.Message.Content.Split(new char[] { ' ', '\n' });
+
+                        foreach (var text in ddParts)
+                        {
+                            try
+                            {
+                                var trimmed = text.Trim('|');
+                                var url = new Uri(trimmed);
+
+                                if (url.Host.ToLower().Equals("bsky.app", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var urlBuilder = new UriBuilder(url);
+                                    urlBuilder.Host = "fxbsky.app";
+                                    if (IsInSpoiler(trimmed, context.Message.Content))
+                                    {
+                                        await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
+                                    }
+                                    else
+                                    {
+                                        await context.Channel.SendMessageAsync(urlBuilder.ToString());
+                                    }
+
+                                    try
+                                    {
+                                        await context.Message.ModifyAsync(message =>
+                                        {
+                                            message.Flags = MessageFlags.SuppressEmbeds;
+                                        });
+
+                                        var modified = await context.Channel.GetMessageAsync(context.Message.Id);
+                                        if (modified.Embeds.Count > 0)
+                                        {
+                                            throw new Exception("Failed to remove embed");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogWarning("Couldn't remove Reddit embed, are permissions or the embed missing?");
+                                        failedEmbedRemoves.Add($"{context.Guild.Id}-{context.Channel.Id}-{context.Message.Id}", 0);
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-image-conversion"))
                     {
                         if (message.Attachments.Count > 0)
