@@ -37,40 +37,62 @@ namespace MariBot.Core.Services
 
             var initialResponse = await client.ExecuteAsync<ImageResponse>(rest);
 
-            if (initialResponse.StatusCode != System.Net.HttpStatusCode.OK)
+            var retryCount = 0;
+
+            while (initialResponse.StatusCode != System.Net.HttpStatusCode.OK && retryCount < 3)
             {
                 logger.LogError("Got bad HTTP status code from BFL: {Code}", initialResponse.StatusCode.ToString());
-            } else
-            {
-                logger.LogInformation("Got ID back from BFL: {Id}", initialResponse.Data.id);
-                logger.LogInformation("BFL Body {Body}", initialResponse.Content.ToString());
+                initialResponse = await client.ExecuteAsync<ImageResponse>(rest);
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+                retryCount++;
             }
 
-            Thread.Sleep(5);
+            retryCount = 0;
+
+            if (initialResponse.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return ReturnDiscordError(initialResponse.StatusCode.ToString());
+            }
+
+            Thread.Sleep(TimeSpan.FromSeconds(5));
 
             rest = new RestRequest("https://api.bfl.ml/v1/get_result", Method.GET);
             rest.AddQueryParameter("id", initialResponse.Data.id);
             var imageResult = await client.ExecuteAsync<ImageResponse>(rest);
 
-            if (imageResult.StatusCode != System.Net.HttpStatusCode.OK)
+            while (imageResult.StatusCode != System.Net.HttpStatusCode.OK && retryCount < 3)
             {
                 logger.LogError("Got bad HTTP status code from BFL: {Code}", imageResult.StatusCode.ToString());
+                imageResult = await client.ExecuteAsync<ImageResponse>(rest);
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+                retryCount++;
             }
-            logger.LogInformation("Got generation response, status is {Status}", imageResult.Data.status);
-            logger.LogInformation("BFL Body {Body}", imageResult.Content.ToString());
+
+            if (imageResult.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return ReturnDiscordError(imageResult.StatusCode.ToString());
+            }
+
+            retryCount = 0;
 
             while (imageResult.Data.status.ToLower().Equals("pending"))
             {
                 logger.LogInformation("Request is pending....");
                 Thread.Sleep(TimeSpan.FromSeconds(1));
-                imageResult = await client.ExecuteAsync<ImageResponse>(rest);
-                logger.LogInformation("Pending new status code: {Code}", imageResult.StatusCode.ToString());
-                logger.LogInformation("BFL Body {Body}", imageResult.Content.ToString());
-                if (imageResult.StatusCode != System.Net.HttpStatusCode.OK)
+                while (imageResult.StatusCode != System.Net.HttpStatusCode.OK && retryCount < 3)
                 {
                     logger.LogError("Got bad HTTP status code from BFL: {Code}", imageResult.StatusCode.ToString());
-                    break;
+                    imageResult = await client.ExecuteAsync<ImageResponse>(rest);
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    retryCount++;
                 }
+
+                if (imageResult.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    return ReturnDiscordError(imageResult.StatusCode.ToString());
+                }
+
+                retryCount = 0;
             }
 
             if (imageResult.Data.status.ToLower().Equals("ready"))
@@ -82,9 +104,14 @@ namespace MariBot.Core.Services
                 logger.LogWarning("Got bad status back from BFL: {Code}", imageResult.Data.status);
             }
 
+            return ReturnDiscordError(imageResult.Data.status);
+        }
+
+        public ImageResponse.Result ReturnDiscordError(string error)
+        {
             ImageResponse.Result discordError = new ImageResponse.Result();
             discordError.sample = "";
-            discordError.prompt = $"Something went wrong. {imageResult.Data.status}";
+            discordError.prompt = $"Something went wrong. {error}";
             return discordError;
         }
     }
