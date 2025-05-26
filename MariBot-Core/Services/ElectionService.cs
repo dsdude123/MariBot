@@ -355,7 +355,7 @@ namespace MariBot.Core.Services
         {
             if (DateTime.Now >= NextSubmissionPeriod)
             {
-                CreateBookClubSubmissionPoll();
+                //CreateBookClubSubmissionPoll();
                 NextSubmissionPeriod = GetNextVideoGameBookClub();
             }
             var activePolls = dataService.GetPollsByStatus(PollStatus.Open);
