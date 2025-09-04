@@ -17,10 +17,11 @@ namespace MariBot.Core.Services
         private static int EarliestTransaction = -15;
         public static readonly Dictionary<ulong, string> guildLeagueMapping = new()
         {
+            // The number at the end here comes from https://football.fantasysports.yahoo.com/f1/439676/matchup
             #if DEBUG
-            { 410597263363276801, "423.l.161379" },
+            { 410597263363276801, "nfl.l.439676" },
             #else
-            { 829910467622338580, "nfl.l.42250" }
+            { 829910467622338580, "nfl.l.439676" }
             #endif
         };
 
