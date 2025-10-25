@@ -301,3 +301,5 @@ __pycache__/
 *.onnx
 /MariBot-Core/yt-dlp.exe
 /MariBot-Core/ffmpeg.exe
+/MariBot-Core/runtimes
+/MariBot-Core/runtimes

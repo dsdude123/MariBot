@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MariBot", "src\DiscordBot\MariBot.csproj", "{52A60847-0133-4716-B75C-044DF48A0DC7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{07992C78-DC2A-4BC8-B87E-5B15689ED6D7}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE.txt = LICENSE.txt
@@ -24,11 +22,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{52A60847-0133-4716-B75C-044DF48A0DC7}.Debug|Any CPU.ActiveCfg = Release|Any CPU
-		{52A60847-0133-4716-B75C-044DF48A0DC7}.Debug|x64.ActiveCfg = Debug|x64
-		{52A60847-0133-4716-B75C-044DF48A0DC7}.Debug|x64.Build.0 = Debug|x64
-		{52A60847-0133-4716-B75C-044DF48A0DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{52A60847-0133-4716-B75C-044DF48A0DC7}.Release|x64.ActiveCfg = Release|x64
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EF5A15A-E065-43C8-B177-D882C49BDD33}.Debug|x64.ActiveCfg = Debug|Any CPU

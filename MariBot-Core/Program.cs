@@ -6,7 +6,9 @@ using Discord.WebSocket;
 using MariBot.Core;
 using MariBot.Core.Services;
 using MariBot.Services;
-using OpenAI.Extensions;
+using OpenAI;
+using OpenAI.Chat;
+using OpenAI.Moderations;
 
 var builder = WebApplication.CreateBuilder(args);
 var clientConfig = new DiscordSocketConfig()
@@ -51,10 +53,6 @@ builder.Services.AddSingleton<WorkerManagerService>();
 builder.Services.AddSingleton<YouTubeDlService>();
 builder.Services.AddSingleton<YahooFantasyService>();
 builder.Services.AddSingleton<MediawikiSharp_API.Mediawiki>();
-builder.Services.AddOpenAIService(settings => {
-    settings.ApiKey = builder.Configuration["DiscordSettings:OpenAiApiKey"];
-    settings.Organization = builder.Configuration["DiscordSettings:OpenAiOrganization"];
-});
 
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();

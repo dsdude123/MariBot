@@ -8,6 +8,16 @@
     <UserSecretsId>7a1ba4ca-0fb6-4d2d-992c-1c8f3a4d08e3</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Deterministic>True</Deterministic>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Deterministic>True</Deterministic>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Remove="webcams.json" />
   </ItemGroup>
@@ -19,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Betalgo.OpenAI" Version="8.1.1" />
     <PackageReference Include="BooruSharp" Version="3.5.5" />
     <PackageReference Include="ByteSize" Version="2.0.0" />
     <PackageReference Include="ConsoleTables" Version="2.4.2" />
@@ -35,6 +44,7 @@
     <PackageReference Include="MathParser.org-mXparser" Version="5.2.1" />
     <PackageReference Include="MediawikiSharp_API" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
+    <PackageReference Include="OpenAI" Version="2.5.0" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />

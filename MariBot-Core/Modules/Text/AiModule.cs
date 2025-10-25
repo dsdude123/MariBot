@@ -27,34 +27,34 @@ namespace MariBot.Core.Modules.Text
             this.logger = logger;
         }
 
-        /// <summary>
-        /// ChatGPT prompt completion command
-        /// </summary>
-        /// <param name="input">Input prompt</param>
-        /// <returns>Completed task</returns>
-        [Command("chatgpt", RunMode = RunMode.Async)]
-        public async Task StartChatGptSession([Remainder] string input)
-        {
-            try
-            {
-                var result = await openAiService.ExecuteChatGptQuery(Context.Guild.Id, Context.Channel.Id, Context.Message.Id, input, Context.User.Id.ToString());
-                var sentMessage = Context.Channel.SendMessageAsync($"```\n{result.Replace("```","")}\n```", messageReference: new MessageReference(Context.Message.Id)).Result;
-                if (!dataService.UpdateChatGptMessageHistoryId(Context.Guild.Id, Context.Channel.Id, Context.Message.Id,
-                        sentMessage.Id))
-                {
-                    throw new ApplicationException(
-                        "Failed to save message history to DB. ChatGPT context will be lost.");
-                };
-            }
-            catch (ArgumentException)
-            {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ApplicationException ex)
-            {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
-            }
-        }
+        ///// <summary>
+        ///// ChatGPT prompt completion command
+        ///// </summary>
+        ///// <param name="input">Input prompt</param>
+        ///// <returns>Completed task</returns>
+        //[Command("chatgpt", RunMode = RunMode.Async)]
+        //public async Task StartChatGptSession([Remainder] string input)
+        //{
+        //    try
+        //    {
+        //        var result = await openAiService.ExecuteChatGptQuery(Context.Guild.Id, Context.Channel.Id, Context.Message.Id, input, Context.User.Id.ToString());
+        //        var sentMessage = Context.Channel.SendMessageAsync($"```\n{result.Replace("```","")}\n```", messageReference: new MessageReference(Context.Message.Id)).Result;
+        //        if (!dataService.UpdateChatGptMessageHistoryId(Context.Guild.Id, Context.Channel.Id, Context.Message.Id,
+        //                sentMessage.Id))
+        //        {
+        //            throw new ApplicationException(
+        //                "Failed to save message history to DB. ChatGPT context will be lost.");
+        //        };
+        //    }
+        //    catch (ArgumentException)
+        //    {
+        //        await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
+        //    }
+        //    catch (ApplicationException ex)
+        //    {
+        //        await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+        //    }
+        //}
 
         /// <summary>
         /// DALLE Image Command
@@ -62,17 +62,14 @@ namespace MariBot.Core.Modules.Text
         /// <param name="prompt">Input prompt</param>
         /// <returns></returns>
         [Command("dalle", RunMode = RunMode.Async)]
+        [Alias("dallehd")]
         public async Task Dalle([Remainder] string prompt)
         {
             try
             {
-                var imageUrl = await openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "standard");
+                var imageUrl = await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.DALLE);
                 var stream = await imageService.GetWebResource(imageUrl);
                 await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ArgumentException)
-            {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (AggregateException ex)
             {
@@ -87,18 +84,19 @@ namespace MariBot.Core.Modules.Text
             }
         }
 
-        [Command("dallehd", RunMode = RunMode.Async)]
-        public async Task DalleHd([Remainder] string prompt)
+        /// <summary>
+        /// GPT Image Image Command
+        /// </summary>
+        /// <param name="prompt">Input prompt</param>
+        /// <returns></returns>
+        [Command("gptimage", RunMode = RunMode.Async)]
+        public async Task GptImage([Remainder] string prompt)
         {
             try
             {
-                var imageUrl = await openAiService.ExecuteDalleQuery(prompt, Context.User.Id.ToString(), "hd");
+                var imageUrl = await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.GPTIMAGE);
                 var stream = await imageService.GetWebResource(imageUrl);
                 await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ArgumentException)
-            {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (AggregateException ex)
             {
@@ -123,12 +121,8 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGpt3Query(input, Context.User.Id.ToString());
+                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
-            }
-            catch (ArgumentException)
-            {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ApplicationException ex)
             {
@@ -146,12 +140,28 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGpt4Query(input, Context.User.Id.ToString());
+                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (ArgumentException)
+            catch (ApplicationException ex)
             {
-                await Context.Channel.SendMessageAsync("Your input prompt failed safety checks.", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+            }
+        }
+
+        /// <summary>
+        /// GPT-5 prompt completion command
+        /// </summary>
+        /// <param name="input">Input prompt</param>
+        /// <returns></returns>
+        [Command("gpt5", RunMode = RunMode.Async)]
+        [Alias("gpt")]
+        public async Task Gpt5TextCompletion([Remainder] string input)
+        {
+            try
+            {
+                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT5);
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ApplicationException ex)
             {

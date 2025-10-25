@@ -190,7 +190,7 @@ namespace MariBot.Core.Services
                 {
                     if (message.Type == MessageType.Reply)
                     {
-                        openAiService.HandleReply(context);
+                        //openAiService.HandleReply(context);
                     }
                     // Anti-Elon Feature
                     if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtwitter"))
