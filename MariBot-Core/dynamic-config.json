@@ -3,16 +3,31 @@
     {
       "Id": 369891771573993474,
       "Name": "NSSE",
-      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion", "auto-vxtwitter", "auto-rxddit" ]
+      "EnabledFeatures": [
+        "emoji-triggers",
+        "auto-image-conversion",
+        "auto-vxtwitter",
+        "auto-rxddit"
+      ]
     },
     {
       "Id": 410597263363276801,
       "Name": "CSMTestingFacility",
-      "EnabledFeatures": [ "latex", "emoji-triggers", "auto-image-conversion", "auto-vxtwitter", "auto-rxddit"],
+      "EnabledFeatures": [
+        "latex",
+        "emoji-triggers",
+        "auto-image-conversion",
+        "auto-vxtwitter",
+        "auto-rxddit"
+      ],
       "AutoReactions": [
         {
-          "TriggerWords": [ "testemojitrigger" ],
-          "TriggerUsers": [ 234840886519791616 ],
+          "TriggerWords": [
+            "testemojitrigger"
+          ],
+          "TriggerUsers": [
+            234840886519791616
+          ],
           "Emoji": "<:nintendo64:642068552106508347>"
         }
       ]
@@ -20,28 +35,96 @@
     {
       "Id": 297485054836342786,
       "Name": "CSS",
-      "EnabledFeatures": [ "auto-image-conversion", "emoji-triggers", "auto-vxtwitter", "auto-rxddit"],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere", "e2h", "gpt3", "chatgpt", "gpt4", "dalle", "dallehd", "flux" ]
+      "EnabledFeatures": [
+        "auto-image-conversion",
+        "emoji-triggers",
+        "auto-vxtwitter",
+        "auto-rxddit"
+      ],
+      "BlockedTextCommands": [
+        "danbooru",
+        "gelbooru",
+        "konachan",
+        "realbooru",
+        "r34",
+        "safebooru",
+        "sakugabooru",
+        "sankakucomplex",
+        "xbooru",
+        "yandere",
+        "e2h",
+        "gpt3",
+        "chatgpt",
+        "gpt4",
+        "dalle",
+        "dallehd",
+        "flux",
+        "grok",
+        "grokimage"
+      ]
     },
     {
       "Id": 829910467622338580,
       "Name": "MarukiCountry",
-      "EnabledFeatures": [ "emoji-triggers", "auto-image-conversion", "auto-vxtwitter", "auto-rxddit"],
-      "BlockedTextCommands": [ "danbooru", "gelbooru", "konachan", "realbooru", "r34", "safebooru", "sakugabooru", "sankakucomplex", "xbooru", "yandere"],
+      "EnabledFeatures": [
+        "emoji-triggers",
+        "auto-image-conversion",
+        "auto-vxtwitter",
+        "auto-rxddit"
+      ],
+      "BlockedTextCommands": [
+        "danbooru",
+        "gelbooru",
+        "konachan",
+        "realbooru",
+        "r34",
+        "safebooru",
+        "sakugabooru",
+        "sankakucomplex",
+        "xbooru",
+        "yandere"
+      ],
       "AutoReactions": [
         {
-          "TriggerWords": [ "cowboy", "cowboys", "dak", "zeke", "lamb", "diggs", "parsons", "ring", "dallas", "amari" ],
-          "TriggerUsers": [ 388872773109284876, 607723716977098753 ],
+          "TriggerWords": [
+            "cowboy",
+            "cowboys",
+            "dak",
+            "zeke",
+            "lamb",
+            "diggs",
+            "parsons",
+            "ring",
+            "dallas",
+            "amari"
+          ],
+          "TriggerUsers": [
+            388872773109284876,
+            607723716977098753
+          ],
           "Emoji": "<:cowboypium:1033168800348127272>"
         },
         {
-          "TriggerWords": [ "skyrim" ],
-          "TriggerUsers": [ 316822516889026560 ],
+          "TriggerWords": [
+            "skyrim"
+          ],
+          "TriggerUsers": [
+            316822516889026560
+          ],
           "Emoji": "<:thunk:1033172054213660672>"
         },
         {
-          "TriggerWords": [ "mac", "patriots", "pats", "brady", "edelman" ],
-          "TriggerUsers": [ 170295324500426754, 442217258194960384 ],
+          "TriggerWords": [
+            "mac",
+            "patriots",
+            "pats",
+            "brady",
+            "edelman"
+          ],
+          "TriggerUsers": [
+            170295324500426754,
+            442217258194960384
+          ],
           "Emoji": "<:patriotscopium:1033168813274959914>"
         }
       ]
@@ -49,7 +132,20 @@
     {
       "Id": 1004662899756769371,
       "Name": "booba",
-      "EnabledFeatures": [ "auto-vxtwitter", "auto-rxddit" ]
+      "EnabledFeatures": [
+        "auto-vxtwitter",
+        "auto-rxddit"
+      ],
+      "BlockedTextCommands": [
+        "gpt3",
+        "gpt4",
+        "gpt5",
+        "grok",
+        "grokimage",
+        "flux",
+        "dalle",
+        "gptimage"
+      ]
     }
   ]
 }

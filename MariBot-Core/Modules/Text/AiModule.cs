@@ -13,18 +13,21 @@ namespace MariBot.Core.Modules.Text
     public class AiModule : ModuleBase<SocketCommandContext>
     {
         private readonly DataService dataService;
+        private readonly GrokService grokService;
         private readonly OpenAiService openAiService;
         private readonly ImageService imageService;
         private readonly FluxService fluxService;
         private readonly ILogger<AiModule> logger;
 
-        public AiModule(OpenAiService openAIService, DataService dataService, ImageService imageService, FluxService fluxService, ILogger<AiModule> logger)
+        public AiModule(OpenAiService openAIService, DataService dataService, ImageService imageService,
+            FluxService fluxService, ILogger<AiModule> logger, GrokService grokService)
         {
             this.openAiService = openAIService;
             this.dataService = dataService;
             this.imageService = imageService;
             this.fluxService = fluxService;
             this.logger = logger;
+            this.grokService = grokService;
         }
 
         ///// <summary>
@@ -67,15 +70,18 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var imageUrl = await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.DALLE);
+                var imageUrl =
+                    await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.DALLE);
                 var stream = await imageService.GetWebResource(imageUrl);
-                await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendFileAsync(stream, "dalle.png",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerException.GetType() == typeof(ApplicationException))
                 {
-                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}", messageReference: new MessageReference(Context.Message.Id));
+                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}",
+                        messageReference: new MessageReference(Context.Message.Id));
                 }
                 else
                 {
@@ -94,15 +100,19 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var imageUrl = await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.GPTIMAGE);
+                var imageUrl =
+                    await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(),
+                        Models.OpenAiModel.GPTIMAGE);
                 var stream = await imageService.GetWebResource(imageUrl);
-                await Context.Channel.SendFileAsync(stream, "dalle.png", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendFileAsync(stream, "dalle.png",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerException.GetType() == typeof(ApplicationException))
                 {
-                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}", messageReference: new MessageReference(Context.Message.Id));
+                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}",
+                        messageReference: new MessageReference(Context.Message.Id));
                 }
                 else
                 {
@@ -121,12 +131,15 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
+                var result =
+                    await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ApplicationException ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"{ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
         }
 
@@ -140,12 +153,15 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
+                var result =
+                    await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ApplicationException ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"{ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
         }
 
@@ -160,12 +176,15 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
-                var result = await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT5);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```", messageReference: new MessageReference(Context.Message.Id));
+                var result =
+                    await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT5);
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
             catch (ApplicationException ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendMessageAsync($"{ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
         }
 
@@ -174,7 +193,7 @@ namespace MariBot.Core.Modules.Text
         /// </summary>
         /// <param name="input">Input prompt</param>
         /// <returns></returns>
-        [Command("flux", RunMode= RunMode.Async)]
+        [Command("flux", RunMode = RunMode.Async)]
         public async Task FluxImageGeneration([Remainder] string input)
         {
             try
@@ -186,10 +205,57 @@ namespace MariBot.Core.Modules.Text
                 var filename = $"{Guid.NewGuid().ToString()}.jpeg";
                 eb.WithImageUrl($"attachment://{filename}");
                 await File.WriteAllBytesAsync(filename, stream.ReadAsBytes());
-                await Context.Channel.SendFileAsync(filename, embed: eb.Build(), messageReference: new MessageReference(Context.Message.Id));
+                await Context.Channel.SendFileAsync(filename, embed: eb.Build(),
+                    messageReference: new MessageReference(Context.Message.Id));
                 File.Delete(filename);
-            } catch (Exception ex) {
-                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}", messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
+                logger.LogCritical(ex, "Unhandled service exception");
+            }
+        }
+        
+        /// <summary>
+        /// Grok Text Generation Command
+        /// </summary>
+        /// <param name="input">Input prompt</param>
+        [Command("grok", RunMode = RunMode.Async)]
+        public async Task GrokTextGeneration([Remainder] string input)
+        {
+            try
+            {
+                var result = await grokService.GetGrokResponseAsync(input);
+                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
+                logger.LogCritical(ex, "Unhandled service exception");
+            }
+        }
+        
+        /// <summary>
+        /// Grok Image Generation Command
+        /// </summary>
+        /// <param name="input">Input prompt</param>
+        [Command("grokimage", RunMode = RunMode.Async)]
+        public async Task GrokImageGeneration([Remainder] string input)
+        {
+            try
+            {
+                var result = await grokService.GetGrokImageAsync(input);
+                var stream = await imageService.GetWebResource(result);
+                await Context.Channel.SendFileAsync(stream, "grok_image.png",
+                    messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
+                    messageReference: new MessageReference(Context.Message.Id));
                 logger.LogCritical(ex, "Unhandled service exception");
             }
         }
