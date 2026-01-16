@@ -227,6 +227,11 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await grokService.GetGrokResponseAsync(input);
+                // Trim result to not be more than 1990 characters to avoid Discord message length limits
+                if (result.Length > 1990)
+                {
+                    result = result.Substring(0, 1990);
+                }
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
@@ -248,6 +253,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await grokService.GetGrokImageAsync(input);
+                // Validate result is a URL
                 var stream = await imageService.GetWebResource(result);
                 await Context.Channel.SendFileAsync(stream, "grok_image.png",
                     messageReference: new MessageReference(Context.Message.Id));

@@ -26,13 +26,34 @@ public class GrokService
             var thread = grokClient.GetGrokThread();
             thread.RegisterTool(new GrokToolReasoning(grokClient));
             thread.RegisterTool(new GrokToolLiveSearch(grokClient));
-            var fullResult = "";
+            var rawResponse = "";
             await foreach (var message in thread.AskQuestion(prompt))
             {
-                fullResult += message + "\n";
-            }
+                rawResponse += message.ToString();
+                if (message is GrokTextMessage textMessage)
+                {
+                    return textMessage.Message;
+                }
+                if (message is GrokToolResponse response && (response.ToolName == GrokToolLiveSearch.ToolName 
+                                                             || response.ToolName == GrokToolReasoning.ToolName))
+                {
+                    var jsonResponse = response.ToolResponse;
+                    string summary = null;
+                    using (var doc = System.Text.Json.JsonDocument.Parse(jsonResponse))
+                    {
+                        if (doc.RootElement.TryGetProperty("summary", out var el) 
+                            && el.ValueKind == System.Text.Json.JsonValueKind.String)
+                            summary = el.GetString();
+                    }
+                    if (!string.IsNullOrEmpty(summary))
+                    {
+                        return summary;
+                    }
 
-            return fullResult.Trim();
+                    return jsonResponse;
+                }
+            }
+            return $"Unknown or no response from Grok. {rawResponse}";
         }
         catch (Exception ex)
         {
@@ -48,22 +69,13 @@ public class GrokService
     /// <returns>URI</returns>
     public async Task<string> GetGrokImageAsync(string prompt)
     {
-        try
+        GrokImageGenerationRequest request = new GrokImageGenerationRequest()
         {
-            var thread = grokClient.GetGrokThread();
-            thread.RegisterTool(new GrokToolImageGeneration(grokClient));
-            var fullResult = "";
-            await foreach (var message in thread.AskQuestion(prompt))
-            {
-                fullResult += message + "\n";
-            }
-
-            return fullResult.Trim();
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Error while generating Grok image");
-            return $"Error: {ex.Message}";
-        }
+            Prompt = prompt,
+            N = 1,
+            Response_format = GrokImageGenerationRequestResponse_format.Url
+        };
+        var generatedImage = await grokClient.GenerateImagesAsync(request);
+        return generatedImage.Data.First().Url;
     }
 }
