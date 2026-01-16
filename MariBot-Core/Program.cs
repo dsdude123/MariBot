@@ -39,6 +39,7 @@ builder.Services.AddSingleton<DataService>();
 builder.Services.AddSingleton<ElectionService>();
 builder.Services.AddSingleton<FluxService>();
 builder.Services.AddSingleton<GoogleService>();
+builder.Services.AddSingleton<GrokService>();
 builder.Services.AddSingleton<IgdbService>();
 builder.Services.AddSingleton<ImageService>();
 builder.Services.AddSingleton<OpenAiService>();

@@ -342,7 +342,7 @@ namespace MariBot.Core.Services
                         }
                     }
 
-                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-vxtiktok"))
+                    if (dynamicConfigService.CheckFeatureEnabled(context.Guild.Id, "auto-tiktokez"))
                     {
                         var ddParts = context.Message.Content.Split(new char[] {' ', '\n'});
 
@@ -356,7 +356,7 @@ namespace MariBot.Core.Services
                                 if (tiktokDomains.Contains(url.Host, StringComparer.InvariantCultureIgnoreCase))
                                 {
                                     var urlBuilder = new UriBuilder(url);
-                                    urlBuilder.Host = "vxtiktok.com";
+                                    urlBuilder.Host = "tiktokez.com";
                                     if (IsInSpoiler(trimmed, context.Message.Content))
                                     {
                                         await context.Channel.SendMessageAsync($"|| {urlBuilder.ToString()} ||");
