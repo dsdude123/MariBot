@@ -350,8 +350,9 @@ namespace MariBot.Worker
 
         }
 
-        public void HandleRandomOverlay(List<Tuple<string, int[]>> files, int selector = 0)
+        public void HandleRandomOverlay(List<Tuple<string, int[]>> files)
         {
+            var selector = WorkerGlobals.Job.ImageSelector.GetValueOrDefault(0);
             // Check if selector is set (greater than 0) and return the selected overlay
             if (selector > 0 && selector <= files.Count)
             {
