@@ -40,7 +40,8 @@
         "auto-image-conversion",
         "emoji-triggers",
         "auto-vxtwitter",
-        "auto-rxddit"
+        "auto-rxddit",
+        "auto-tiktokez"
       ],
       "BlockedTextCommands": [
         "danbooru",
@@ -71,7 +72,8 @@
         "emoji-triggers",
         "auto-image-conversion",
         "auto-vxtwitter",
-        "auto-rxddit"
+        "auto-rxddit",
+        "auto-tiktokez"
       ],
       "BlockedTextCommands": [
         "danbooru",
@@ -135,7 +137,8 @@
       "Name": "booba",
       "EnabledFeatures": [
         "auto-vxtwitter",
-        "auto-rxddit"
+        "auto-rxddit",
+        "auto-tiktokez"
       ],
       "BlockedTextCommands": [
         "gpt3",
