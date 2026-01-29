@@ -370,6 +370,7 @@ namespace MariBot.Worker
                 {
                     Message = "Image selector is out of range."
                 };
+                return;
             }
             var pick = new Random().Next(0, files.Count);
             var source = files[pick];
