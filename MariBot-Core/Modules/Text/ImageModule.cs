@@ -138,6 +138,12 @@ namespace MariBot.Core.Modules.Text
         {
             HandleCommonImageScenario(Command.BobRoss);
         }
+        
+        [Command("classic", RunMode = RunMode.Async)]
+        public async Task Classic([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.Classic);
+        }
 
         [Command("cmm", RunMode = RunMode.Async)]
         public async Task ChangeMyMind([Remainder] string text = null)

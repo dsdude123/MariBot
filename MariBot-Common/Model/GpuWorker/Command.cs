@@ -24,6 +24,7 @@ namespace MariBot.Common.Model.GpuWorker
         Blagblare,
         BobRoss,
         ChangeMyMind,
+        Classic,
         Condom,
         ConvertToDiscordFriendly,
         Daryl,

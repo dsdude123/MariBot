@@ -27,6 +27,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.Blagblare, WorkerCapability.CPU},
                 { Command.BobRoss, WorkerCapability.CPU},
                 { Command.ChangeMyMind, WorkerCapability.CPU},
+                { Command.Classic, WorkerCapability.CPU},
                 { Command.Condom, WorkerCapability.CPU},
                 { Command.ConvertToDiscordFriendly, WorkerCapability.CPU},
                 { Command.Daryl, WorkerCapability.CPU},

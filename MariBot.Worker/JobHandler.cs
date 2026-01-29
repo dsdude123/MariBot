@@ -111,6 +111,9 @@ namespace MariBot.Worker
 
                         magickImageHandler.AnnotateImage("cmm", cmmReadSettings, MagickColors.White, 242, 352, 526, 236, 292, 474, 576, 358);
                         break;
+                    case Command.Classic:
+                        magickImageHandler.OverlayImage("classic", 498, 462, 750, 386, 589, 789, 852, 706);
+                        break;
                     case Command.Condom:
                         magickImageHandler.OverlayImage("condom", 0, 381, 320, 381, 0, 702, 320, 702);
                         break;
