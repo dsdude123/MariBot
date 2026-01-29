@@ -126,6 +126,12 @@ namespace MariBot.Core.Modules.Text
         {
             HandleCommonImageScenario(Command.Binoculars);
         }
+        
+        [Command("blagblare", RunMode = RunMode.Async)]
+        public async Task Blagblare([Remainder] string text = null)
+        {
+            HandleCommonImageScenario(Command.Blagblare);
+        }
 
         [Command("bobross", RunMode = RunMode.Async)]
         public async Task BobRoss([Remainder] string text = null)

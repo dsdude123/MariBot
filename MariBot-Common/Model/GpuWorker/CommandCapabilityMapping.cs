@@ -24,6 +24,7 @@ namespace MariBot.Common.Model.GpuWorker
                 { Command.Bernie, WorkerCapability.CPU},
                 { Command.Biden, WorkerCapability.CPU},
                 { Command.Binoculars, WorkerCapability.CPU},
+                { Command.Blagblare, WorkerCapability.CPU},
                 { Command.BobRoss, WorkerCapability.CPU},
                 { Command.ChangeMyMind, WorkerCapability.CPU},
                 { Command.Condom, WorkerCapability.CPU},

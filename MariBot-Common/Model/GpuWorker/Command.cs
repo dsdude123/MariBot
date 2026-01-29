@@ -21,6 +21,7 @@ namespace MariBot.Common.Model.GpuWorker
         Bernie,
         Biden,
         Binoculars,
+        Blagblare,
         BobRoss,
         ChangeMyMind,
         Condom,

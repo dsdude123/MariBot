@@ -90,6 +90,9 @@ namespace MariBot.Worker
                     case Command.Binoculars:
                         magickImageHandler.OverlayImage("binoculars", 36, 458, 769, 458, 36, 894, 769, 894);
                         break;
+                    case Command.Blagblare:
+                        magickImageHandler.OverlayImage("blagblare", 1392, 852, 1843, 886, 1429, 1840, 1852, 1762);
+                        break;
                     case Command.BobRoss:
                         magickImageHandler.OverlayImage("bobross", 22, 71, 453, 88, 22, 389, 453, 403);
                         break;
