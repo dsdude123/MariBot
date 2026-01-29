@@ -350,11 +350,31 @@ namespace MariBot.Worker
 
         }
 
-        public void HandleRandomOverlay(List<Tuple<string, int[]>> files)
+        public void HandleRandomOverlay(List<Tuple<string, int[]>> files, int selector = 0)
         {
+            // Check if selector is set (greater than 0) and return the selected overlay
+            if (selector > 0 && selector <= files.Count)
+            {
+                var overrideSource = files[selector - 1];
+                magickImageHandler.OverlayImage(overrideSource.Item1, overrideSource.Item2[0], 
+                    overrideSource.Item2[1], overrideSource.Item2[2], overrideSource.Item2[3], 
+                    overrideSource.Item2[4], overrideSource.Item2[5], overrideSource.Item2[6], 
+                    overrideSource.Item2[7]);
+                return;
+            }
+
+            if (selector > files.Count || selector < 0)
+            {
+                WorkerGlobals.Job.Result = new JobResult()
+                {
+                    Message = "Image selector is out of range."
+                };
+            }
             var pick = new Random().Next(0, files.Count);
             var source = files[pick];
-            magickImageHandler.OverlayImage(source.Item1, source.Item2[0], source.Item2[1], source.Item2[2], source.Item2[3], source.Item2[4], source.Item2[5], source.Item2[6], source.Item2[7]);
+            magickImageHandler.OverlayImage(source.Item1, source.Item2[0], source.Item2[1], 
+                source.Item2[2], source.Item2[3], source.Item2[4], source.Item2[5], 
+                source.Item2[6], source.Item2[7]);
         }
     }
 }

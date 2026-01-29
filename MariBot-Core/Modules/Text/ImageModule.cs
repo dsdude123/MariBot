@@ -363,9 +363,25 @@ namespace MariBot.Core.Modules.Text
                 return;
             }
 
+            var selector = 0;
+
+            // Try to find integer in the message
+            foreach (var part in Context.Message.ToString().Split(' '))
+            {
+                try
+                {
+                    selector = int.Parse(part);
+                    break;
+                }
+                catch
+                {
+                    // Ignore parse errors
+                }
+            }
+
             var image = await imageService.GetWebResource(imageUrl);
 
-            var job = BuildImageJob(Context, command, image);
+            var job = BuildImageJob(Context, command, image, selector);
             var serviceResult = workerManagerService.EnqueueJob(job);
 
             var notification = await Context.Channel.SendMessageAsync(serviceResult.Item1,
@@ -391,7 +407,7 @@ namespace MariBot.Core.Modules.Text
             }
         }
 
-        private WorkerJob BuildImageJob(SocketCommandContext context, Command command, Stream image)
+        private WorkerJob BuildImageJob(SocketCommandContext context, Command command, Stream image, int selector = 0)
         {
             return new WorkerJob()
             {
@@ -400,7 +416,8 @@ namespace MariBot.Core.Modules.Text
                 MessageId = context.Message.Id,
                 Command = command,
                 Id = Guid.NewGuid(),
-                SourceImage = image.ReadAsBytes()
+                SourceImage = image.ReadAsBytes(),
+                ImageSelector = selector
             };
         }
 

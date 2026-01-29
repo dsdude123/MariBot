@@ -17,5 +17,6 @@ namespace MariBot.Common.Model.GpuWorker
         public byte[]? SourceImage { get; set; }
         public string? SourceText { get; set; }
         public JobResult? Result { get; set; }
+        public int? ImageSelector { get; set; }
     }
 }
