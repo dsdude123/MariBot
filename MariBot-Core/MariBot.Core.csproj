@@ -61,4 +61,12 @@
     <ProjectReference Include="..\MariBot-Common\MariBot.Common.csproj" />
   </ItemGroup>
 
+  <Target Name="CleanDebugLogs" BeforeTargets="BeforeBuild">
+    <Message Importance="high" Text="Cleaning up old maribot-*.log files in $(MSBuildProjectDirectory)" />
+    <ItemGroup>
+      <_OldLogs Include="$(MSBuildProjectDirectory)\maribot-*.log" />
+    </ItemGroup>
+    <Delete Files="@(_OldLogs)" ContinueOnError="true" />
+  </Target>
+
 </Project>
