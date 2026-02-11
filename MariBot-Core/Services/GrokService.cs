@@ -1,16 +1,24 @@
-using GrokSdk;
-using GrokSdk.Tools;
+using Grpc.Core;
+using Grpc.Net.Client;
+using XaiApi;
 
 namespace MariBot.Core.Services;
 
 public class GrokService
 {
-    private readonly GrokClient grokClient;
+    private readonly GrpcChannel grpcChannel;
+    private readonly Metadata headers;
+    private readonly DynamicConfigService dynamicConfigService;
     private readonly ILogger<GrokService> logger;
 
-    public GrokService(IConfiguration configuration, ILogger<GrokService> logger)
+    public GrokService(IConfiguration configuration, DynamicConfigService dynamicConfigService, ILogger<GrokService> logger)
     {
-        grokClient = new GrokClient(new HttpClient(), configuration["DiscordSettings:GrokApiKey"]);
+        grpcChannel = GrpcChannel.ForAddress("https://api.x.ai");
+        headers = new Metadata
+        {
+            { "Authorization", $"Bearer {configuration["DiscordSettings:GrokApiKey"]}" }
+        };
+        this.dynamicConfigService = dynamicConfigService;
         this.logger = logger;
     }
 
@@ -21,45 +29,34 @@ public class GrokService
     /// <returns>Response from Grok</returns>
     public async Task<string> GetGrokResponseAsync(string prompt)
     {
-        try
-        {
-            var thread = grokClient.GetGrokThread();
-            thread.RegisterTool(new GrokToolReasoning(grokClient));
-            thread.RegisterTool(new GrokToolLiveSearch(grokClient));
-            var rawResponse = "";
-            await foreach (var message in thread.AskQuestion(prompt))
-            {
-                rawResponse += message.ToString();
-                if (message is GrokTextMessage textMessage)
-                {
-                    return textMessage.Message;
-                }
-                if (message is GrokToolResponse response && (response.ToolName == GrokToolLiveSearch.ToolName 
-                                                             || response.ToolName == GrokToolReasoning.ToolName))
-                {
-                    var jsonResponse = response.ToolResponse;
-                    string summary = null;
-                    using (var doc = System.Text.Json.JsonDocument.Parse(jsonResponse))
-                    {
-                        if (doc.RootElement.TryGetProperty("summary", out var el) 
-                            && el.ValueKind == System.Text.Json.JsonValueKind.String)
-                            summary = el.GetString();
-                    }
-                    if (!string.IsNullOrEmpty(summary))
-                    {
-                        return summary;
-                    }
+        var chatClient = new Chat.ChatClient(grpcChannel);
 
-                    return jsonResponse;
+        var request = new GetCompletionsRequest
+        {
+            Model = dynamicConfigService.GetGrokChatModel(),
+            Messages =
+            {
+                new Message
+                {
+                    Content =
+                    {
+                        new Content
+                        {
+                            Text = prompt
+                        }
+                    },
+                    Role = MessageRole.RoleUser
                 }
             }
-            return $"Unknown or no response from Grok. {rawResponse}";
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Error while getting Grok response");
-            return $"Error: {ex.Message}";
-        }
+        };
+
+        var response = await chatClient.GetCompletionAsync(request, headers);
+
+        var text = response.Outputs
+            .Select(o => o.Message?.Content)
+            .FirstOrDefault(c => !string.IsNullOrEmpty(c));
+
+        return text ?? "Unknown or no response from Grok.";
     }
 
     /// <summary>
@@ -69,13 +66,17 @@ public class GrokService
     /// <returns>URI</returns>
     public async Task<string> GetGrokImageAsync(string prompt)
     {
-        GrokImageGenerationRequest request = new GrokImageGenerationRequest()
+        var imageClient = new Image.ImageClient(grpcChannel);
+
+        var request = new GenerateImageRequest
         {
+            Model = dynamicConfigService.GetGrokImageModel(),
             Prompt = prompt,
             N = 1,
-            Response_format = GrokImageGenerationRequestResponse_format.Url
+            Format = ImageFormat.ImgFormatUrl
         };
-        var generatedImage = await grokClient.GenerateImagesAsync(request);
-        return generatedImage.Data.First().Url;
+
+        var response = await imageClient.GenerateImageAsync(request, headers);
+        return response.Images.First().Url;
     }
 }
