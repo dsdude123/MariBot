@@ -47,6 +47,21 @@ public class GrokService
                     },
                     Role = MessageRole.RoleUser
                 }
+            },
+            ToolChoice = new ToolChoice
+            {
+                Mode = ToolMode.Auto
+            },
+            Tools =
+            {
+                new Tool
+                {
+                    WebSearch = new WebSearch()
+                },
+                new Tool
+                {
+                    XSearch = new XSearch()
+                }
             }
         };
 
