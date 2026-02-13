@@ -56,17 +56,12 @@
     <PackageReference Include="UrbanDictionaryDex" Version="1.0.3" />
     <PackageReference Include="WikipediaNet" Version="2.0.0" />
     <PackageReference Include="WolframAlphaNET" Version="2.0.0" />
+    <PackageReference Include="XaiProtoSharp" Version="2026.2.13" />
     <PackageReference Include="YoutubeDLSharp" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MariBot-Common\MariBot.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Xai.Protos">
-      <HintPath>C:\Users\conne\RiderProjects\XaiProtoSharp\Xai.Protos\bin\Debug\net8.0\Xai.Protos.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <Target Name="CleanDebugLogs" BeforeTargets="BeforeBuild">
