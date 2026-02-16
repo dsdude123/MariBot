@@ -11,6 +11,8 @@ public class GrokService
     private readonly DynamicConfigService dynamicConfigService;
     private readonly ILogger<GrokService> logger;
 
+    protected GrokService() { }
+
     public GrokService(IConfiguration configuration, DynamicConfigService dynamicConfigService, ILogger<GrokService> logger)
     {
         grpcChannel = GrpcChannel.ForAddress("https://api.x.ai");
@@ -27,7 +29,7 @@ public class GrokService
     /// </summary>
     /// <param name="prompt">Prompt</param>
     /// <returns>Response from Grok</returns>
-    public async Task<string> GetGrokResponseAsync(string prompt)
+    public virtual async Task<string> GetGrokResponseAsync(string prompt)
     {
         var chatClient = new Chat.ChatClient(grpcChannel);
 
@@ -79,7 +81,7 @@ public class GrokService
     /// </summary>
     /// <param name="prompt">Prompt</param>
     /// <returns>URI</returns>
-    public async Task<string> GetGrokImageAsync(string prompt)
+    public virtual async Task<string> GetGrokImageAsync(string prompt)
     {
         var imageClient = new Image.ImageClient(grpcChannel);
 

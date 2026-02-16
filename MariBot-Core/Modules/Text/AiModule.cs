@@ -1,7 +1,5 @@
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
-using Discord.WebSocket;
 using MariBot.Core.Services;
 using RestSharp.Extensions;
 
@@ -10,7 +8,7 @@ namespace MariBot.Core.Modules.Text
     /// <summary>
     /// Module for commands related to cloud AI services.
     /// </summary>
-    public class AiModule : ModuleBase<SocketCommandContext>
+    public class AiModule : ModuleBase<ICommandContext>
     {
         private readonly DataService dataService;
         private readonly GrokService grokService;
