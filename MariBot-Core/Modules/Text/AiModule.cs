@@ -238,6 +238,35 @@ namespace MariBot.Core.Modules.Text
             }
         }
 
+        /// <summary>
+        /// Grok Video Generation Command
+        /// </summary>
+        /// <param name="seconds">Duration in seconds (1-10)</param>
+        /// <param name="input">Input prompt</param>
+        [Command("grokvideo", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task GrokVideoGeneration(int seconds, [Remainder] string input)
+        {
+            if (seconds < 1 || seconds > 10)
+            {
+                await Context.Channel.SendMessageAsync("Duration must be between 1 and 10 seconds.",
+                    messageReference: new MessageReference(Context.Message.Id));
+                return;
+            }
+
+            try
+            {
+                var result = await grokService.GetGrokVideoAsync(input, seconds);
+                var stream = await imageService.GetWebResource(result);
+                await Context.Channel.SendFileAsync(stream, "grok_video.mp4",
+                    messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await HandleUnexpectedException(ex);
+            }
+        }
+
         private async Task HandleUnexpectedException(Exception ex)
         {
             logger.LogError(ex, "Service exception in AiModule");

@@ -118,6 +118,15 @@ namespace MariBot.Core.Services
         }
 
         /// <summary>
+        /// Get the Grok video model from dynamic config.
+        /// </summary>
+        /// <returns>Model name string</returns>
+        public string GetGrokVideoModel()
+        {
+            return dynamicConfig?.GrokVideoModel ?? "grok-imagine-video";
+        }
+
+        /// <summary>
         /// Get the dynamic config for a specified guild ID.
         /// </summary>
         /// <param name="id">Guild ID</param>

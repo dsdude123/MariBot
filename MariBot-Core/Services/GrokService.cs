@@ -96,4 +96,38 @@ public class GrokService
         var response = await imageClient.GenerateImageAsync(request, headers);
         return response.Images.First().Url;
     }
+
+    /// <summary>
+    /// Generates a video using Grok's video generation tool
+    /// </summary>
+    /// <param name="prompt">Prompt</param>
+    /// <param name="duration">Duration in seconds</param>
+    /// <returns>Video URL</returns>
+    public virtual async Task<string> GetGrokVideoAsync(string prompt, int duration)
+    {
+        var videoClient = new Video.VideoClient(grpcChannel);
+
+        var request = new GenerateVideoRequest
+        {
+            Model = dynamicConfigService.GetGrokVideoModel(),
+            Prompt = prompt,
+            Duration = duration
+        };
+
+        var generateResponse = await videoClient.GenerateVideoAsync(request, headers);
+        var requestId = generateResponse.RequestId;
+
+        while (true)
+        {
+            await Task.Delay(5000);
+
+            var deferredResponse = await videoClient.GetDeferredVideoAsync(
+                new GetDeferredVideoRequest { RequestId = requestId }, headers);
+
+            if (deferredResponse.Status == DeferredStatus.Done)
+            {
+                return deferredResponse.Response.Video.Url;
+            }
+        }
+    }
 }

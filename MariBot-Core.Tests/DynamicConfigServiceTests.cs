@@ -75,6 +75,29 @@ namespace MariBot.Core.Tests
             Assert.Equal("custom-image-model", service.GetGrokImageModel());
         }
 
+        // --- GetGrokVideoModel ---
+
+        [Fact]
+        public void GetGrokVideoModel_NullConfig_ReturnsDefault()
+        {
+            var service = CreateServiceWithConfig(null);
+            Assert.Equal("grok-imagine-video", service.GetGrokVideoModel());
+        }
+
+        [Fact]
+        public void GetGrokVideoModel_ConfigWithoutOverride_ReturnsDefault()
+        {
+            var service = CreateServiceWithConfig(new DynamicConfig());
+            Assert.Equal("grok-imagine-video", service.GetGrokVideoModel());
+        }
+
+        [Fact]
+        public void GetGrokVideoModel_CustomValue_ReturnsCustom()
+        {
+            var service = CreateServiceWithConfig(new DynamicConfig { GrokVideoModel = "custom-video-model" });
+            Assert.Equal("custom-video-model", service.GetGrokVideoModel());
+        }
+
         // --- GetGuildConfig ---
 
         [Fact]

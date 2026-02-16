@@ -183,5 +183,93 @@ namespace MariBot.Core.Tests
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
                 Times.Once);
         }
+        // --- GrokVideoGeneration ---
+
+        [Fact]
+        public async Task GrokVideoGeneration_NormalFlow_SendsFile()
+        {
+            var fakeStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            mockGrokService.Setup(s => s.GetGrokVideoAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync("https://example.com/video.mp4");
+            mockImageService.Setup(s => s.GetWebResource("https://example.com/video.mp4"))
+                .ReturnsAsync(fakeStream);
+
+            await module.GrokVideoGeneration(5, "test prompt");
+
+            mockChannel.Verify(c => c.SendFileAsync(
+                It.IsAny<Stream>(), It.Is<string>(s => s == "grok_video.mp4"),
+                It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(),
+                It.IsAny<RequestOptions>(), It.IsAny<bool>(), It.IsAny<AllowedMentions>(),
+                It.IsAny<MessageReference>(), It.IsAny<MessageComponent>(),
+                It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(),
+                It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokVideoGeneration_SecondsTooLow_SendsValidationError()
+        {
+            await module.GrokVideoGeneration(0, "test prompt");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Duration must be between 1 and 10 seconds")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+            mockGrokService.Verify(s => s.GetGrokVideoAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GrokVideoGeneration_SecondsTooHigh_SendsValidationError()
+        {
+            await module.GrokVideoGeneration(11, "test prompt");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Duration must be between 1 and 10 seconds")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+            mockGrokService.Verify(s => s.GetGrokVideoAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GrokVideoGeneration_GrokServiceThrows_SendsErrorMessage()
+        {
+            mockGrokService.Setup(s => s.GetGrokVideoAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .ThrowsAsync(new Exception("Video generation failed"));
+
+            await module.GrokVideoGeneration(5, "test prompt");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Something went wrong") && s.Contains("Video generation failed")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokVideoGeneration_ImageServiceThrows_SendsErrorMessage()
+        {
+            mockGrokService.Setup(s => s.GetGrokVideoAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync("https://example.com/video.mp4");
+            mockImageService.Setup(s => s.GetWebResource(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Download failed"));
+
+            await module.GrokVideoGeneration(5, "test prompt");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Something went wrong") && s.Contains("Download failed")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
     }
 }

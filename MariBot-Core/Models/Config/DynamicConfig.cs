@@ -19,5 +19,10 @@
         /// Model to use for Grok image generation.
         /// </summary>
         public string GrokImageModel { get; set; } = "grok-imagine-image";
+
+        /// <summary>
+        /// Model to use for Grok video generation.
+        /// </summary>
+        public string GrokVideoModel { get; set; } = "grok-imagine-video";
     }
 }
