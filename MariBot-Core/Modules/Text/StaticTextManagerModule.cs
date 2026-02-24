@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using MariBot.Core.Services;
 
 namespace MariBot.Core.Modules.Text
@@ -66,7 +67,7 @@ namespace MariBot.Core.Modules.Text
 
         [RequireOwner]
         [Command("updateglobal", RunMode = RunMode.Async)]
-        public async Task updateGlobal(string key, [Remainder] string text)
+        public async Task updateGlobal(string key, [Remainder] string text = "")
         {
             try
             {
@@ -81,7 +82,7 @@ namespace MariBot.Core.Modules.Text
         }
 
         [Command("update", RunMode = RunMode.Async)]
-        public async Task update(string key, [Remainder] string text)
+        public async Task update(string key, [Remainder] string text = "")
         {
             try
             {
@@ -143,6 +144,31 @@ namespace MariBot.Core.Modules.Text
         public async Task Upgrade()
         {
             await Context.Channel.SendMessageAsync(staticTextResponseService.UpgradeAttachments().Result);
+        }
+
+        [RequireOwner]
+        [Command("promote")]
+        public Task promote(string key)
+        {
+            var result = staticTextResponseService.PromoteToGlobal(key, Context.Guild.Id);
+            return Context.Channel.SendMessageAsync(result);
+        }
+
+        [Command("list", RunMode = RunMode.Async)]
+        public async Task list()
+        {
+            var globalCmds = staticTextResponseService.GetGlobalResponses()
+                .Select(r => r.Command)
+                .OrderBy(n => n)
+                .ToList();
+            var guildCmds = staticTextResponseService.GetGuildResponses(Context.Guild.Id)
+                .Select(r => r.Command)
+                .OrderBy(n => n)
+                .ToList();
+
+            var pages = StaticTextListHelpers.BuildListPages(globalCmds, guildCmds);
+            foreach (var embed in pages)
+                await Context.Channel.SendMessageAsync(embed: embed);
         }
     }
 }

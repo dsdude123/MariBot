@@ -18,11 +18,12 @@ namespace MariBot.Core.Services
     public class DataService
     {
         private readonly ILogger<DataService> logger;
-        private static LiteDatabase db = new LiteDatabase("data.db");
+        private readonly LiteDatabase db;
 
-        public DataService(ILogger<DataService> logger)
+        public DataService(ILogger<DataService> logger, string dbPath = "data.db")
         {
             this.logger = logger;
+            db = new LiteDatabase(dbPath);
 
             logger.LogInformation("DB init in progress...");
 
