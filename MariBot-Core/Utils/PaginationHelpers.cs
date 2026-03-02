@@ -1,8 +1,8 @@
 using Discord;
 
-namespace MariBot.Core.Modules.Text
+namespace MariBot.Core.Utils
 {
-    public static class StaticTextListHelpers
+    public static class PaginationHelpers
     {
         private const int MaxDescriptionLength = 3500;
 

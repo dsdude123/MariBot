@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using MariBot.Core.Services;
+using MariBot.Core.Utils;
 
 namespace MariBot.Core.Modules.Text
 {
@@ -166,7 +167,7 @@ namespace MariBot.Core.Modules.Text
                 .OrderBy(n => n)
                 .ToList();
 
-            var pages = StaticTextListHelpers.BuildListPages(globalCmds, guildCmds);
+            var pages = PaginationHelpers.BuildListPages(globalCmds, guildCmds);
             foreach (var embed in pages)
                 await Context.Channel.SendMessageAsync(embed: embed);
         }
