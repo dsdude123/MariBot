@@ -1,4 +1,4 @@
-﻿using MariBot.Core.Models.Config;
+using MariBot.Core.Models.Config;
 using Newtonsoft.Json;
 using System.Net;
 using System.Timers;
@@ -97,6 +97,33 @@ namespace MariBot.Core.Services
                 return guildConfig.AutoReactions;
             }
             return Array.Empty<ReactionConfig>();
+        }
+
+        /// <summary>
+        /// Get the Grok chat model from dynamic config.
+        /// </summary>
+        /// <returns>Model name string</returns>
+        public string GetGrokChatModel()
+        {
+            return dynamicConfig?.GrokChatModel ?? "grok-4-1-fast-reasoning";
+        }
+
+        /// <summary>
+        /// Get the Grok image model from dynamic config.
+        /// </summary>
+        /// <returns>Model name string</returns>
+        public string GetGrokImageModel()
+        {
+            return dynamicConfig?.GrokImageModel ?? "grok-imagine-image";
+        }
+
+        /// <summary>
+        /// Get the Grok video model from dynamic config.
+        /// </summary>
+        /// <returns>Model name string</returns>
+        public string GetGrokVideoModel()
+        {
+            return dynamicConfig?.GrokVideoModel ?? "grok-imagine-video";
         }
 
         /// <summary>

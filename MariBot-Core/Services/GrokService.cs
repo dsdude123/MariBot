@@ -1,16 +1,26 @@
-using GrokSdk;
-using GrokSdk.Tools;
+using Grpc.Core;
+using Grpc.Net.Client;
+using XaiApi;
 
 namespace MariBot.Core.Services;
 
 public class GrokService
 {
-    private readonly GrokClient grokClient;
+    private readonly GrpcChannel grpcChannel;
+    private readonly Metadata headers;
+    private readonly DynamicConfigService dynamicConfigService;
     private readonly ILogger<GrokService> logger;
 
-    public GrokService(IConfiguration configuration, ILogger<GrokService> logger)
+    protected GrokService() { }
+
+    public GrokService(IConfiguration configuration, DynamicConfigService dynamicConfigService, ILogger<GrokService> logger)
     {
-        grokClient = new GrokClient(new HttpClient(), configuration["DiscordSettings:GrokApiKey"]);
+        grpcChannel = GrpcChannel.ForAddress("https://api.x.ai");
+        headers = new Metadata
+        {
+            { "Authorization", $"Bearer {configuration["DiscordSettings:GrokApiKey"]}" }
+        };
+        this.dynamicConfigService = dynamicConfigService;
         this.logger = logger;
     }
 
@@ -19,47 +29,51 @@ public class GrokService
     /// </summary>
     /// <param name="prompt">Prompt</param>
     /// <returns>Response from Grok</returns>
-    public async Task<string> GetGrokResponseAsync(string prompt)
+    public virtual async Task<string> GetGrokResponseAsync(string prompt)
     {
-        try
-        {
-            var thread = grokClient.GetGrokThread();
-            thread.RegisterTool(new GrokToolReasoning(grokClient));
-            thread.RegisterTool(new GrokToolLiveSearch(grokClient));
-            var rawResponse = "";
-            await foreach (var message in thread.AskQuestion(prompt))
-            {
-                rawResponse += message.ToString();
-                if (message is GrokTextMessage textMessage)
-                {
-                    return textMessage.Message;
-                }
-                if (message is GrokToolResponse response && (response.ToolName == GrokToolLiveSearch.ToolName 
-                                                             || response.ToolName == GrokToolReasoning.ToolName))
-                {
-                    var jsonResponse = response.ToolResponse;
-                    string summary = null;
-                    using (var doc = System.Text.Json.JsonDocument.Parse(jsonResponse))
-                    {
-                        if (doc.RootElement.TryGetProperty("summary", out var el) 
-                            && el.ValueKind == System.Text.Json.JsonValueKind.String)
-                            summary = el.GetString();
-                    }
-                    if (!string.IsNullOrEmpty(summary))
-                    {
-                        return summary;
-                    }
+        var chatClient = new Chat.ChatClient(grpcChannel);
 
-                    return jsonResponse;
+        var request = new GetCompletionsRequest
+        {
+            Model = dynamicConfigService.GetGrokChatModel(),
+            Messages =
+            {
+                new Message
+                {
+                    Content =
+                    {
+                        new Content
+                        {
+                            Text = prompt
+                        }
+                    },
+                    Role = MessageRole.RoleUser
+                }
+            },
+            ToolChoice = new ToolChoice
+            {
+                Mode = ToolMode.Auto
+            },
+            Tools =
+            {
+                new Tool
+                {
+                    WebSearch = new WebSearch()
+                },
+                new Tool
+                {
+                    XSearch = new XSearch()
                 }
             }
-            return $"Unknown or no response from Grok. {rawResponse}";
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Error while getting Grok response");
-            return $"Error: {ex.Message}";
-        }
+        };
+
+        var response = await chatClient.GetCompletionAsync(request, headers);
+
+        var text = response.Outputs
+            .Select(o => o.Message?.Content)
+            .FirstOrDefault(c => !string.IsNullOrEmpty(c));
+
+        return text ?? "Unknown or no response from Grok.";
     }
 
     /// <summary>
@@ -67,15 +81,53 @@ public class GrokService
     /// </summary>
     /// <param name="prompt">Prompt</param>
     /// <returns>URI</returns>
-    public async Task<string> GetGrokImageAsync(string prompt)
+    public virtual async Task<string> GetGrokImageAsync(string prompt)
     {
-        GrokImageGenerationRequest request = new GrokImageGenerationRequest()
+        var imageClient = new Image.ImageClient(grpcChannel);
+
+        var request = new GenerateImageRequest
         {
+            Model = dynamicConfigService.GetGrokImageModel(),
             Prompt = prompt,
             N = 1,
-            Response_format = GrokImageGenerationRequestResponse_format.Url
+            Format = ImageFormat.ImgFormatUrl
         };
-        var generatedImage = await grokClient.GenerateImagesAsync(request);
-        return generatedImage.Data.First().Url;
+
+        var response = await imageClient.GenerateImageAsync(request, headers);
+        return response.Images.First().Url;
+    }
+
+    /// <summary>
+    /// Generates a video using Grok's video generation tool
+    /// </summary>
+    /// <param name="prompt">Prompt</param>
+    /// <param name="duration">Duration in seconds</param>
+    /// <returns>Video URL</returns>
+    public virtual async Task<string> GetGrokVideoAsync(string prompt, int duration)
+    {
+        var videoClient = new Video.VideoClient(grpcChannel);
+
+        var request = new GenerateVideoRequest
+        {
+            Model = dynamicConfigService.GetGrokVideoModel(),
+            Prompt = prompt,
+            Duration = duration
+        };
+
+        var generateResponse = await videoClient.GenerateVideoAsync(request, headers);
+        var requestId = generateResponse.RequestId;
+
+        while (true)
+        {
+            await Task.Delay(5000);
+
+            var deferredResponse = await videoClient.GetDeferredVideoAsync(
+                new GetDeferredVideoRequest { RequestId = requestId }, headers);
+
+            if (deferredResponse.Status == DeferredStatus.Done)
+            {
+                return deferredResponse.Response.Video.Url;
+            }
+        }
     }
 }

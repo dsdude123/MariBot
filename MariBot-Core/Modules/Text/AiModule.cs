@@ -1,7 +1,5 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
-using Discord.Rest;
-using Discord.WebSocket;
 using MariBot.Core.Services;
 using RestSharp.Extensions;
 
@@ -10,7 +8,7 @@ namespace MariBot.Core.Modules.Text
     /// <summary>
     /// Module for commands related to cloud AI services.
     /// </summary>
-    public class AiModule : ModuleBase<SocketCommandContext>
+    public class AiModule : ModuleBase<ICommandContext>
     {
         private readonly DataService dataService;
         private readonly GrokService grokService;
@@ -76,17 +74,9 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendFileAsync(stream, "dalle.png",
                     messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (AggregateException ex)
+            catch (Exception ex)
             {
-                if (ex.InnerException.GetType() == typeof(ApplicationException))
-                {
-                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}",
-                        messageReference: new MessageReference(Context.Message.Id));
-                }
-                else
-                {
-                    throw ex.InnerException;
-                }
+                await HandleUnexpectedException(ex);
             }
         }
 
@@ -107,17 +97,9 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendFileAsync(stream, "dalle.png",
                     messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (AggregateException ex)
+            catch (Exception ex)
             {
-                if (ex.InnerException.GetType() == typeof(ApplicationException))
-                {
-                    await Context.Channel.SendMessageAsync($"{ex.InnerException.Message}",
-                        messageReference: new MessageReference(Context.Message.Id));
-                }
-                else
-                {
-                    throw ex.InnerException;
-                }
+                await HandleUnexpectedException(ex);
             }
         }
 
@@ -136,10 +118,9 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await HandleUnexpectedException(ex);
             }
         }
 
@@ -158,10 +139,9 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await HandleUnexpectedException(ex);
             }
         }
 
@@ -181,10 +161,9 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"{ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await HandleUnexpectedException(ex);
             }
         }
 
@@ -211,12 +190,10 @@ namespace MariBot.Core.Modules.Text
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
-                logger.LogCritical(ex, "Unhandled service exception");
+                await HandleUnexpectedException(ex);
             }
         }
-        
+
         /// <summary>
         /// Grok Text Generation Command
         /// </summary>
@@ -237,12 +214,10 @@ namespace MariBot.Core.Modules.Text
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
-                logger.LogCritical(ex, "Unhandled service exception");
+                await HandleUnexpectedException(ex);
             }
         }
-        
+
         /// <summary>
         /// Grok Image Generation Command
         /// </summary>
@@ -253,17 +228,50 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await grokService.GetGrokImageAsync(input);
-                // Validate result is a URL
                 var stream = await imageService.GetWebResource(result);
                 await Context.Channel.SendFileAsync(stream, "grok_image.png",
                     messageReference: new MessageReference(Context.Message.Id));
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync($"Something went really wrong. {ex.Message}",
-                    messageReference: new MessageReference(Context.Message.Id));
-                logger.LogCritical(ex, "Unhandled service exception");
+                await HandleUnexpectedException(ex);
             }
+        }
+
+        /// <summary>
+        /// Grok Video Generation Command
+        /// </summary>
+        /// <param name="seconds">Duration in seconds (1-10)</param>
+        /// <param name="input">Input prompt</param>
+        [Command("grokvideo", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task GrokVideoGeneration(int seconds, [Remainder] string input)
+        {
+            if (seconds < 1 || seconds > 10)
+            {
+                await Context.Channel.SendMessageAsync("Duration must be between 1 and 10 seconds.",
+                    messageReference: new MessageReference(Context.Message.Id));
+                return;
+            }
+
+            try
+            {
+                var result = await grokService.GetGrokVideoAsync(input, seconds);
+                var stream = await imageService.GetWebResource(result);
+                await Context.Channel.SendFileAsync(stream, "grok_video.mp4",
+                    messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await HandleUnexpectedException(ex);
+            }
+        }
+
+        private async Task HandleUnexpectedException(Exception ex)
+        {
+            logger.LogError(ex, "Service exception in AiModule");
+            await Context.Channel.SendMessageAsync($"Something went wrong. {ex.Message}",
+                messageReference: new MessageReference(Context.Message.Id));
         }
     }
 }

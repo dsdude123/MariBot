@@ -109,7 +109,7 @@ namespace MariBot.Core.Services
         /// </summary>
         /// <param name="url">HTTP URL</param>
         /// <returns>Stream</returns>
-        public async Task<Stream> GetWebResource(string url)
+        public virtual async Task<Stream> GetWebResource(string url)
         {
             var client = new HttpClient();
             var request = new HttpRequestMessage()
