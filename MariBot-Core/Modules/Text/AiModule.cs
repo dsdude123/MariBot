@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 using MariBot.Core.Services;
+using MariBot.Core.Utils;
 using RestSharp.Extensions;
 
 namespace MariBot.Core.Modules.Text
@@ -116,8 +117,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -137,8 +137,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -159,8 +158,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT5);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -205,13 +203,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await grokService.GetGrokResponseAsync(input);
-                // Trim result to not be more than 1990 characters to avoid Discord message length limits
-                if (result.Length > 1990)
-                {
-                    result = result.Substring(0, 1990);
-                }
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -354,6 +346,16 @@ namespace MariBot.Core.Modules.Text
             catch (Exception ex)
             {
                 await HandleUnexpectedException(ex);
+            }
+        }
+
+        private async Task SendCodeBlockResponse(string text)
+        {
+            var chunks = PaginationHelpers.ChunkText(text.Replace("```", ""), 1992);
+            foreach (var chunk in chunks)
+            {
+                await Context.Channel.SendMessageAsync($"```\n{chunk}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
         }
 

@@ -229,12 +229,6 @@ namespace MariBot.Core.Services
                 var gptResult = await chatClient.CompleteChatAsync(messages, chatCompletionOptions);
                 var gptContent = gptResult.Value.Content.First().Text;
 
-                // Trim to meet Discord message length limits
-                if (gptContent.Length > 1992)
-                {
-                    gptContent = gptContent[..1992];
-                }
-
                 return gptContent;
             }
             catch (Exception ex)

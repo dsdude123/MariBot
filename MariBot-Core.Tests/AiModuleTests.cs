@@ -73,7 +73,7 @@ namespace MariBot.Core.Tests
         }
 
         [Fact]
-        public async Task GrokTextGeneration_LongResponse_TruncatesTo1990()
+        public async Task GrokTextGeneration_LongResponse_SendsMultipleMessages()
         {
             var longResponse = new string('A', 3000);
             mockGrokService.Setup(s => s.GetGrokResponseAsync(It.IsAny<string>()))
@@ -81,14 +81,13 @@ namespace MariBot.Core.Tests
 
             await module.GrokTextGeneration("test prompt");
 
-            // 1990 chars + "```\n" (4) + "\n```" (4) = 1998 max
             mockChannel.Verify(c => c.SendMessageAsync(
-                It.Is<string>(s => !s.Contains(longResponse) && s.Length <= 1998),
+                It.Is<string>(s => s.StartsWith("```") && s.EndsWith("```") && s.Length <= 2000),
                 It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
                 It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
                 It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
-                Times.Once);
+                Times.Exactly(2));
         }
 
         [Fact]
