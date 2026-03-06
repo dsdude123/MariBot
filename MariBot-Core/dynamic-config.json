@@ -62,7 +62,9 @@
         "dallehd",
         "flux",
         "grok",
-        "grokimage"
+        "grokimage",
+        "grokvideo",
+        "grokedit"
       ]
     },
     {
@@ -146,6 +148,8 @@
         "gpt5",
         "grok",
         "grokimage",
+        "grokvideo",
+        "grokedit",
         "flux",
         "dalle",
         "gptimage"
