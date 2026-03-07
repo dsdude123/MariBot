@@ -69,6 +69,31 @@ namespace MariBot.Core.Services
 
             await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
             await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), serviceProvider);
+
+            // Boot-time check: warn if any statictext commands shadow registered bot commands
+            var topLevelTextNames = commandService.Commands
+                .SelectMany(c => c.Aliases)
+                .Select(a => a.Split(' ')[0].ToLowerInvariant())
+                .ToHashSet();
+            var slashNames = interactionService.SlashCommands
+                .Select(c => c.Name.ToLowerInvariant())
+                .ToHashSet();
+
+            var allStaticResponses = staticTextResponseService.GetAllResponses();
+            if (allStaticResponses != null)
+            {
+                foreach (var response in allStaticResponses)
+                {
+                    var lower = response.Command.ToLowerInvariant();
+                    if (topLevelTextNames.Contains(lower) || slashNames.Contains(lower))
+                    {
+                        logger.LogWarning(
+                            "Static text response \"{}\" ({}) conflicts with a registered bot command and will never be served.",
+                            response.Command,
+                            response.IsGlobal ? "global" : $"guild:{response.GuildId}");
+                    }
+                }
+            }
         }
 
         private Task ComponentCommandExecuted(ComponentCommandInfo arg1, Discord.IInteractionContext arg2, Discord.Interactions.IResult arg3)

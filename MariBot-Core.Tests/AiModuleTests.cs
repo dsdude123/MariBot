@@ -73,7 +73,7 @@ namespace MariBot.Core.Tests
         }
 
         [Fact]
-        public async Task GrokTextGeneration_LongResponse_TruncatesTo1990()
+        public async Task GrokTextGeneration_LongResponse_SendsMultipleMessages()
         {
             var longResponse = new string('A', 3000);
             mockGrokService.Setup(s => s.GetGrokResponseAsync(It.IsAny<string>()))
@@ -81,14 +81,13 @@ namespace MariBot.Core.Tests
 
             await module.GrokTextGeneration("test prompt");
 
-            // 1990 chars + "```\n" (4) + "\n```" (4) = 1998 max
             mockChannel.Verify(c => c.SendMessageAsync(
-                It.Is<string>(s => !s.Contains(longResponse) && s.Length <= 1998),
+                It.Is<string>(s => s.StartsWith("```") && s.EndsWith("```") && s.Length <= 2000),
                 It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
                 It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
                 It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
-                Times.Once);
+                Times.Exactly(2));
         }
 
         [Fact]
@@ -183,6 +182,163 @@ namespace MariBot.Core.Tests
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
                 Times.Once);
         }
+        // --- GrokImageEdit ---
+
+        private AiModule CreateModuleWithAttachments(params IAttachment[] attachments)
+        {
+            var mockMsg = new Mock<IUserMessage>();
+            mockMsg.Setup(m => m.Id).Returns(12345UL);
+            mockMsg.Setup(m => m.Attachments).Returns(attachments);
+            mockMsg.Setup(m => m.Reference).Returns((MessageReference)null!);
+
+            var mockCtx = new Mock<ICommandContext>();
+            mockCtx.Setup(c => c.Channel).Returns(mockChannel.Object);
+            mockCtx.Setup(c => c.Message).Returns(mockMsg.Object);
+
+            var mod = new AiModule(null!, null!, mockImageService.Object, null!, NullLogger<AiModule>.Instance, mockGrokService.Object);
+            ((IModuleBase)mod).SetContext(mockCtx.Object);
+            return mod;
+        }
+
+        private static IAttachment CreateMockAttachment(string url, string contentType)
+        {
+            var mock = new Mock<IAttachment>();
+            mock.Setup(a => a.Url).Returns(url);
+            mock.Setup(a => a.ContentType).Returns(contentType);
+            return mock.Object;
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_OneAttachment_SendsEditedFile()
+        {
+            var attachment = CreateMockAttachment("https://example.com/photo.png", "image/png");
+            var mod = CreateModuleWithAttachments(attachment);
+
+            var fakeStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ReturnsAsync("https://example.com/edited.png");
+            mockImageService.Setup(s => s.GetWebResource("https://example.com/edited.png"))
+                .ReturnsAsync(fakeStream);
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockGrokService.Verify(s => s.GetGrokImageEditAsync("make it blue",
+                It.Is<List<string>>(l => l.Count == 1 && l[0] == "https://example.com/photo.png")), Times.Once);
+            mockChannel.Verify(c => c.SendFileAsync(
+                It.IsAny<Stream>(), It.Is<string>(s => s == "grok_edit.png"),
+                It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(),
+                It.IsAny<RequestOptions>(), It.IsAny<bool>(), It.IsAny<AllowedMentions>(),
+                It.IsAny<MessageReference>(), It.IsAny<MessageComponent>(),
+                It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(),
+                It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_TwoAttachments_SendsEditedFile()
+        {
+            var attachment1 = CreateMockAttachment("https://example.com/photo1.png", "image/png");
+            var attachment2 = CreateMockAttachment("https://example.com/photo2.jpg", "image/jpeg");
+            var mod = CreateModuleWithAttachments(attachment1, attachment2);
+
+            var fakeStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ReturnsAsync("https://example.com/edited.png");
+            mockImageService.Setup(s => s.GetWebResource("https://example.com/edited.png"))
+                .ReturnsAsync(fakeStream);
+
+            await mod.GrokImageEdit("combine these");
+
+            mockGrokService.Verify(s => s.GetGrokImageEditAsync("combine these",
+                It.Is<List<string>>(l => l.Count == 2 && l[0] == "https://example.com/photo1.png" && l[1] == "https://example.com/photo2.jpg")), Times.Once);
+            mockChannel.Verify(c => c.SendFileAsync(
+                It.IsAny<Stream>(), It.Is<string>(s => s == "grok_edit.png"),
+                It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(),
+                It.IsAny<RequestOptions>(), It.IsAny<bool>(), It.IsAny<AllowedMentions>(),
+                It.IsAny<MessageReference>(), It.IsAny<MessageComponent>(),
+                It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(),
+                It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_NoImages_SendsErrorMessage()
+        {
+            var mod = CreateModuleWithAttachments();
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Please provide at least one image to edit")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+            mockGrokService.Verify(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_UnsupportedImageType_FiltersOut()
+        {
+            var gifAttachment = CreateMockAttachment("https://example.com/anim.gif", "image/gif");
+            var pngAttachment = CreateMockAttachment("https://example.com/photo.png", "image/png");
+            var mod = CreateModuleWithAttachments(gifAttachment, pngAttachment);
+
+            var fakeStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ReturnsAsync("https://example.com/edited.png");
+            mockImageService.Setup(s => s.GetWebResource("https://example.com/edited.png"))
+                .ReturnsAsync(fakeStream);
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockGrokService.Verify(s => s.GetGrokImageEditAsync("make it blue",
+                It.Is<List<string>>(l => l.Count == 1 && l[0] == "https://example.com/photo.png")), Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_GrokServiceThrows_SendsErrorMessage()
+        {
+            var attachment = CreateMockAttachment("https://example.com/photo.png", "image/png");
+            var mod = CreateModuleWithAttachments(attachment);
+
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ThrowsAsync(new Exception("Edit failed"));
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Something went wrong") && s.Contains("Edit failed")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_ImageServiceThrows_SendsErrorMessage()
+        {
+            var attachment = CreateMockAttachment("https://example.com/photo.png", "image/png");
+            var mod = CreateModuleWithAttachments(attachment);
+
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ReturnsAsync("https://example.com/edited.png");
+            mockImageService.Setup(s => s.GetWebResource(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("Download failed"));
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s.Contains("Something went wrong") && s.Contains("Download failed")),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+        }
+
         // --- GrokVideoGeneration ---
 
         [Fact]

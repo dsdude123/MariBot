@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.Commands;
+using Discord.Interactions;
 using MariBot.Core.Models;
 using Newtonsoft.Json;
 using RestSharp.Extensions;
@@ -6,21 +8,46 @@ using RestSharp.Extensions;
 namespace MariBot.Core.Services
 {
     /// <summary>
-    /// Service providing static text response retrieval and management. 
+    /// Service providing static text response retrieval and management.
     /// </summary>
     public class StaticTextResponseService
     {
         public static readonly string LegacyGlobalPath = Environment.CurrentDirectory + "\\data\\global\\textresponse.json";
 
         private readonly DataService dataService;
+        private readonly CommandService commandService;
+        private readonly InteractionService interactionService;
 
         private static readonly string UserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4414.0 Safari/537.36 Edg/90.0.803.0";
 
-        public StaticTextResponseService(DataService dataService)
+        public StaticTextResponseService(DataService dataService, CommandService commandService, InteractionService interactionService)
         {
             this.dataService = dataService;
+            this.commandService = commandService;
+            this.interactionService = interactionService;
         }
+
+        private bool IsExistingBotCommand(string command)
+        {
+            var lower = command.ToLowerInvariant();
+            var textCommandTopLevel = commandService.Commands
+                .SelectMany(c => c.Aliases)
+                .Select(a => a.Split(' ')[0].ToLowerInvariant())
+                .ToHashSet();
+            var slashCommandNames = interactionService.SlashCommands
+                .Select(c => c.Name.ToLowerInvariant())
+                .ToHashSet();
+            return textCommandTopLevel.Contains(lower) || slashCommandNames.Contains(lower);
+        }
+
+        public List<StaticTextResponse>? GetAllResponses() => dataService.GetStaticTextResponse();
+
+        public List<StaticTextResponse> GetGlobalResponses()
+            => dataService.GetStaticTextResponse()?.Where(r => r.IsGlobal).ToList() ?? new List<StaticTextResponse>();
+
+        public List<StaticTextResponse> GetGuildResponses(ulong guildId)
+            => dataService.GetStaticTextResponse()?.Where(r => !r.IsGlobal && r.GuildId == guildId).ToList() ?? new List<StaticTextResponse>();
 
         /// <summary>
         /// Gets a static text response
@@ -48,6 +75,16 @@ namespace MariBot.Core.Services
         /// <returns>Status message</returns>
         public async Task<string> AddNewResponse(string command, string text, ulong guild, List<Attachment>? discordAttachments, bool isGlobal)
         {
+            // Blank validation
+            if (string.IsNullOrWhiteSpace(command))
+                return "Command name cannot be blank.";
+            if (string.IsNullOrWhiteSpace(text) && (discordAttachments == null || discordAttachments.Count == 0))
+                return "Response cannot be blank. Provide text or attach a file.";
+
+            // Bot command conflict check
+            if (IsExistingBotCommand(command))
+                return $"Failed to add command. \"{command}\" conflicts with an existing bot command.";
+
             var stringParts = text.Split(" ");
             var attachments = new Dictionary<string, byte[]>();
             var partsToRemove = new List<string>();
@@ -99,7 +136,6 @@ namespace MariBot.Core.Services
                 }
             }
 
-
             var newResponse = new StaticTextResponse
             {
                 Command = command,
@@ -132,8 +168,16 @@ namespace MariBot.Core.Services
 
             if (noExistingGlobalResponse)
             {
+                // Explicit duplicate check (gives clear error instead of generic DB failure)
+                if (dataService.GetStaticTextResponse(newResponse.Id) != null)
+                {
+                    return isGlobal
+                        ? "Failed to add command. A global command with this name already exists."
+                        : "Failed to add command. A guild command with this name already exists.";
+                }
+
                 var isSuccess = dataService.InsertStaticTextResponse(newResponse);
-                return isSuccess ? "OK" : "Failed to add command. It may already exist or there is a problem with the database.";
+                return isSuccess ? "OK" : "Failed to add command. There is a problem with the database.";
             }
             else
             {
@@ -151,6 +195,16 @@ namespace MariBot.Core.Services
         /// <returns>Status message</returns>
         public async Task<string> UpdateResponse(string command, string text, ulong guild, List<Attachment>? discordAttachments, bool isGlobal)
         {
+            // Blank validation
+            if (string.IsNullOrWhiteSpace(command))
+                return "Command name cannot be blank.";
+            if (string.IsNullOrWhiteSpace(text) && (discordAttachments == null || discordAttachments.Count == 0))
+                return "Response cannot be blank. Provide text or attach a file.";
+
+            // Bot command conflict check
+            if (IsExistingBotCommand(command))
+                return $"Failed to update command. \"{command}\" conflicts with an existing bot command.";
+
             var stringParts = text.Split(" ");
             var attachments = new Dictionary<string, byte[]>();
             var partsToRemove = new List<string>();
@@ -274,6 +328,51 @@ namespace MariBot.Core.Services
 
             var isSuccess = dataService.DeleteStaticTextResponse(newResponse);
             return isSuccess ? "OK" : "Failed to delete command. It may not exist or there is a problem with the database.";
+        }
+
+        /// <summary>
+        /// Promotes a guild-specific static text response to global.
+        /// Checks that no other guild has the same command before promoting.
+        /// Removes the original guild-specific entry after promotion.
+        /// </summary>
+        public string PromoteToGlobal(string command, ulong guild)
+        {
+            var guildEntry = dataService.GetStaticTextResponse(GenerateId(command, guild));
+            if (guildEntry == null)
+                return $"Command \"{command}\" not found in this guild's responses.";
+
+            var globalEntry = dataService.GetStaticTextResponse(GenerateId(command));
+            if (globalEntry != null)
+                return $"Failed to promote. A global command named \"{command}\" already exists.";
+
+            // Check for other guilds with the same command name
+            var allResponses = dataService.GetStaticTextResponse();
+            var conflicts = allResponses?
+                .Where(r => !r.IsGlobal && r.GuildId != guild &&
+                            r.Command.Equals(command, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (conflicts != null && conflicts.Count > 0)
+            {
+                var guildIds = string.Join(", ", conflicts.Select(r => r.GuildId.ToString()));
+                return $"Failed to promote. Other guilds have the same command: {guildIds}";
+            }
+
+            // Create global version
+            var newGlobal = new StaticTextResponse
+            {
+                Command = command,
+                Message = guildEntry.Message,
+                IsGlobal = true,
+                Attachments = guildEntry.Attachments
+            };
+
+            if (!dataService.InsertStaticTextResponse(newGlobal))
+                return "Failed to create global entry. There may be a database problem.";
+
+            // Remove guild-specific version (true move)
+            dataService.DeleteStaticTextResponse(guildEntry);
+            return "OK";
         }
 
         /// <summary>

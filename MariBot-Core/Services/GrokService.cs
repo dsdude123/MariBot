@@ -98,6 +98,40 @@ public class GrokService
     }
 
     /// <summary>
+    /// Edits an image (or combines two images) using Grok's image editing tool
+    /// </summary>
+    /// <param name="prompt">Editing instructions</param>
+    /// <param name="imageUrls">1-2 image URLs to edit</param>
+    /// <returns>URL of the edited image</returns>
+    public virtual async Task<string> GetGrokImageEditAsync(string prompt, List<string> imageUrls)
+    {
+        var imageClient = new Image.ImageClient(grpcChannel);
+
+        var request = new GenerateImageRequest
+        {
+            Model = dynamicConfigService.GetGrokImageModel(),
+            Prompt = prompt,
+            N = 1,
+            Format = ImageFormat.ImgFormatUrl
+        };
+
+        if (imageUrls.Count == 1)
+        {
+            request.Image = new ImageUrlContent { ImageUrl = imageUrls[0] };
+        }
+        else
+        {
+            foreach (var url in imageUrls)
+            {
+                request.Images.Add(new ImageUrlContent { ImageUrl = url });
+            }
+        }
+
+        var response = await imageClient.GenerateImageAsync(request, headers);
+        return response.Images.First().Url;
+    }
+
+    /// <summary>
     /// Generates a video using Grok's video generation tool
     /// </summary>
     /// <param name="prompt">Prompt</param>

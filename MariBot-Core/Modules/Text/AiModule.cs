@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 using MariBot.Core.Services;
+using MariBot.Core.Utils;
 using RestSharp.Extensions;
 
 namespace MariBot.Core.Modules.Text
@@ -115,8 +117,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -136,8 +137,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -158,8 +158,7 @@ namespace MariBot.Core.Modules.Text
             {
                 var result =
                     await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT5);
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -204,13 +203,7 @@ namespace MariBot.Core.Modules.Text
             try
             {
                 var result = await grokService.GetGrokResponseAsync(input);
-                // Trim result to not be more than 1990 characters to avoid Discord message length limits
-                if (result.Length > 1990)
-                {
-                    result = result.Substring(0, 1990);
-                }
-                await Context.Channel.SendMessageAsync($"```\n{result.Replace("```", "")}\n```",
-                    messageReference: new MessageReference(Context.Message.Id));
+                await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
             {
@@ -264,6 +257,105 @@ namespace MariBot.Core.Modules.Text
             catch (Exception ex)
             {
                 await HandleUnexpectedException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Grok Image Editing Command
+        /// </summary>
+        /// <param name="input">Editing instructions and optional image URLs</param>
+        [Command("grokedit", RunMode = RunMode.Async)]
+        public async Task GrokImageEdit([Remainder] string input)
+        {
+            try
+            {
+                var imageUrls = new List<string>();
+                var prompt = input;
+                var supportedContentTypes = new HashSet<string> { "image/png", "image/jpeg", "image/webp" };
+
+                // Source 1: Direct attachments (up to 2)
+                if (Context.Message.Attachments.Any())
+                {
+                    imageUrls.AddRange(Context.Message.Attachments
+                        .Where(a => a.ContentType != null && supportedContentTypes.Contains(a.ContentType))
+                        .Take(2)
+                        .Select(a => a.Url));
+                }
+
+                // Source 2: Reply attachments/embeds
+                if (!imageUrls.Any() && Context.Message.Reference?.MessageId.IsSpecified == true)
+                {
+                    var referencedMsg = await Context.Channel.GetMessageAsync(Context.Message.Reference.MessageId.Value);
+                    if (referencedMsg != null)
+                    {
+                        imageUrls.AddRange(referencedMsg.Attachments
+                            .Where(a => a.ContentType != null && supportedContentTypes.Contains(a.ContentType))
+                            .Take(2)
+                            .Select(a => a.Url));
+
+                        if (!imageUrls.Any())
+                        {
+                            imageUrls.AddRange(referencedMsg.Embeds
+                                .Where(e => e.Image.HasValue)
+                                .Take(2)
+                                .Select(e => e.Image.Value.Url));
+                        }
+                    }
+                }
+
+                // Source 3: URLs in message content
+                if (!imageUrls.Any())
+                {
+                    var urlPattern = new Regex(@"https?://\S+\.(?:png|jpe?g|webp)(?:\?\S*)?", RegexOptions.IgnoreCase);
+                    var matches = urlPattern.Matches(input);
+                    foreach (Match match in matches.Take(2))
+                    {
+                        imageUrls.Add(match.Value);
+                        prompt = prompt.Replace(match.Value, "").Trim();
+                    }
+                }
+
+                // Source 4: Channel history fallback (1 image)
+                if (!imageUrls.Any() && Context is Discord.Commands.SocketCommandContext socketContext)
+                {
+                    var historyUrl = await imageService.GetImageUrl(socketContext);
+                    if (historyUrl != null)
+                    {
+                        imageUrls.Add(historyUrl);
+                    }
+                }
+
+                // Grok API accepts at most 2 images
+                if (imageUrls.Count > 2)
+                {
+                    imageUrls = imageUrls.Take(2).ToList();
+                }
+
+                if (!imageUrls.Any())
+                {
+                    await Context.Channel.SendMessageAsync("Please provide at least one image to edit.",
+                        messageReference: new MessageReference(Context.Message.Id));
+                    return;
+                }
+
+                var result = await grokService.GetGrokImageEditAsync(prompt, imageUrls);
+                var stream = await imageService.GetWebResource(result);
+                await Context.Channel.SendFileAsync(stream, "grok_edit.png",
+                    messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (Exception ex)
+            {
+                await HandleUnexpectedException(ex);
+            }
+        }
+
+        private async Task SendCodeBlockResponse(string text)
+        {
+            var chunks = PaginationHelpers.ChunkText(text.Replace("```", ""), 1992);
+            foreach (var chunk in chunks)
+            {
+                await Context.Channel.SendMessageAsync($"```\n{chunk}\n```",
+                    messageReference: new MessageReference(Context.Message.Id));
             }
         }
 
