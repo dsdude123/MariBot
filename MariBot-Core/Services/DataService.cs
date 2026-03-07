@@ -213,7 +213,6 @@ namespace MariBot.Core.Services
             return true;
         }
 
-
         /// <summary>
         /// Deletes an existing StaticTextResponse in the DB.
         /// </summary>

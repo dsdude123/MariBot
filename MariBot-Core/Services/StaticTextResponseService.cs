@@ -136,7 +136,6 @@ namespace MariBot.Core.Services
                 }
             }
 
-
             var newResponse = new StaticTextResponse
             {
                 Command = command,

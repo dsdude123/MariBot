@@ -216,7 +216,6 @@ namespace MariBot.Core.Services
                     return "Input failed safety checks.";
                 }
 
-
                 ChatCompletionOptions chatCompletionOptions = new ChatCompletionOptions
                 {
                     EndUserId = userid
