@@ -39,7 +39,7 @@ namespace MariBot.Core.Services
                 OrganizationId = orgId
             };
 
-            gpt3Client = new ChatClient("gpt-3.5-turbo-1106", apiKeyCredential, openAIClientOptions);
+            gpt3Client = new ChatClient("gpt-3.5-turbo-0125", apiKeyCredential, openAIClientOptions);
             gpt4Client = new ChatClient("gpt-4.1", apiKeyCredential, openAIClientOptions);
             gpt5Client = new ChatClient("gpt-5", apiKeyCredential, openAIClientOptions);
 
