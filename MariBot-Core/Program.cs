@@ -58,8 +58,11 @@ builder.Services.AddSingleton<MediawikiSharp_API.Mediawiki>();
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
 builder.Logging.AddConsole();
-builder.Logging.AddFile("maribot.log");
-builder.Logging.AddEventLog();
+builder.Logging.AddFile(Environment.GetEnvironmentVariable("MariBot__LogPath") ?? "maribot.log");
+if (OperatingSystem.IsWindows())
+{
+    builder.Logging.AddEventLog();
+}
 
 var app = builder.Build();
 

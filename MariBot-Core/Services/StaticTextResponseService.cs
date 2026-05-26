@@ -12,7 +12,7 @@ namespace MariBot.Core.Services
     /// </summary>
     public class StaticTextResponseService
     {
-        public static readonly string LegacyGlobalPath = Environment.CurrentDirectory + "\\data\\global\\textresponse.json";
+        public static readonly string LegacyGlobalPath = Path.Combine(Environment.CurrentDirectory, "data", "global", "textresponse.json");
 
         private readonly DataService dataService;
         private readonly CommandService commandService;
@@ -404,7 +404,7 @@ namespace MariBot.Core.Services
             }
             else
             {
-                var path = $"{Environment.CurrentDirectory}\\data\\{guild}\\textresponse.json";
+                var path = Path.Combine(Environment.CurrentDirectory, "data", guild.ToString(), "textresponse.json");
                 if (!File.Exists(path)) return "No source file.";
                 var guildResponses = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(path));
 

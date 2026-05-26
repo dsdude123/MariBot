@@ -1,0 +1,30 @@
+services:
+  maribot-core:
+    build:
+      context: .
+      dockerfile: MariBot-Core/Dockerfile
+    image: maribot-core:latest
+    container_name: maribot-core
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Config — bind-mount the in-repo files so edits survive a rebuild.
+      # Override any of these with your own paths in a docker-compose.override.yml.
+      - ./MariBot-Core/appsettings.json:/app/appsettings.json:ro
+      - ./MariBot-Core/dynamic-config.json:/app/dynamic-config.json
+      - ./MariBot-Core/worker-config.json:/app/worker-config.json:ro
+      - ./MariBot-Core/webcams.json:/app/webcams.json:ro
+      # Persistent state
+      - maribot-data:/app/data
+      - maribot-logs:/app/logs
+      - maribot-yt:/app/yt-downloads
+    environment:
+      # Any DiscordSettings:* value can be overridden here, e.g.
+      #   DiscordSettings__BotToken: ${MARIBOT_BOT_TOKEN}
+      ASPNETCORE_ENVIRONMENT: Production
+
+volumes:
+  maribot-data:
+  maribot-logs:
+  maribot-yt:

@@ -321,7 +321,7 @@ namespace MariBot.Core.Modules.Text
 
             if (video.Success)
             {
-                var filename = HttpUtility.UrlPathEncode(video.Data.Split('\\').Last());
+                var filename = HttpUtility.UrlPathEncode(Path.GetFileName(video.Data));
                 await Context.Channel.SendMessageAsync(text: $"http://nerv.jpn.com/transfer/temp/{filename}", messageReference: new MessageReference(Context.Message.Id));
 
             } else

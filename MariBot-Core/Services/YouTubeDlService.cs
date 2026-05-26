@@ -7,12 +7,14 @@ namespace MariBot.Core.Services
     {
         private YoutubeDL client;
 
-        public YouTubeDlService()
+        public YouTubeDlService(IConfiguration configuration)
         {
             YoutubeDLSharp.Utils.DownloadYtDlp();
             YoutubeDLSharp.Utils.DownloadFFmpeg();
             client = new YoutubeDL();
-            client.OutputFolder = "D:\\inetpub\\wwwroot\\transfer\\temp";
+            client.OutputFolder = configuration.GetValue<string>("DiscordSettings:YouTubeDlOutputPath")
+                ?? Path.Combine(Path.GetTempPath(), "maribot-yt");
+            Directory.CreateDirectory(client.OutputFolder);
         }
 
 

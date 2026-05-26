@@ -31,7 +31,7 @@ namespace MariBot.Core.Modules.Text
                 return;
             }
 
-            WebcamStore webcams = JsonConvert.DeserializeObject<WebcamStore>(File.ReadAllText(Environment.CurrentDirectory + "\\webcams.json"));
+            WebcamStore webcams = JsonConvert.DeserializeObject<WebcamStore>(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "webcams.json")));
             Webcam foundCamera = null;
             foreach (Webcam i in webcams.cameras)
             {
