@@ -600,9 +600,23 @@ namespace MariBot.Core.Services
 
         private bool IsInSpoiler(string section, string source)
         {
-            string pattern = $"\\|\\|\\s*{section}\\s*\\|\\|";
+            // Find every Discord spoiler region (||...||) in the message and check whether the
+            // link appears inside any of them. We can't interpolate the URL into a regex pattern
+            // because URLs frequently contain regex metacharacters (e.g. '?', '.', '&' from query
+            // strings), which would either break matching or match unintended text and cause the
+            // spoiler to be missed. Matching the spoiler regions instead and using a plain string
+            // Contains also correctly handles spoilers that wrap more than just the bare URL.
+            var matches = Regex.Matches(source, @"\|\|(.+?)\|\|", RegexOptions.Singleline);
 
-            return Regex.IsMatch(source, pattern);
+            foreach (Match match in matches)
+            {
+                if (match.Groups[1].Value.Contains(section))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
