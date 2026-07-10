@@ -7,7 +7,6 @@
         "emoji-triggers",
         "auto-image-conversion",
         "auto-vxtwitter",
-        "auto-rxddit",
         "auto-tiktokez"
       ]
     },
@@ -18,8 +17,7 @@
         "latex",
         "emoji-triggers",
         "auto-image-conversion",
-        "auto-vxtwitter",
-        "auto-rxddit"
+        "auto-vxtwitter"
       ],
       "AutoReactions": [
         {
@@ -40,7 +38,6 @@
         "auto-image-conversion",
         "emoji-triggers",
         "auto-vxtwitter",
-        "auto-rxddit",
         "auto-tiktokez"
       ],
       "BlockedTextCommands": [
@@ -74,7 +71,6 @@
         "emoji-triggers",
         "auto-image-conversion",
         "auto-vxtwitter",
-        "auto-rxddit",
         "auto-tiktokez"
       ],
       "BlockedTextCommands": [
@@ -139,7 +135,6 @@
       "Name": "booba",
       "EnabledFeatures": [
         "auto-vxtwitter",
-        "auto-rxddit",
         "auto-tiktokez"
       ],
       "BlockedTextCommands": [
