@@ -8,6 +8,9 @@ on:
 
 jobs:
   test:
+    # Without this the matrix splices the whole project list into the check
+    # name, producing an unreadable (and untypeable) required-status-check.
+    name: test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:

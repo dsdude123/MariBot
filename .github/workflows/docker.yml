@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [master]
     paths:
+      # Listed explicitly even though 'MariBot-Core/**' already matches it —
+      # the Dockerfile is the thing this job actually exercises.
+      - 'MariBot-Core/Dockerfile'
       - 'MariBot-Core/**'
       - 'MariBot-Common/**'
       - '.dockerignore'
