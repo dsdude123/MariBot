@@ -20,6 +20,12 @@
 **/data.db-log
 **/yahoo-auth.json
 
+# Stray build outputs next to a csproj collide with the ones `dotnet publish`
+# generates (NETSDK1152), so keep them out of the build context entirely.
+**/*.deps.json
+**/*.runtimeconfig.json
+**/*.staticwebassets.endpoints.json
+
 # Docker artefacts
 Dockerfile
 **/Dockerfile

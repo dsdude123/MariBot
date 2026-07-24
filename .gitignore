@@ -303,3 +303,10 @@ __pycache__/
 /MariBot-Core/ffmpeg.exe
 /MariBot-Core/runtimes
 /MariBot-Core/runtimes
+
+# Build outputs that must never sit next to a csproj — they collide with the
+# generated copies during `dotnet publish` (NETSDK1152). Legitimate copies only
+# ever live under bin/obj, which are already ignored above.
+*.deps.json
+*.runtimeconfig.json
+*.staticwebassets.endpoints.json
