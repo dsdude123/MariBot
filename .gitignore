@@ -304,6 +304,10 @@ __pycache__/
 /MariBot-Core/runtimes
 /MariBot-Core/runtimes
 
+# Local secrets for docker compose. .env.example is the tracked template.
+.env
+!.env.example
+
 # Build outputs that must never sit next to a csproj — they collide with the
 # generated copies during `dotnet publish` (NETSDK1152). Legitimate copies only
 # ever live under bin/obj, which are already ignored above.

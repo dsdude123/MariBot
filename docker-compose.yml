@@ -1,28 +1,55 @@
+# Deployment compose file. Pulls the published image, so it works from a
+# Portainer stack with no repo checkout.
+#
+# Running `docker compose up` inside a clone of this repo instead ALSO picks up
+# docker-compose.override.yml automatically, which swaps the pulled image for a
+# local source build. Portainer never sees that file.
+
 services:
   maribot-core:
-    build:
-      context: .
-      dockerfile: MariBot-Core/Dockerfile
-    image: maribot-core:latest
+    # Set MARIBOT_IMAGE_TAG=pr-70 to trial a pull request before merging it.
+    image: ghcr.io/dsdude123/maribot-core:${MARIBOT_IMAGE_TAG:-latest}
     container_name: maribot-core
     restart: unless-stopped
     ports:
+      # The bot serves the worker callback API, so workers must be able to
+      # reach this port.
       - "8080:8080"
+
+    # A bare NAME here means "pass through from the host / Portainer stack
+    # environment". If it isn't set there, the variable is not defined in the
+    # container at all and the image's own appsettings.json value stands — so
+    # you only need to list the ones you actually want to override.
+    # "__" maps to ":" in .NET configuration, i.e. DiscordSettings:BotToken.
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DiscordSettings__BotToken
+      - DiscordSettings__Prefix
+      - DiscordSettings__GoogleCloudKey
+      - DiscordSettings__GoogleCustomSearchId
+      - DiscordSettings__OpenAiApiKey
+      - DiscordSettings__OpenAiOrganization
+      - DiscordSettings__WolframAlphaAppId
+      - DiscordSettings__TwitterApiKey
+      - DiscordSettings__TwitterApiKeySecret
+      - DiscordSettings__BlackForestLabsApiKey
+      - DiscordSettings__GrokApiKey
+      - DiscordSettings__IGDBClientId
+      - DiscordSettings__IGDBClientSecret
+
+    # appsettings.json, worker-config.json, webcams.json and dynamic-config.json
+    # all ship inside the image — none of them need to be supplied here.
+    #
+    # dynamic-config.json in particular must NOT be bind-mounted: the bot
+    # refreshes it from GitHub on a timer and replaces the file on disk, and a
+    # single-file bind mount cannot be unlinked from inside the container.
+    #
+    # To point at different workers, mount an absolute host path over it:
+    #   - /srv/maribot/worker-config.json:/app/worker-config.json:ro
     volumes:
-      # Config — bind-mount the in-repo files so edits survive a rebuild.
-      # Override any of these with your own paths in a docker-compose.override.yml.
-      - ./MariBot-Core/appsettings.json:/app/appsettings.json:ro
-      - ./MariBot-Core/dynamic-config.json:/app/dynamic-config.json
-      - ./MariBot-Core/worker-config.json:/app/worker-config.json:ro
-      - ./MariBot-Core/webcams.json:/app/webcams.json:ro
-      # Persistent state
       - maribot-data:/app/data
       - maribot-logs:/app/logs
       - maribot-yt:/app/yt-downloads
-    environment:
-      # Any DiscordSettings:* value can be overridden here, e.g.
-      #   DiscordSettings__BotToken: ${MARIBOT_BOT_TOKEN}
-      ASPNETCORE_ENVIRONMENT: Production
 
 volumes:
   maribot-data:
