@@ -38,10 +38,6 @@ services:
       - DiscordSettings__IGDBClientSecret
       - DiscordSettings__YahooFantasyClientId
       - DiscordSettings__YahooFantasyClientSecret
-      # Defaults to /app/yahoo-auth.json, which is inside the image and so is
-      # lost whenever the container is recreated. Point it into the mounted
-      # config directory below.
-      - DiscordSettings__YahooAuthPath
 
     # appsettings.json, worker-config.json, webcams.json and dynamic-config.json
     # all ship inside the image — none of them need to be supplied here.
@@ -50,26 +46,26 @@ services:
     # refreshes it from GitHub on a timer and replaces the file on disk, and a
     # single-file bind mount cannot be unlinked from inside the container.
     #
-    # For file-based config, keep it together in one host directory and mount
-    # that directory rather than the individual files. A directory mount is
-    # created by Docker if it doesn't exist yet and lets the bot write new files
-    # into it; a single-file mount silently becomes an empty *directory* when
-    # the host file is missing, which is a confusing way to fail.
+    # The image already knows where everything goes, so these only decide where
+    # the data is kept. /app/config holds writable config — currently the
+    # rotating Yahoo OAuth token, which must outlive a container recreate.
     #
+    # To keep that alongside config you manage yourself, swap the named volume
+    # for a directory on the host:
     #   - /srv/maribot/config:/app/config
-    #
-    # With that mounted, set:
-    #   DiscordSettings__YahooAuthPath=/app/config/yahoo-auth.json
-    # so the rotating Yahoo refresh token is written alongside your other
-    # config and survives the container being recreated. Drop your own
-    # worker-config.json in the same directory and mount it over the image's:
+    # Mount the directory rather than individual files: Docker creates a missing
+    # directory, whereas a single-file mount whose source doesn't exist silently
+    # becomes an empty directory instead. You can then drop your own
+    # worker-config.json in there and mount it over the image's copy:
     #   - /srv/maribot/config/worker-config.json:/app/worker-config.json:ro
     volumes:
+      - maribot-config:/app/config
       - maribot-data:/app/data
       - maribot-logs:/app/logs
       - maribot-yt:/app/yt-downloads
 
 volumes:
+  maribot-config:
   maribot-data:
   maribot-logs:
   maribot-yt:

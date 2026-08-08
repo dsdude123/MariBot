@@ -44,16 +44,21 @@ RUN apt-get update \
 
 COPY --from=build /app/publish/ ./
 
+# Every one of these is a mount point with a working in-image default, so the
+# app runs correctly with no configuration — mounting a volume over one only
+# decides where the data lives, never whether it works.
+# /app/config      -> writable config, incl. the rotating Yahoo OAuth token
 # /app/data        -> LiteDB file + legacy text-response migration source
 # /app/logs        -> Serilog file sink (maribot-*.log)
-# /app/yt-downloads -> default YoutubeDl output (override with DiscordSettings__YouTubeDlOutputPath)
-RUN mkdir -p /app/data /app/logs /app/yt-downloads
+# /app/yt-downloads -> YoutubeDl output
+RUN mkdir -p /app/config /app/data /app/logs /app/yt-downloads
 
 ENV ASPNETCORE_URLS=http://+:8080 \
     ASPNETCORE_ENVIRONMENT=Production \
     DOTNET_RUNNING_IN_CONTAINER=true \
     DiscordSettings__YouTubeDlOutputPath=/app/yt-downloads \
     DiscordSettings__DataDbPath=/app/data/data.db \
+    DiscordSettings__YahooAuthPath=/app/config/yahoo-auth.json \
     MariBot__LogPath=/app/logs/maribot.log
 
 EXPOSE 8080
