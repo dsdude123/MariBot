@@ -29,9 +29,11 @@ WORKDIR /app
 #   libsodium23 + libopus0 -> Discord voice
 #   libfontconfig1 + libfreetype6 -> SkiaSharp (latex rendering)
 #   ca-certificates    -> HTTPS to third-party APIs
+#   curl               -> container healthchecks
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
         ffmpeg \
         libfontconfig1 \
         libfreetype6 \
