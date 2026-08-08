@@ -53,7 +53,10 @@ COPY --from=build /app/publish/ ./
 # /app/yt-downloads -> YoutubeDl output
 RUN mkdir -p /app/config /app/data /app/logs /app/yt-downloads
 
-ENV ASPNETCORE_URLS=http://+:8080 \
+# 8091 is not arbitrary: workers post job results to
+# http://<caller-ip>:8091/job with the port hardcoded in MariBot.Worker's
+# JobHandler, so Core has to be listening there or results never come back.
+ENV ASPNETCORE_URLS=http://+:8091 \
     ASPNETCORE_ENVIRONMENT=Production \
     DOTNET_RUNNING_IN_CONTAINER=true \
     DiscordSettings__YouTubeDlOutputPath=/app/yt-downloads \
@@ -61,6 +64,6 @@ ENV ASPNETCORE_URLS=http://+:8080 \
     DiscordSettings__YahooAuthPath=/app/config/yahoo-auth.json \
     MariBot__LogPath=/app/logs/maribot.log
 
-EXPOSE 8080
+EXPOSE 8091
 
 ENTRYPOINT ["dotnet", "MariBot.Core.dll"]

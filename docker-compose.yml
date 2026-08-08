@@ -12,9 +12,11 @@ services:
     container_name: maribot-core
     restart: unless-stopped
     ports:
-      # The bot serves the worker callback API, so workers must be able to
-      # reach this port.
-      - "8080:8080"
+      # Workers post finished jobs to port 8091 on whatever address they saw the
+      # request come from, and that port is hardcoded in MariBot.Worker. Under
+      # bridge networking the workers see the Docker host's address, so 8091 has
+      # to be published on the host for results to land.
+      - "8091:8091"
 
     # A bare NAME here means "pass through from the host / Portainer stack
     # environment". If it isn't set there, the variable is not defined in the
