@@ -36,6 +36,12 @@ services:
       - DiscordSettings__GrokApiKey
       - DiscordSettings__IGDBClientId
       - DiscordSettings__IGDBClientSecret
+      - DiscordSettings__YahooFantasyClientId
+      - DiscordSettings__YahooFantasyClientSecret
+      # Defaults to /app/yahoo-auth.json, which is inside the image and so is
+      # lost whenever the container is recreated. Point it into the mounted
+      # config directory below.
+      - DiscordSettings__YahooAuthPath
 
     # appsettings.json, worker-config.json, webcams.json and dynamic-config.json
     # all ship inside the image — none of them need to be supplied here.
@@ -44,8 +50,20 @@ services:
     # refreshes it from GitHub on a timer and replaces the file on disk, and a
     # single-file bind mount cannot be unlinked from inside the container.
     #
-    # To point at different workers, mount an absolute host path over it:
-    #   - /srv/maribot/worker-config.json:/app/worker-config.json:ro
+    # For file-based config, keep it together in one host directory and mount
+    # that directory rather than the individual files. A directory mount is
+    # created by Docker if it doesn't exist yet and lets the bot write new files
+    # into it; a single-file mount silently becomes an empty *directory* when
+    # the host file is missing, which is a confusing way to fail.
+    #
+    #   - /srv/maribot/config:/app/config
+    #
+    # With that mounted, set:
+    #   DiscordSettings__YahooAuthPath=/app/config/yahoo-auth.json
+    # so the rotating Yahoo refresh token is written alongside your other
+    # config and survives the container being recreated. Drop your own
+    # worker-config.json in the same directory and mount it over the image's:
+    #   - /srv/maribot/config/worker-config.json:/app/worker-config.json:ro
     volumes:
       - maribot-data:/app/data
       - maribot-logs:/app/logs
