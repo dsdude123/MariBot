@@ -1,0 +1,73 @@
+# Deployment compose file. Pulls the published image, so it works from a
+# Portainer stack with no repo checkout.
+#
+# Running `docker compose up` inside a clone of this repo instead ALSO picks up
+# docker-compose.override.yml automatically, which swaps the pulled image for a
+# local source build. Portainer never sees that file.
+
+services:
+  maribot-core:
+    # Set MARIBOT_IMAGE_TAG=pr-70 to trial a pull request before merging it.
+    image: ghcr.io/dsdude123/maribot-core:${MARIBOT_IMAGE_TAG:-latest}
+    container_name: maribot-core
+    restart: unless-stopped
+    ports:
+      # Workers post finished jobs to port 8091 on whatever address they saw the
+      # request come from, and that port is hardcoded in MariBot.Worker. Under
+      # bridge networking the workers see the Docker host's address, so 8091 has
+      # to be published on the host for results to land.
+      - "8091:8091"
+
+    # A bare NAME here means "pass through from the host / Portainer stack
+    # environment". If it isn't set there, the variable is not defined in the
+    # container at all and the image's own appsettings.json value stands — so
+    # you only need to list the ones you actually want to override.
+    # "__" maps to ":" in .NET configuration, i.e. DiscordSettings:BotToken.
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DiscordSettings__BotToken
+      - DiscordSettings__Prefix
+      - DiscordSettings__GoogleCloudKey
+      - DiscordSettings__GoogleCustomSearchId
+      - DiscordSettings__OpenAiApiKey
+      - DiscordSettings__OpenAiOrganization
+      - DiscordSettings__WolframAlphaAppId
+      - DiscordSettings__TwitterApiKey
+      - DiscordSettings__TwitterApiKeySecret
+      - DiscordSettings__BlackForestLabsApiKey
+      - DiscordSettings__GrokApiKey
+      - DiscordSettings__IGDBClientId
+      - DiscordSettings__IGDBClientSecret
+      - DiscordSettings__YahooFantasyClientId
+      - DiscordSettings__YahooFantasyClientSecret
+
+    # appsettings.json, worker-config.json, webcams.json and dynamic-config.json
+    # all ship inside the image — none of them need to be supplied here.
+    #
+    # dynamic-config.json in particular must NOT be bind-mounted: the bot
+    # refreshes it from GitHub on a timer and replaces the file on disk, and a
+    # single-file bind mount cannot be unlinked from inside the container.
+    #
+    # The image already knows where everything goes, so these only decide where
+    # the data is kept. /app/config holds writable config — currently the
+    # rotating Yahoo OAuth token, which must outlive a container recreate.
+    #
+    # To keep that alongside config you manage yourself, swap the named volume
+    # for a directory on the host:
+    #   - /srv/maribot/config:/app/config
+    # Mount the directory rather than individual files: Docker creates a missing
+    # directory, whereas a single-file mount whose source doesn't exist silently
+    # becomes an empty directory instead. You can then drop your own
+    # worker-config.json in there and mount it over the image's copy:
+    #   - /srv/maribot/config/worker-config.json:/app/worker-config.json:ro
+    volumes:
+      - maribot-config:/app/config
+      - maribot-data:/app/data
+      - maribot-logs:/app/logs
+      - maribot-yt:/app/yt-downloads
+
+volumes:
+  maribot-config:
+  maribot-data:
+  maribot-logs:
+  maribot-yt:

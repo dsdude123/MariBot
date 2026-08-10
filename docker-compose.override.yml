@@ -1,0 +1,28 @@
+# Local development overlay. Compose merges this on top of docker-compose.yml
+# automatically for `docker compose up` run from this directory — it is not
+# something you deploy, and Portainer never sees it.
+#
+# Differences from the deployment file: builds from source rather than pulling,
+# serves Swagger, doesn't restart on crash, and bind-mounts the two config files
+# worth editing without a rebuild.
+
+services:
+  maribot-core:
+    build:
+      context: .
+      dockerfile: MariBot-Core/Dockerfile
+    # Distinct tag so a local build never shadows a pulled ghcr.io image.
+    image: maribot-core:dev
+    restart: "no"
+
+    environment:
+      # Enables the Swagger UI, which the app only maps outside Production.
+      - ASPNETCORE_ENVIRONMENT=Development
+
+    # Merged with the named volumes in docker-compose.yml — those still apply.
+    # webcams.json and dynamic-config.json are intentionally absent: the first
+    # is copied fresh on every build, and mounting the second breaks the
+    # self-update described in docker-compose.yml.
+    volumes:
+      - ./MariBot-Core/appsettings.json:/app/appsettings.json:ro
+      - ./MariBot-Core/worker-config.json:/app/worker-config.json:ro

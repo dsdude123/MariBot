@@ -49,12 +49,23 @@ namespace MariBot.Core.Services
         private readonly DiscordSocketClient discord;
         private readonly ILogger<YahooFantasyService> logger;
 
+        /// <summary>
+        /// Where the Yahoo OAuth tokens are cached. The refresh token rotates on
+        /// every refresh, so this has to outlive the process — in a container it
+        /// must point at a mounted volume rather than somewhere in the image.
+        /// </summary>
+        private readonly string authPath;
+
         public YahooFantasyService(IConfiguration configuration, DiscordSocketClient discord, ILogger<YahooFantasyService> logger)
         {
             this.discord = discord;
             this.logger = logger;
             clientId = configuration["DiscordSettings:YahooFantasyClientId"];
             clientSecret = configuration["DiscordSettings:YahooFantasyClientSecret"];
+            authPath = configuration.GetValue<string>("DiscordSettings:YahooAuthPath") ?? "yahoo-auth.json";
+            var authDir = Path.GetDirectoryName(authPath);
+            if (!string.IsNullOrEmpty(authDir))
+                Directory.CreateDirectory(authDir);
             CheckTimer.Elapsed += HandleTimer;
 
             #if DEBUG
@@ -65,7 +76,7 @@ namespace MariBot.Core.Services
 
             try
             {
-                authDetails = JsonConvert.DeserializeObject<OAuthResponse>(File.ReadAllText("yahoo-auth.json"));
+                authDetails = JsonConvert.DeserializeObject<OAuthResponse>(File.ReadAllText(authPath));
             }
             catch (Exception ex)
             {
@@ -91,7 +102,7 @@ namespace MariBot.Core.Services
             authDetails = await client.PostAsync<OAuthResponse>(request);
             expiresTime = DateTime.Now.AddSeconds(authDetails.expiresIn);
             logger.LogInformation("Yahoo token expires at {}", expiresTime.ToLongTimeString());
-            File.WriteAllText("yahoo-auth.json", JsonConvert.SerializeObject(authDetails));
+            File.WriteAllText(authPath, JsonConvert.SerializeObject(authDetails));
         }
 
         public async Task<string> GetRaw(string url)
@@ -172,7 +183,7 @@ namespace MariBot.Core.Services
                     authDetails = await client.PostAsync<OAuthResponse>(request);
                     expiresTime = DateTime.Now.AddSeconds(authDetails.expiresIn);
                     logger.LogInformation("Refreshed token. New expiry time is {}", expiresTime.ToLongTimeString());
-                    File.WriteAllText("yahoo-auth.json", JsonConvert.SerializeObject(authDetails));
+                    File.WriteAllText(authPath, JsonConvert.SerializeObject(authDetails));
                 }
             }
             finally

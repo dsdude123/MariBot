@@ -20,9 +20,13 @@ namespace MariBot.Core.Services
         private readonly ILogger<DataService> logger;
         private readonly LiteDatabase db;
 
-        public DataService(ILogger<DataService> logger, string dbPath = "data.db")
+        public DataService(ILogger<DataService> logger, string? dbPath = null)
         {
             this.logger = logger;
+            dbPath ??= Environment.GetEnvironmentVariable("DiscordSettings__DataDbPath") ?? "data.db";
+            var dir = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
             db = new LiteDatabase(dbPath);
 
             logger.LogInformation("DB init in progress...");

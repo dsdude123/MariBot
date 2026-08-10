@@ -1,0 +1,44 @@
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+
+# Build/CI noise
+**/.git/
+**/.github/
+**/node_modules/
+**/TestResults/
+
+# Logs and local data — must not leak into the image
+**/maribot-*.log
+**/*.log
+**/data.db
+**/data.db-log
+**/yahoo-auth.json
+
+# Stray build outputs next to a csproj collide with the ones `dotnet publish`
+# generates (NETSDK1152), so keep them out of the build context entirely.
+**/*.deps.json
+**/*.runtimeconfig.json
+**/*.staticwebassets.endpoints.json
+
+# Docker artefacts
+Dockerfile
+**/Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Repo content not needed by the build
+docs/
+src/
+README.md
+LICENSE.txt
+upgrade-assistant.clef
+
+# Worker — explicitly excluded; Core has no dependency on it.
+MariBot.Worker/
+MariBot-Worker.Tests/

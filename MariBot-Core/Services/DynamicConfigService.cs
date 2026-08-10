@@ -14,7 +14,8 @@ namespace MariBot.Core.Services
         private DynamicConfig dynamicConfig;
         private ILogger<DynamicConfigService> logger;
 
-        private readonly string configPath = Environment.CurrentDirectory + "\\dynamic-config.json";
+        private readonly string configPath = Path.Combine(Environment.CurrentDirectory, "dynamic-config.json");
+        private readonly string tempConfigPath = Path.Combine(Environment.CurrentDirectory, "dynamic-config-temp.json");
 
         public DynamicConfigService(ILogger<DynamicConfigService> logger)
         {
@@ -181,9 +182,9 @@ namespace MariBot.Core.Services
                 {
                     // Try to download latest config
                     logger.LogInformation("Updating dynamic config.");
-                    client.DownloadFile("https://raw.githubusercontent.com/dsdude123/MariBot/master/MariBot-Core/dynamic-config.json", "dynamic-config-temp.json");
+                    client.DownloadFile("https://raw.githubusercontent.com/dsdude123/MariBot/master/MariBot-Core/dynamic-config.json", tempConfigPath);
                     dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
-                        File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config-temp.json"));
+                        File.ReadAllText(tempConfigPath));
                 }
                 catch (Exception ex)
                 {
@@ -193,7 +194,7 @@ namespace MariBot.Core.Services
                     try
                     {
                         dynamicConfig = JsonConvert.DeserializeObject<DynamicConfig>(
-                            File.ReadAllText(Environment.CurrentDirectory + "\\dynamic-config.json"));
+                            File.ReadAllText(configPath));
                         return;
                     } catch (Exception rollbackEx)
                     {
@@ -204,13 +205,13 @@ namespace MariBot.Core.Services
                 }
 
                 // Update file on disk
-                if (File.Exists("dynamic-config-temp.json") && File.Exists("dynamic-config.json"))
+                if (File.Exists(tempConfigPath) && File.Exists(configPath))
                 {
-                    File.Delete("dynamic-config.json");
-                    File.Move("dynamic-config-temp.json", "dynamic-config.json");
-                } else if (File.Exists("dynamic-config-temp.json"))
+                    File.Delete(configPath);
+                    File.Move(tempConfigPath, configPath);
+                } else if (File.Exists(tempConfigPath))
                 {
-                    File.Move("dynamic-config-temp.json", "dynamic-config.json");
+                    File.Move(tempConfigPath, configPath);
                 }
                 
             }
