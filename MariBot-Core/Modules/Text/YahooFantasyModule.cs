@@ -8,7 +8,14 @@ using Timer = System.Timers.Timer;
 
 namespace MariBot.Core.Modules.Text
 {
-    [Group("fantasy")]
+    /// <summary>
+    /// Deprecated. The guild this was built for has moved to Sleeper, which now owns the
+    /// <c>fantasy</c> group; these commands stay reachable under <c>yahoofantasy</c>.
+    /// With no guild mapped in <see cref="YahooFantasyService.guildLeagueMapping"/> the
+    /// league-scoped commands explain themselves rather than failing.
+    /// See <see cref="SleeperFantasyModule"/>.
+    /// </summary>
+    [Group("yahoofantasy")]
     public class YahooFantasyModule : ModuleBase<SocketCommandContext>
     {
         private static readonly EmbedFooterBuilder yahooFooter = new EmbedFooterBuilder()
@@ -21,6 +28,22 @@ namespace MariBot.Core.Modules.Text
         public YahooFantasyModule(YahooFantasyService yahooFantasyService)
         {
             this.yahooFantasyService = yahooFantasyService;
+        }
+
+        /// <summary>
+        /// The guild-to-league mapping is empty now that the integration is deprecated,
+        /// so this replies with an explanation rather than letting the lookup throw.
+        /// </summary>
+        private async Task<string> GetLeagueIdOrExplain()
+        {
+            if (YahooFantasyService.guildLeagueMapping.TryGetValue(Context.Guild.Id, out var leagueId))
+                return leagueId;
+
+            await Context.Channel.SendMessageAsync(
+                "The Yahoo Fantasy Sports integration is deprecated and no league is configured for this server. " +
+                "Use `z fantasy` for Sleeper instead — see `z help fantasy`.",
+                messageReference: new MessageReference(Context.Message.Id));
+            return null;
         }
 
 
@@ -51,7 +74,10 @@ namespace MariBot.Core.Modules.Text
         [Command("league", RunMode = RunMode.Async)]
         public async Task GetLeague()
         {
-            FantasyContent result = await yahooFantasyService.GetLeague(YahooFantasyService.guildLeagueMapping[Context.Guild.Id]);
+            var leagueId = await GetLeagueIdOrExplain();
+            if (leagueId == null) return;
+
+            FantasyContent result = await yahooFantasyService.GetLeague(leagueId);
 
             var eb = new EmbedBuilder();
             eb.WithFooter(yahooFooter);
@@ -74,7 +100,10 @@ namespace MariBot.Core.Modules.Text
         [Command("standings", RunMode = RunMode.Async)]
         public async Task GetStandings()
         {
-            FantasyContent result = await yahooFantasyService.GetStandings(YahooFantasyService.guildLeagueMapping[Context.Guild.Id]);
+            var leagueId = await GetLeagueIdOrExplain();
+            if (leagueId == null) return;
+
+            FantasyContent result = await yahooFantasyService.GetStandings(leagueId);
 
             var eb = new EmbedBuilder();
             eb.WithFooter(yahooFooter);
@@ -111,7 +140,10 @@ namespace MariBot.Core.Modules.Text
         [Command("scoreboard", RunMode = RunMode.Async)]
         public async Task GetScoreboard()
         {
-            FantasyContent result = await yahooFantasyService.GetScoreboard(YahooFantasyService.guildLeagueMapping[Context.Guild.Id]);
+            var leagueId = await GetLeagueIdOrExplain();
+            if (leagueId == null) return;
+
+            FantasyContent result = await yahooFantasyService.GetScoreboard(leagueId);
 
             var eb = new EmbedBuilder();
             eb.WithFooter(yahooFooter);

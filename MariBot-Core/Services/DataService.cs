@@ -20,6 +20,8 @@ namespace MariBot.Core.Services
         private readonly ILogger<DataService> logger;
         private readonly LiteDatabase db;
 
+        protected DataService() { }
+
         public DataService(ILogger<DataService> logger, string? dbPath = null)
         {
             this.logger = logger;
@@ -42,6 +44,9 @@ namespace MariBot.Core.Services
 
             var chatGptCol = db.GetCollection<MessageHistory>("chatGptHistory");
             chatGptCol.EnsureIndex(x => x.Id);
+
+            var sleeperCol = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
+            sleeperCol.EnsureIndex(x => x.Id);
 
         }
 
@@ -380,6 +385,92 @@ namespace MariBot.Core.Services
                 return false;
             }
             return true;
+        }
+
+        // Sleeper Subscription Methods
+
+        /// <summary>
+        /// Gets a guild's Sleeper subscription
+        /// </summary>
+        /// <param name="guildId">Guild id to find</param>
+        /// <returns>SleeperSubscription or null if not found</returns>
+        public virtual SleeperSubscription? GetSleeperSubscription(ulong guildId)
+        {
+            try
+            {
+
+                var col = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
+                return col.FindById(guildId.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets all Sleeper subscriptions
+        /// </summary>
+        /// <returns>IEnumerable of SleeperSubscriptions</returns>
+        public virtual IEnumerable<SleeperSubscription> GetAllSleeperSubscriptions()
+        {
+            try
+            {
+
+                var col = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
+                return col.FindAll();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to read from DB. {}", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing Sleeper subscription in the DB or adds a new one if it doesn't exist.
+        /// </summary>
+        /// <param name="sleeperSubscription">SleeperSubscription</param>
+        /// <returns>True if successful</returns>
+        public virtual bool UpdateSleeperSubscription(SleeperSubscription sleeperSubscription)
+        {
+            try
+            {
+
+                var col = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
+                col.Upsert(sleeperSubscription);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a guild's Sleeper subscription.
+        /// </summary>
+        /// <param name="guildId">Guild id to remove</param>
+        /// <returns>True if a subscription was removed</returns>
+        public virtual bool DeleteSleeperSubscription(ulong guildId)
+        {
+            try
+            {
+
+                var col = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
+                return col.Delete(guildId.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical("Failed to write to DB. {}", ex.Message);
+                return false;
+            }
         }
 
         public Models.Election.Poll GetPoll(string id)

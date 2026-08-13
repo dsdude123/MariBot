@@ -48,7 +48,8 @@ COPY --from=build /app/publish/ ./
 # app runs correctly with no configuration — mounting a volume over one only
 # decides where the data lives, never whether it works.
 # /app/config      -> writable config, incl. the rotating Yahoo OAuth token
-# /app/data        -> LiteDB file + legacy text-response migration source
+# /app/data        -> LiteDB file, cached Sleeper player catalog, and legacy
+#                     text-response migration source
 # /app/logs        -> Serilog file sink (maribot-*.log)
 # /app/yt-downloads -> YoutubeDl output
 RUN mkdir -p /app/config /app/data /app/logs /app/yt-downloads
@@ -61,6 +62,7 @@ ENV ASPNETCORE_URLS=http://+:8091 \
     DOTNET_RUNNING_IN_CONTAINER=true \
     DiscordSettings__YouTubeDlOutputPath=/app/yt-downloads \
     DiscordSettings__DataDbPath=/app/data/data.db \
+    DiscordSettings__SleeperCachePath=/app/data/sleeper-players.json \
     DiscordSettings__YahooAuthPath=/app/config/yahoo-auth.json \
     MariBot__LogPath=/app/logs/maribot.log
 

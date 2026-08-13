@@ -44,6 +44,8 @@ builder.Services.AddSingleton<IgdbService>();
 builder.Services.AddSingleton<ImageService>();
 builder.Services.AddSingleton<OpenAiService>();
 builder.Services.AddSingleton<PricechartingService>();
+builder.Services.AddSingleton<SleeperPlayerCache>();
+builder.Services.AddSingleton<SleeperService>();
 builder.Services.AddSingleton<StaticTextResponseService>();
 builder.Services.AddSingleton<TalkHubService>();
 builder.Services.AddSingleton<TwitterService>();
@@ -65,6 +67,13 @@ if (OperatingSystem.IsWindows())
 }
 
 var app = builder.Build();
+
+// Resolve eagerly so the transaction poller and the player-catalog refresh actually
+// start at boot. Both attach their timers in their constructors, and a singleton is
+// not constructed until something asks for it — which is why the equivalent Yahoo
+// poller never ran until someone happened to invoke a fantasy command.
+app.Services.GetRequiredService<SleeperPlayerCache>();
+app.Services.GetRequiredService<SleeperService>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

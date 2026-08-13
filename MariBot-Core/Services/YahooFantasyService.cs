@@ -15,24 +15,20 @@ namespace MariBot.Core.Services
 
         private static System.Timers.Timer CheckTimer = new Timer { AutoReset = true, Enabled = true, Interval = 900000 };
         private static int EarliestTransaction = -15;
-        public static readonly Dictionary<ulong, string> guildLeagueMapping = new()
-        {
-            // The number at the end here comes from https://football.fantasysports.yahoo.com/f1/439676/matchup
-            #if DEBUG
-            { 410597263363276801, "nfl.l.439676" },
-            #else
-            { 829910467622338580, "nfl.l.439676" }
-            #endif
-        };
+        /// <summary>
+        /// Deprecated. The guild this served has moved its league to Sleeper, so this
+        /// mapping is intentionally empty and the poller below iterates nothing. The
+        /// service and its commands are left intact so a league can be re-added here if
+        /// anyone still needs Yahoo; see <see cref="SleeperService"/> and the
+        /// <c>fantasy</c> command group for the active integration.
+        /// </summary>
+        public static readonly Dictionary<ulong, string> guildLeagueMapping = new();
 
-        private static readonly Dictionary<ulong, ulong> guildDestinations = new()
-        {
-            #if DEBUG
-            { 410597263363276801, 686064098168799262 },
-            #else
-            { 829910467622338580, 1012515441685569546}
-            #endif
-        };
+        /// <summary>
+        /// Deprecated alongside <see cref="guildLeagueMapping"/>. Sleeper stores the
+        /// announcement channel per guild in the database instead of in source.
+        /// </summary>
+        private static readonly Dictionary<ulong, ulong> guildDestinations = new();
 
         private static readonly EmbedFooterBuilder yahooFooter = new EmbedFooterBuilder()
             .WithText("Yahoo Fantasy Sports")

@@ -29,6 +29,20 @@ For each of these commands, replace `<tags>` with your search tags or leave blan
 `xbooru <tags>` - 🔞**NSFW**. Returns a random image from Xbooru.  
 `yandere <tags>` - 🔞**NSFW**. Returns a random image from yandre.re.  
 
+### Fantasy Football Commands
+Sleeper fantasy football integration. Each server follows one league. A moderator sets it once with `fantasy subscribe`, after which the other commands need no arguments and completed trades, waiver claims, and free agent pickups are announced automatically in the channel the subscription was created in. No API key is required — Sleeper's API is public. The league ID is the number in your league's URL, e.g. `https://sleeper.com/leagues/289646328504385536`.
+
+`fantasy subscribe <leagueId>` - 🔒 **Requires Manage Webhooks** Point this server at a Sleeper league and announce its transactions in the current channel. Replace `<leagueId>` with your league ID.  
+`fantasy unsubscribe` - 🔒 **Requires Manage Webhooks** Stop following the league and stop announcements.  
+`fantasy league` - Displays league name, status, season, team count, current week, scoring format, and roster positions.  
+`fantasy standings` - Displays the standings ordered by record, with points for and against.  
+`fantasy scoreboard <week>` - Displays scores for every matchup. Replace `<week>` with a week number or leave blank for the current week.  
+`fantasy roster <team>` - Displays the starters and bench for a team. Replace `<team>` with a team name, display name, or username; partial and case-insensitive matches work. Leave blank to list the teams in the league.  
+`fantasy bracket <losers>` - Displays the playoff bracket. Add `losers` for the consolation bracket.  
+`fantasy trending <type> <count>` - Displays the most added or dropped players across all of Sleeper in the last 24 hours. Replace `<type>` with `add` or `drop` and `<count>` with how many to show. Defaults to the top 10 adds. Does not require a subscription.  
+
+The Yahoo Fantasy Sports commands are deprecated and have moved to the `yahoofantasy` group. No guild is mapped to a Yahoo league any more, so they have nothing to read.
+
 ### Image Commands
 For all commands with `<url>` parameter, replace it with an image URL, mention a user to use their avatar, or leave blank to use the last posted image in the channel.    
 
