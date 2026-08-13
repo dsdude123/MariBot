@@ -25,6 +25,14 @@ dotnet test MariBot-Worker.Tests
 dotnet test MariBot-Worker.Tests --filter "FullyQualifiedName~TestMethodName"
 ```
 
+These need the .NET 8 SDK. `.devcontainer/` provides one along with the native
+dependencies from the runtime image, so the toolchain does not have to be installed on
+the host.
+
+`MariBot-Worker.Tests` only passes on Windows: `MagickImageHandler` builds its asset
+paths as `Environment.CurrentDirectory + "\\Content\\"`, which does not resolve on
+Linux. Core and Common tests run anywhere.
+
 ## Solution Structure
 
 | Project | Purpose |
@@ -60,6 +68,8 @@ dotnet test MariBot-Worker.Tests --filter "FullyQualifiedName~TestMethodName"
 - `ImageService` — Image processing coordination
 - `DynamicConfigService` — Runtime feature flags (`dynamic-config.json`)
 - `BooruService`, `TwitterService`, `WikipediaService`, `GoogleService` — Third-party API wrappers
+- `SleeperService` — Sleeper fantasy football (read-only public API, no key) plus the 15-minute transaction poller; leagues are bound per-guild via a LiteDB `SleeperSubscription`
+- `SleeperPlayerCache` — Disk-backed daily copy of Sleeper's ~14 MB NFL player catalog, used to resolve player ids to names
 - `StaticTextResponseService` — Configurable canned responses
 
 ### Configuration
