@@ -23,19 +23,13 @@ namespace MariBot.Worker.CommandHandlers
 
         public void ExecuteOcr()
         {
+            CondaShell.EnsureAvailable("OCR");
+
             string consoleLogs = "";
 
             ConvertAndWriteImage();
 
-            var easyOcr = Process.Start(new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                WorkingDirectory = Environment.CurrentDirectory,
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
+            var easyOcr = Process.Start(CondaShell.StartInfo());
 
             easyOcr.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
             {
@@ -66,7 +60,7 @@ namespace MariBot.Worker.CommandHandlers
             {
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine("C:\\ProgramData\\Anaconda3\\Scripts\\activate.bat");
+                    sw.WriteLine(CondaShell.ActivateScript);
                     sw.WriteLine("set PYTHONIOENCODING=utf-8");
                     sw.WriteLine("activate ocr");
                     sw.WriteLine($"easyocr --verbose=False --download_enabled=False --model_storage_directory .\\ocr_cache --output_format json -f .\\Python\\{WorkerGlobals.Job.Id}.png -l {GetLanguageCombo()} > .\\Python\\{WorkerGlobals.Job.Id}.json ");
@@ -77,7 +71,7 @@ namespace MariBot.Worker.CommandHandlers
             LogAllConsoleText(consoleLogs);
 
             string output = "```\n";
-            foreach (var jsonLine in File.ReadAllLines($".\\Python\\{WorkerGlobals.Job.Id}.json"))
+            foreach (var jsonLine in File.ReadAllLines(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.json")))
             {
                 try
                 {
@@ -94,14 +88,14 @@ namespace MariBot.Worker.CommandHandlers
                 Message = output
             };
 
-            File.Delete($".\\Python\\{WorkerGlobals.Job.Id}.png");
-            File.Delete($".\\Python\\{WorkerGlobals.Job.Id}.json");
+            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"));
+            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.json"));
         }
 
         public void ConvertAndWriteImage()
         {
             var inputImage = new MagickImage(WorkerGlobals.Job.SourceImage);
-            inputImage.Write($".\\Python\\{WorkerGlobals.Job.Id}.png", MagickFormat.Png);
+            inputImage.Write(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"), MagickFormat.Png);
         }
 
         public string GetLanguageCombo()

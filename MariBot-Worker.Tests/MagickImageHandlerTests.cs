@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.IO;
+using MariBot.Worker;
 using MariBot.Worker.CommandHandlers;
 using MariBot.Common.Model.GpuWorker;
 using Xunit;
@@ -77,9 +78,8 @@ namespace MariBot.Worker.Tests
             baseImg.Write(msBase);
 
             // Write overlay source in Content directory (small black box)
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -139,9 +139,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -188,9 +187,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -237,9 +235,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -286,9 +283,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -337,9 +333,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -388,9 +383,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;
@@ -439,9 +433,8 @@ namespace MariBot.Worker.Tests
             baseImg.Format = MagickFormat.Png;
             baseImg.Write(msBase);
 
-            var contentDir = Path.Combine(Environment.CurrentDirectory, "Content");
-            Directory.CreateDirectory(contentDir);
-            var overlayPath = Path.Combine(contentDir, "blackbox.png");
+            var overlayPath = WorkerPaths.Content("blackbox", ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(overlayPath)!);
             using (var overlay = new MagickImage(MagickColors.Black, 10, 10))
             {
                 overlay.Format = MagickFormat.Png;

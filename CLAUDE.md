@@ -26,12 +26,16 @@ dotnet test MariBot-Worker.Tests --filter "FullyQualifiedName~TestMethodName"
 ```
 
 These need the .NET 8 SDK. `.devcontainer/` provides one along with the native
-dependencies from the runtime image, so the toolchain does not have to be installed on
+dependencies from the runtime images, so the toolchain does not have to be installed on
 the host.
 
-`MariBot-Worker.Tests` only passes on Windows: `MagickImageHandler` builds its asset
-paths as `Environment.CurrentDirectory + "\\Content\\"`, which does not resolve on
-Linux. Core and Common tests run anywhere.
+Every test project runs on Windows and Linux alike. On Linux, Magick.NET's OpenMP
+build needs `libgomp1` present or every image test fails on a type initializer; the
+dev container and the CI job both install it.
+
+Paths in `MariBot.Worker` must go through `WorkerPaths`, and font and Haar cascade
+locations through `FontCatalog` and `OpenCVHandler`'s configuration key. A literal
+`"\\"` or a `C:\` default is what kept the worker Windows-only.
 
 ## Solution Structure
 

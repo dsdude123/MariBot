@@ -1,30 +1,21 @@
 name: Tests
 
 on:
+  # No base-branch filter: a pull request stacked on another pull request has
+  # that branch as its base rather than master, and it still has to be tested.
   pull_request:
-    branches: [master]
   push:
     branches: [master]
 
 jobs:
   test:
-    # Without this the matrix splices the whole project list into the check
-    # name, producing an unreadable (and untypeable) required-status-check.
+    # Without this the matrix splices the OS list into the check name, producing
+    # an unreadable (and untypeable) required-status-check.
     name: test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # Windows runs the whole solution.
-          - os: windows-latest
-            test-projects: MariBot.sln
-          # MariBot.Worker's image handlers still build Content paths with
-          # hardcoded "\" separators, so its tests only pass on Windows. Until
-          # Worker is made cross-platform, Linux covers the projects that are.
-          - os: ubuntu-latest
-            test-projects: >-
-              MariBot-Core.Tests/MariBot-Core.Tests.csproj
-              MariBot-Common.Tests/MariBot-Common.Tests.csproj
+        os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -35,19 +26,22 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      # Magick.NET's OpenMP build needs libgomp at load time. Without it the
+      # native library is found but cannot load, and every image test fails on a
+      # type initializer. Installed explicitly rather than relying on whatever
+      # the runner image happens to ship.
+      - name: Install native dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgomp1
+
       - name: Restore dependencies
         run: dotnet restore MariBot.sln
 
-      # Always compile everything, on both platforms — a Worker compile error on
-      # Linux should still fail the build even though its tests are skipped there.
       - name: Build
         run: dotnet build MariBot.sln --no-restore
 
+      # The whole solution on both platforms. MariBot.Worker used to be Windows
+      # only — its handlers built paths with hardcoded "\" separators — so Linux
+      # ran a subset; it is portable now.
       - name: Test
-        shell: bash
-        run: |
-          for proj in ${{ matrix.test-projects }}; do
-            echo "::group::dotnet test $proj"
-            dotnet test "$proj" --no-build --verbosity normal
-            echo "::endgroup::"
-          done
+        run: dotnet test MariBot.sln --no-build --verbosity normal

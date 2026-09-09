@@ -26,3 +26,25 @@ services:
     volumes:
       - ./MariBot-Core/appsettings.json:/app/appsettings.json:ro
       - ./MariBot-Core/worker-config.json:/app/worker-config.json:ro
+
+  maribot-worker:
+    build:
+      context: .
+      dockerfile: MariBot.Worker/Dockerfile
+    # Distinct tag so a local build never shadows a pulled ghcr.io image.
+    image: maribot-worker:dev
+    restart: "no"
+
+    # Published here but not in the deployment file, so you can post a job
+    # straight at the worker while developing:
+    #   curl -X POST localhost:8092/api/worker -H 'Content-Type: application/json' -d @job.json
+    # GET the same URL for its status.
+    ports:
+      - "8092:8092"
+
+    environment:
+      # Enables the Swagger UI, which the app only maps outside Production.
+      - ASPNETCORE_ENVIRONMENT=Development
+
+    volumes:
+      - ./MariBot.Worker/appsettings.json:/app/appsettings.json:ro

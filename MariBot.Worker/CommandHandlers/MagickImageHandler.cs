@@ -11,10 +11,17 @@ namespace MariBot.Worker.CommandHandlers
         private static readonly int SIZE_LIMIT_BYTES = 10000000;
 
         private readonly OpenCVHandler openCvHandler;
+        private readonly IReadOnlyList<string> fontList;
 
-        public MagickImageHandler(OpenCVHandler openCvHandler)
+        /// <remarks>
+        /// <paramref name="configuration"/> is optional so tests can build a
+        /// handler without standing up a configuration root; the container
+        /// resolves the two-argument form.
+        /// </remarks>
+        public MagickImageHandler(OpenCVHandler openCvHandler, IConfiguration? configuration = null)
         {
             this.openCvHandler = openCvHandler;
+            fontList = FontCatalog.Resolve(configuration);
         }
 
         /// <summary>
@@ -74,7 +81,7 @@ namespace MariBot.Worker.CommandHandlers
                     using (var baseCollection = new MagickImageCollection(WorkerGlobals.Job.SourceImage))
                     {
                         baseCollection.Coalesce();
-                        using (var overlay = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                        using (var overlay = new MagickImage(WorkerPaths.Content(filename, ".png")))
                         {
                             MagickGeometry geometry = new MagickGeometry((int)(baseCollection[0].Width * overlayWidthPercentage),
                                 (int)(baseCollection[0].Height * overlayHeightPercentage));
@@ -140,7 +147,7 @@ namespace MariBot.Worker.CommandHandlers
             {
                 using (var baseImage = new MagickImage(WorkerGlobals.Job.SourceImage))
                 {
-                    using (var overlay = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                    using (var overlay = new MagickImage(WorkerPaths.Content(filename, ".png")))
                     {
                         MagickGeometry geometry = new MagickGeometry((int)(baseImage.Width * overlayWidthPercentage),
                             (int)(baseImage.Height * overlayHeightPercentage));
@@ -163,8 +170,19 @@ namespace MariBot.Worker.CommandHandlers
             int x1Dest, int y1Dest, int x2Dest, int y2Dest, int x3Dest, int y3Dest, int x4Dest, int y4Dest)
         {
 
+            // GetBestFont hands back the path of the file it picked, but callers
+            // pass that as FontFamily, which ImageMagick resolves as a family
+            // name rather than a path. Where the lookup fails the pick is
+            // dropped silently and the caption renders in the default face —
+            // with nothing at all where that face has no glyph, which is what
+            // CJK text does on a Linux worker. Font does take a path.
+            if (File.Exists(textSettings.FontFamily))
+            {
+                textSettings.Font = textSettings.FontFamily;
+            }
+
             MemoryStream outgoingImage = new MemoryStream();
-            using (var baseImage = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+            using (var baseImage = new MagickImage(WorkerPaths.Content(filename, ".png")))
             {
                 using (var overlayImage = new MagickImage($"caption:{WorkerGlobals.Job.SourceText}", textSettings))
                 {
@@ -200,7 +218,7 @@ namespace MariBot.Worker.CommandHandlers
 
             if (isAnimated)
             {
-                using (var baseImage = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                using (var baseImage = new MagickImage(WorkerPaths.Content(filename, ".png")))
                 {
                     using (var outputCollection = new MagickImageCollection())
                     {
@@ -277,7 +295,7 @@ namespace MariBot.Worker.CommandHandlers
             }
             else
             {
-                using (var baseImage = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                using (var baseImage = new MagickImage(WorkerPaths.Content(filename, ".png")))
                 {
                     using (var overlayImage = new MagickImage(WorkerGlobals.Job.SourceImage))
                     {
@@ -316,7 +334,7 @@ namespace MariBot.Worker.CommandHandlers
                     using (var baseCollection = new MagickImageCollection(WorkerGlobals.Job.SourceImage))
                     {
                         baseCollection.Coalesce();
-                        using (var overlay = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                        using (var overlay = new MagickImage(WorkerPaths.Content(filename, ".png")))
                         {
                             MagickGeometry geometry = new MagickGeometry(overlay.Width, overlay.Height);
                             geometry.IgnoreAspectRatio = true;
@@ -382,7 +400,7 @@ namespace MariBot.Worker.CommandHandlers
             {
                 using (var baseImage = new MagickImage(WorkerGlobals.Job.SourceImage))
                 {
-                    using (var overlay = new MagickImage(Environment.CurrentDirectory + "\\Content\\" + filename + ".png"))
+                    using (var overlay = new MagickImage(WorkerPaths.Content(filename, ".png")))
                     {
                         MagickGeometry geometry = new MagickGeometry(overlay.Width, overlay.Height);
                         geometry.IgnoreAspectRatio = true;
@@ -401,18 +419,12 @@ namespace MariBot.Worker.CommandHandlers
             }
         }
 
+        /// <summary>
+        /// Picks the font from <see cref="FontCatalog"/> that covers the most
+        /// distinct characters in <paramref name="text"/>.
+        /// </summary>
         public string GetBestFont(string text)
         {
-            //List<string> fontList = MariBot.Program.config.GetSection("supportedFonts").GetChildren().Select(t => t.Value).ToList();
-            // TODO: Make this configurable
-            List<string> fontList = new List<string>()
-            {
-                "C:\\Windows\\Fonts\\NotoSans-Regular.ttf",
-                "C:\\Windows\\Fonts\\NotoSansJP-Regular.otf",
-                "C:\\Windows\\Fonts\\NotoSansKR-Regular.otf",
-                "C:\\Windows\\Fonts\\NotoSansSC-Regular.otf",
-                "C:\\Windows\\Fonts\\NotoSansTC-Regular.otf"
-            };
             string topFont = "";
             int topScore = 0;
 
@@ -428,31 +440,41 @@ namespace MariBot.Worker.CommandHandlers
 
             foreach (string font in fontList)
             {
-                using (var fontStream = System.IO.File.OpenRead(font))
+                IDictionary<int, ushort> characterMap;
+
+                // A font listed but not installed, or in a format GlyphLoader
+                // cannot parse, only means we cannot score it. Every other font
+                // still gets its turn, and an empty result falls back to
+                // ImageMagick's own default font rather than failing the job.
+                try
                 {
-                    var typeface = new Typeface(fontStream);
-                    IDictionary<int, ushort> characterMap = typeface.CharacterToGlyphMap;
-                    int score = 0;
-                    foreach (char c in uniqueCharacters)
-                    {
-                        if (characterMap != null && characterMap.ContainsKey((int)c))
-                        {
-                            score++;
-                        }
-                    }
+                    using var fontStream = System.IO.File.OpenRead(font);
+                    characterMap = new Typeface(fontStream).CharacterToGlyphMap;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
 
-                    if (score > topScore)
+                int score = 0;
+                foreach (char c in uniqueCharacters)
+                {
+                    if (characterMap != null && characterMap.ContainsKey((int)c))
                     {
-                        topFont = font;
-                        topScore = score;
-                    }
-
-                    if (topScore == uniqueCharacters.Count)
-                    {
-                        return topFont; // Found a font with everything we need
+                        score++;
                     }
                 }
 
+                if (score > topScore)
+                {
+                    topFont = font;
+                    topScore = score;
+                }
+
+                if (topScore == uniqueCharacters.Count)
+                {
+                    return topFont; // Found a font with everything we need
+                }
             }
 
             return topFont;
@@ -768,7 +790,7 @@ namespace MariBot.Worker.CommandHandlers
 
             if (isAnimated)
             {
-                using (var baseImage = new MagickImageCollection(Environment.CurrentDirectory + "\\Content\\" + filename + ".gif"))
+                using (var baseImage = new MagickImageCollection(WorkerPaths.Content(filename, ".gif")))
                 {
                     using (var outputCollection = new MagickImageCollection())
                     {
@@ -856,7 +878,7 @@ namespace MariBot.Worker.CommandHandlers
             }
             else
             {
-                using (var baseImage = new MagickImageCollection(Environment.CurrentDirectory + "\\Content\\" + filename + ".gif"))
+                using (var baseImage = new MagickImageCollection(WorkerPaths.Content(filename, ".gif")))
                 {
                     using (var outputCollection = new MagickImageCollection())
                     {
