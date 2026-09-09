@@ -170,6 +170,17 @@ namespace MariBot.Worker.CommandHandlers
             int x1Dest, int y1Dest, int x2Dest, int y2Dest, int x3Dest, int y3Dest, int x4Dest, int y4Dest)
         {
 
+            // GetBestFont hands back the path of the file it picked, but callers
+            // pass that as FontFamily, which ImageMagick resolves as a family
+            // name rather than a path. Where the lookup fails the pick is
+            // dropped silently and the caption renders in the default face —
+            // with nothing at all where that face has no glyph, which is what
+            // CJK text does on a Linux worker. Font does take a path.
+            if (File.Exists(textSettings.FontFamily))
+            {
+                textSettings.Font = textSettings.FontFamily;
+            }
+
             MemoryStream outgoingImage = new MemoryStream();
             using (var baseImage = new MagickImage(WorkerPaths.Content(filename, ".png")))
             {

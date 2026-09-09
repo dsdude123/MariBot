@@ -36,6 +36,17 @@ namespace MariBot.Worker.CommandHandlers
 
         public Rect[] FindFaces()
         {
+            // Checked before CascadeClassifier gets a chance to fail on it:
+            // when its constructor throws, the finalizer follows it into the
+            // native layer and the unhandled exception there kills the worker
+            // rather than the job.
+            if (!File.Exists(haarCascade))
+            {
+                throw new FileNotFoundException(
+                    $"Haar cascade not found at '{haarCascade}'. Install the OpenCV data files or " +
+                    $"point {HaarCascadeConfigurationKey} at them.", haarCascade);
+            }
+
             var scratchFile = WorkerPaths.Temp($"{WorkerGlobals.Job.Id}.tmp");
             File.WriteAllBytes(scratchFile, WorkerGlobals.Job.SourceImage);
             using var haarCascadeClassifier = new CascadeClassifier(haarCascade);
