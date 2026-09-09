@@ -84,6 +84,13 @@ would have it write its result over whatever job the worker picked up next.
 - **LiteDB** embedded NoSQL database (`data.db`) for Discord messages, chat history, static responses
 - `DataService` manages all database operations with collections per guild
 
+A service that reads a credential must not throw while constructing its client.
+Discord.Net resolves the whole service graph while building its command list at
+startup, so a constructor that throws over a missing optional credential stops the
+bot rather than the command. Guard with `ConfiguredValue.IsUnset`, catch what the
+client library still rejects, expose `IsConfigured`, and fail at the call instead.
+`ServiceStartupTests` holds the line.
+
 ### Key Services (MariBot-Core/Services/)
 - `OpenAiService` — OpenAI/ChatGPT integration
 - `ImageService` — Image processing coordination
