@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 using MariBot.Core.Services;
@@ -70,8 +70,9 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
+                await SendRetirementNotice("dalle", "dall-e-3", "gptimage");
                 var imageUrl =
-                    await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.DALLE);
+                    await openAiService.ExecuteGptQuery(prompt, Context.User.Id.ToString(), Models.OpenAiModel.GPTIMAGE);
                 var stream = await imageService.GetWebResource(imageUrl);
                 await Context.Channel.SendFileAsync(stream, "dalle.png",
                     messageReference: new MessageReference(Context.Message.Id));
@@ -115,8 +116,9 @@ namespace MariBot.Core.Modules.Text
         {
             try
             {
+                await SendRetirementNotice("gpt3", "gpt-3.5-turbo", "gpt4");
                 var result =
-                    await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT3);
+                    await openAiService.ExecuteGptQuery(input, Context.User.Id.ToString(), Models.OpenAiModel.GPT4);
                 await SendCodeBlockResponse(result);
             }
             catch (Exception ex)
@@ -357,6 +359,29 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendMessageAsync($"```\n{chunk}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
+        }
+
+        /// <summary>
+        /// Warns that a command's model has been retired, before running the
+        /// prompt on the model that replaced it.
+        /// </summary>
+        /// <remarks>
+        /// A retired command keeps working rather than disappearing or erroring:
+        /// people have these in their muscle memory, and "that model is gone,
+        /// here is the answer from its replacement" is more use than either
+        /// silence or a stack trace. The notice is what stops the substitution
+        /// being invisible — the reply comes from a different model than the one
+        /// that was asked for, and the person asking should know that.
+        /// </remarks>
+        /// <param name="command">The retired command's name.</param>
+        /// <param name="retiredModel">The model that is going away.</param>
+        /// <param name="replacementCommand">The command to use from now on.</param>
+        private async Task SendRetirementNotice(string command, string retiredModel, string replacementCommand)
+        {
+            await Context.Channel.SendMessageAsync(
+                $"`{command}` is retired — OpenAI has discontinued `{retiredModel}`. " +
+                $"Running this on `{replacementCommand}` instead.",
+                messageReference: new MessageReference(Context.Message.Id));
         }
 
         private async Task HandleUnexpectedException(Exception ex)

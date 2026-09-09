@@ -1,4 +1,4 @@
-﻿using MariBot.Core.Models.Yahoo;
+﻿﻿using MariBot.Core.Models.Yahoo;
 using Newtonsoft.Json;
 using RestSharp.Authenticators;
 using RestSharp;
@@ -11,6 +11,9 @@ namespace MariBot.Core.Services
 
         private string apiKey;
         private ILogger<FluxService> logger;
+
+        /// <summary>For mocking in tests, matching DataService's seam.</summary>
+        protected FluxService() { logger = null!; }
 
         public FluxService(IConfiguration configuration, ILogger<FluxService> logger)
         {
