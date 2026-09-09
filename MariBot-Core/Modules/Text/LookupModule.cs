@@ -234,6 +234,14 @@ namespace MariBot.Core.Modules.Text
         [Command("wa", RunMode = RunMode.Async)]
         public async Task wolframAlphaSimple([Remainder] string query)
         {
+            if (!wolframAlphaService.IsConfigured)
+            {
+                await Context.Channel.SendMessageAsync(
+                    "Wolfram Alpha is not configured on this bot.",
+                    messageReference: new MessageReference(Context.Message.Id));
+                return;
+            }
+
             FullResultResponse result = await wolframAlphaService.QuerySimple(query);
             Queue<string> messageQueue = new Queue<string>();
             if (result.IsSuccess)

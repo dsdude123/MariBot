@@ -24,7 +24,7 @@ namespace MariBot.Core.Services
         {
             this.logger = logger;
 
-            if (string.IsNullOrWhiteSpace(settings.PreSharedKey) || settings.PreSharedKey == "SET-ME")
+            if (ConfiguredValue.IsUnset(settings.PreSharedKey))
             {
                 logger.LogWarning(
                     "{Section}:PreSharedKey is not set, so no worker can register. Set it on Core and on every worker.",
