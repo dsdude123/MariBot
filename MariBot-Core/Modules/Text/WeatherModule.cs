@@ -172,7 +172,7 @@ namespace MariBot.Core.Modules.Text
 
             if (serviceResult.Item2.HasValue)
             {
-                workerManagerService.AcceptanceNotifications.Add(serviceResult.Item2.Value, notification.Id);
+                workerManagerService.AcceptanceNotifications.TryAdd(serviceResult.Item2.Value, notification.Id);
             }
             /*            MemoryStream outgoingImage = new MemoryStream();
 

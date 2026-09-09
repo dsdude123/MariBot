@@ -1,43 +1,68 @@
-﻿@model IEnumerable<MariBot.Common.Model.GpuWorker.Worker>
+@model IEnumerable<MariBot.Common.Model.GpuWorker.Worker>
+@using MariBot.Common.Model.GpuWorker
 
 @{
     ViewBag.Title = "Workers";
+    var now = DateTimeOffset.UtcNow;
 }
 
 <h2>Workers</h2>
 
-<table>
-    <tr>
-        <th>
-            Endpoint
-        </th>
-        <th>
-            Capabilities
-        </th>
-        <th>
-            Status
-        </th>
-        <th>
-            Action
-        </th>
-    </tr>
-    
-    @foreach (var worker in Model)
-    {
+<p><a href="/metrics">Job metrics</a></p>
+
+@if (!Model.Any())
+{
+    <p>
+        No workers are registered. Workers register themselves on startup, so an empty
+        list means none are running, or none can reach this instance, or their
+        pre-shared key does not match.
+    </p>
+}
+else
+{
+    <table>
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => worker.Endpoint)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => worker.Capabilities)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => worker.Status)
-            </td>
-            <td>
-                @Html.ActionLink("Hold", "Hold", new { endpoint = worker.Endpoint}, null) | 
-                @Html.ActionLink("Ready", "Ready", new { endpoint = worker.Endpoint}, null)
-            </td>
+            <th>Name</th>
+            <th>Endpoint</th>
+            <th>Capabilities</th>
+            <th>Status</th>
+            <th>Circuit</th>
+            <th>Jobs</th>
+            <th>Last heartbeat</th>
+            <th>Action</th>
         </tr>
-    }
-</table>
+
+        @foreach (var worker in Model)
+        {
+            <tr>
+                <td>@worker.Name</td>
+                <td>@worker.Endpoint</td>
+                <td>@string.Join(", ", worker.Capabilities)</td>
+                <td>
+                    @worker.Status
+                    @if (worker.CurrentJob != Guid.Empty)
+                    {
+                        <text> (@worker.CurrentJob)</text>
+                    }
+                </td>
+                <td>
+                    @worker.Breaker.State
+                    @if (worker.Breaker.State != CircuitState.Closed && worker.Breaker.OpenedAt.HasValue)
+                    {
+                        <text> for @((now - worker.Breaker.OpenedAt.Value).ToString(@"hh\:mm\:ss"))</text>
+                    }
+                    @if (worker.Breaker.Trips > 0)
+                    {
+                        <text> — @worker.Breaker.Trips trip(s)</text>
+                    }
+                </td>
+                <td>@worker.JobsCompleted ok / @worker.JobsFailed failed</td>
+                <td>@((now - worker.LastHeartbeat).TotalSeconds.ToString("F0"))s ago</td>
+                <td>
+                    <a href="/workers/hold?id=@worker.Id">Hold</a> |
+                    <a href="/workers/ready?id=@worker.Id">Ready</a>
+                </td>
+            </tr>
+        }
+    </table>
+}
