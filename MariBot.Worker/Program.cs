@@ -1,4 +1,4 @@
-using MariBot.Common.Model.GpuWorker;
+﻿using MariBot.Common.Model.GpuWorker;
 using MariBot.Worker;
 using MariBot.Worker.CommandHandlers;
 
@@ -20,8 +20,16 @@ builder.Services.AddSingleton(x => new TraceExceptionLogger());
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
 builder.Logging.AddConsole();
-builder.Logging.AddFile("maribot.log");
-builder.Logging.AddEventLog();
+// Same knob MariBot.Core uses, so the container image can point the file sink
+// at a mounted volume instead of writing inside the image.
+builder.Logging.AddFile(Environment.GetEnvironmentVariable("MariBot__LogPath") ?? "maribot.log");
+
+// The Windows event log has no Linux counterpart, and its provider throws on
+// first write rather than degrading, so it is only added where it exists.
+if (OperatingSystem.IsWindows())
+{
+    builder.Logging.AddEventLog();
+}
 
 var app = builder.Build();
 

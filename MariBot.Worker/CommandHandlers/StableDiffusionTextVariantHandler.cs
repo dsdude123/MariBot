@@ -25,19 +25,13 @@ namespace MariBot.Worker.CommandHandlers
 
         public void ExecuteStableDiffusion(string provider)
         {
+            CondaShell.EnsureAvailable("Stable Diffusion");
+
             string consoleLogs = "";
 
-            File.WriteAllText($".\\Python\\{WorkerGlobals.Job.Id}.txt", $"{WorkerGlobals.Job.SourceText}");
+            File.WriteAllText(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.txt"), $"{WorkerGlobals.Job.SourceText}");
 
-            var contentModeration = Process.Start(new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                WorkingDirectory = Environment.CurrentDirectory,
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
+            var contentModeration = Process.Start(CondaShell.StartInfo());
 
             contentModeration.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
             {
@@ -68,7 +62,7 @@ namespace MariBot.Worker.CommandHandlers
             {
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine("C:\\ProgramData\\Anaconda3\\Scripts\\activate.bat");
+                    sw.WriteLine(CondaShell.ActivateScript);
                     sw.WriteLine("activate detoxify");
                     sw.WriteLine($"python .\\Python\\moderation.py \"{WorkerGlobals.Job.Id}\"");
                 }
@@ -76,7 +70,7 @@ namespace MariBot.Worker.CommandHandlers
 
             contentModeration.WaitForExit();
 
-            var moderationResult = JsonConvert.DeserializeObject<ToxicityResult>(File.ReadAllText($".\\Python\\{WorkerGlobals.Job.Id}-moderation.json"));
+            var moderationResult = JsonConvert.DeserializeObject<ToxicityResult>(File.ReadAllText(WorkerPaths.Python($"{WorkerGlobals.Job.Id}-moderation.json")));
 
             if (moderationResult.toxicity.Any(t => t >= moderationThreshold)) {
                 LogAllConsoleText(consoleLogs);
@@ -86,15 +80,7 @@ namespace MariBot.Worker.CommandHandlers
                 };
             } else
             {
-                var generator = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    WorkingDirectory = Environment.CurrentDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                });
+                var generator = Process.Start(CondaShell.StartInfo());
 
                 generator.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
@@ -125,7 +111,7 @@ namespace MariBot.Worker.CommandHandlers
                 {
                     if (sw.BaseStream.CanWrite)
                     {
-                        sw.WriteLine("C:\\ProgramData\\Anaconda3\\Scripts\\activate.bat");
+                        sw.WriteLine(CondaShell.ActivateScript);
                         sw.WriteLine("activate ldm");
                         sw.WriteLine($"python .\\Python\\{provider}.py \"{WorkerGlobals.Job.Id}\" \"{configuration["HuggingFaceToken"]}\"");
                     }
@@ -138,14 +124,14 @@ namespace MariBot.Worker.CommandHandlers
                 WorkerGlobals.Job.Result = new JobResult()
                 {
                     FileName = "result.png",
-                    Data = File.ReadAllBytes($".\\Python\\{WorkerGlobals.Job.Id}.png")
+                    Data = File.ReadAllBytes(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"))
                 };
 
-                File.Delete($".\\Python\\{WorkerGlobals.Job.Id}.png");
+                File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"));
             }
 
-            File.Delete($".\\Python\\{WorkerGlobals.Job.Id}.txt");
-            File.Delete($".\\Python\\{WorkerGlobals.Job.Id}-moderation.json");
+            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.txt"));
+            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}-moderation.json"));
         }
 
         public void LogAllConsoleText(string text)
