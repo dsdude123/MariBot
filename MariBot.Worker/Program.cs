@@ -17,6 +17,14 @@ builder.Services.AddSingleton<StableDiffusionTextVariantHandler>();
 builder.Services.AddSingleton<EasyOcrHandler>();
 builder.Services.AddSingleton(x => new TraceExceptionLogger());
 
+// Self-registration with Core. Bound once and shared so the registration loop
+// and the job deadline agree on the same settings.
+var workerSettings = builder.Configuration.GetSection(WorkerSettings.SectionName).Get<WorkerSettings>()
+                     ?? new WorkerSettings();
+builder.Services.AddSingleton(workerSettings);
+builder.Services.AddHttpClient();
+builder.Services.AddHostedService<WorkerRegistrationService>();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
 builder.Logging.AddConsole();
