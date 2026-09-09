@@ -1,8 +1,9 @@
 name: Tests
 
 on:
+  # No base-branch filter: a pull request stacked on another pull request has
+  # that branch as its base rather than master, and it still has to be tested.
   pull_request:
-    branches: [master]
   push:
     branches: [master]
 

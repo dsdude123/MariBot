@@ -1,8 +1,12 @@
 name: Docker
 
 on:
+  # Deliberately not filtered by base branch. A pull request stacked on another
+  # pull request has that branch as its base, not master, and a stack whose
+  # lower PRs never build is a stack whose CI tells you nothing until the day it
+  # lands. GitHub builds the merge of head into whatever the base is, so each PR
+  # is checked against the state it will actually merge into.
   pull_request:
-    branches: [master]
     paths:
       # Listed explicitly even though the project globs already match them —
       # the Dockerfiles are the thing this job actually exercises.

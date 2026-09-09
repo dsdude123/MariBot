@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile"
   },
   "workspaceFolder": "/workspaces/MariBot",
-  "postCreateCommand": "dotnet restore MariBot-Core/MariBot.Core.csproj MariBot-Core.Tests/MariBot-Core.Tests.csproj MariBot-Common/MariBot.Common.csproj MariBot-Common.Tests/MariBot-Common.Tests.csproj",
+  "postCreateCommand": "dotnet restore MariBot.sln",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -20,5 +20,5 @@
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     "DOTNET_NOLOGO": "1"
   },
-  "forwardPorts": [8091]
+  "forwardPorts": [8091, 8092]
 }
