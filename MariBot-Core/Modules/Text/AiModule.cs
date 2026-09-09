@@ -176,9 +176,26 @@ namespace MariBot.Core.Modules.Text
         [Command("flux", RunMode = RunMode.Async)]
         public async Task FluxImageGeneration([Remainder] string input)
         {
+            await GenerateWithFlux(() => fluxService.GenerateFlux(input));
+        }
+
+        /// <summary>
+        /// The previous generation of Flux, kept reachable now that `flux` runs
+        /// FLUX.2 [max]. Not retired — FLUX 1.1 [pro] is still a supported model,
+        /// and it is cheaper, so this is a choice rather than a fallback.
+        /// </summary>
+        /// <param name="input">Input prompt</param>
+        [Command("flux1", RunMode = RunMode.Async)]
+        public async Task Flux1ImageGeneration([Remainder] string input)
+        {
+            await GenerateWithFlux(() => fluxService.GenerateFlux1(input));
+        }
+
+        private async Task GenerateWithFlux(Func<Task<MariBot.Core.Models.BlackForestLabs.Flux.ImageResponse.Result>> generate)
+        {
             try
             {
-                var result = await fluxService.GenerateFlux(input);
+                var result = await generate();
                 var eb = new EmbedBuilder();
                 eb.WithDescription(result.prompt);
                 var stream = await imageService.GetWebResource(result.sample);
