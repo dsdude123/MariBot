@@ -1,3 +1,8 @@
+# Shared by both images: BuildKit reads one ignore file per context, and both
+# MariBot-Core/Dockerfile and MariBot.Worker/Dockerfile build from the repo
+# root so they can reach MariBot-Common. Each Dockerfile COPYs only the
+# projects it needs, so nothing here has to be split per image.
+
 **/bin/
 **/obj/
 **/out/
@@ -39,6 +44,7 @@ README.md
 LICENSE.txt
 upgrade-assistant.clef
 
-# Worker — explicitly excluded; Core has no dependency on it.
-MariBot.Worker/
+# Test projects — neither image builds or runs them.
+MariBot-Common.Tests/
+MariBot-Core.Tests/
 MariBot-Worker.Tests/

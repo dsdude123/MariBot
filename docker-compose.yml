@@ -66,8 +66,40 @@ services:
       - maribot-logs:/app/logs
       - maribot-yt:/app/yt-downloads
 
+  # Optional. Delete this service if your workers run elsewhere — a Windows box
+  # with a GPU, most likely, since this image is CPU-only: OCR and Stable
+  # Diffusion drive Anaconda environments that exist only there.
+  #
+  # Core does not discover it. Point a worker-config.json entry at it and mount
+  # that over the image's copy, as described above:
+  #   [{ "Endpoint": "http://maribot-worker:8092", "Capabilities": ["CPU"] }]
+  # Listing a GPU capability it does not have only means those jobs get
+  # dispatched here and fail.
+  maribot-worker:
+    image: ghcr.io/dsdude123/maribot-worker:${MARIBOT_IMAGE_TAG:-latest}
+    container_name: maribot-worker
+    restart: unless-stopped
+
+    # Deliberately not published to the host. Core reaches the worker by service
+    # name on the compose network, and finished jobs travel back to port 8091 on
+    # whatever address the worker saw the request arrive from — Core's own
+    # address on that same network. Publish 8092 only for a worker that has to
+    # serve a Core running outside this stack.
+    expose:
+      - "8092"
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+    # Everything the worker reads — Content, the Python scripts, appsettings.json
+    # — ships in the image, so this is only about keeping the log file across a
+    # container recreate.
+    volumes:
+      - maribot-worker-logs:/app/logs
+
 volumes:
   maribot-config:
   maribot-data:
   maribot-logs:
   maribot-yt:
+  maribot-worker-logs:
