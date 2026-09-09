@@ -4,10 +4,12 @@ on:
   pull_request:
     branches: [master]
     paths:
-      # Listed explicitly even though 'MariBot-Core/**' already matches it —
-      # the Dockerfile is the thing this job actually exercises.
+      # Listed explicitly even though the project globs already match them —
+      # the Dockerfiles are the thing this job actually exercises.
       - 'MariBot-Core/Dockerfile'
+      - 'MariBot.Worker/Dockerfile'
       - 'MariBot-Core/**'
+      - 'MariBot.Worker/**'
       - 'MariBot-Common/**'
       - '.dockerignore'
       - '.github/workflows/docker.yml'
@@ -17,14 +19,28 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/maribot-core
 
 jobs:
   build:
+    # Without this the matrix splices the Dockerfile path into the check name,
+    # producing an unreadable (and untypeable) required-status-check.
+    name: build (${{ matrix.image }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
+    # Both images are built on every run rather than filtered by path: they
+    # share MariBot-Common, and a PR that changes it has to prove both still
+    # build. They are independent, so one failing should not cancel the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: maribot-core
+            dockerfile: MariBot-Core/Dockerfile
+          - image: maribot-worker
+            dockerfile: MariBot.Worker/Dockerfile
 
     steps:
       - uses: actions/checkout@v4
@@ -43,13 +59,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # The sha tag is deliberately disabled for PRs: a PR should own exactly
-      # one mutable tag (pr-<n>) so docker-cleanup.yml can remove it by name
-      # when the PR closes. Per-sha tags would outlive that cleanup.
+      # one mutable tag (pr-<n>) per image so docker-cleanup.yml can remove it
+      # by name when the PR closes. Per-sha tags would outlive that cleanup.
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -63,18 +79,20 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: MariBot-Core/Dockerfile
+          file: ${{ matrix.dockerfile }}
           push: ${{ github.event.pull_request.head.repo.fork != true }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Scoped per image: one shared cache would have the two builds
+          # evicting each other's layers on every run.
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
       - name: Summarise published tags
         if: github.event.pull_request.head.repo.fork != true
         run: |
           {
-            echo "### Published images"
+            echo "### Published images — ${{ matrix.image }}"
             echo
             echo 'Pull one of these in Portainer:'
             echo

@@ -1,8 +1,8 @@
 name: Docker Cleanup
 
-# Removes the throwaway pr-<n> image once its PR is closed, so preview builds
+# Removes the throwaway pr-<n> images once their PR is closed, so preview builds
 # don't pile up in GHCR. Deliberately not filtered on paths: a PR that stopped
-# touching Docker files still has an image to clean up.
+# touching Docker files still has images to clean up.
 on:
   pull_request:
     types: [closed]
@@ -14,7 +14,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Delete pr-${{ github.event.number }} from GHCR
+      - name: Delete pr-${{ github.event.number }} images from GHCR
         # Cleanup failing must never mark a merged PR as broken. If this step
         # goes red, see the note at the bottom of this file.
         continue-on-error: true
@@ -23,31 +23,44 @@ jobs:
           github-token: ${{ secrets.GHCR_CLEANUP_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const owner = context.repo.owner;
-            const packageName = 'maribot-core';
             const tag = `pr-${context.payload.number}`;
 
-            const versions = await github.paginate(
-              github.rest.packages.getAllPackageVersionsForPackageOwnedByUser,
-              { username: owner, package_type: 'container', package_name: packageName, per_page: 100 }
-            );
+            // Every image docker.yml publishes a pr-<n> tag for. A package that
+            // does not exist yet — a PR that never touched Docker files, or an
+            // image added after this PR was opened — is not an error.
+            for (const packageName of ['maribot-core', 'maribot-worker']) {
+              let versions;
+              try {
+                versions = await github.paginate(
+                  github.rest.packages.getAllPackageVersionsForPackageOwnedByUser,
+                  { username: owner, package_type: 'container', package_name: packageName, per_page: 100 }
+                );
+              } catch (error) {
+                if (error.status === 404) {
+                  core.info(`No ${packageName} package — nothing to delete.`);
+                  continue;
+                }
+                throw error;
+              }
 
-            const match = versions.find(v =>
-              (v.metadata?.container?.tags ?? []).includes(tag)
-            );
+              const match = versions.find(v =>
+                (v.metadata?.container?.tags ?? []).includes(tag)
+              );
 
-            if (!match) {
-              core.info(`No image tagged ${tag} — nothing to delete.`);
-              return;
+              if (!match) {
+                core.info(`No ${packageName} image tagged ${tag} — nothing to delete.`);
+                continue;
+              }
+
+              await github.rest.packages.deletePackageVersionForUser({
+                username: owner,
+                package_type: 'container',
+                package_name: packageName,
+                package_version_id: match.id,
+              });
+
+              core.info(`Deleted ${packageName}:${tag} (version ${match.id}).`);
             }
-
-            await github.rest.packages.deletePackageVersionForUser({
-              username: owner,
-              package_type: 'container',
-              package_name: packageName,
-              package_version_id: match.id,
-            });
-
-            core.info(`Deleted ${tag} (version ${match.id}).`);
 
 # Only the pr-<n> tagged version is removed. Untagged versions left behind by
 # overwriting that tag are NOT pruned: for multi-arch images those untagged
