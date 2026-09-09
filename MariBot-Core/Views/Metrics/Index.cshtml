@@ -1,0 +1,90 @@
+@model MariBot.Core.Models.JobMetricsReport
+
+@{
+    ViewBag.Title = "Job metrics";
+}
+
+<h2>Job metrics</h2>
+
+<p>
+    Last @Model.Window.TotalHours.ToString("F0") hours, as of @Model.GeneratedAt.ToString("u").
+    Window: <a href="/metrics?hours=1">1h</a> |
+    <a href="/metrics?hours=24">24h</a> |
+    <a href="/metrics?hours=168">7d</a> |
+    <a href="/metrics?hours=720">30d</a>.
+    Same numbers as <a href="/metrics/json">JSON</a>.
+    <a href="/workers">Workers</a>.
+</p>
+
+@if (Model.TotalJobs == 0)
+{
+    <p>No jobs in this window.</p>
+}
+else
+{
+    <p>
+        <strong>@Model.TotalJobs</strong> jobs —
+        @Model.Completed completed,
+        @Model.Failed failed to dispatch,
+        @Model.TimedOut timed out,
+        @Model.Dropped dropped with no worker available
+        (@Model.SuccessRate.ToString("P1") success).
+    </p>
+
+    <h3>By command</h3>
+    <table>
+        <tr>
+            <th>Command</th>
+            <th>Priority</th>
+            <th>Runs</th>
+            <th>Success</th>
+            <th>Median run</th>
+            <th>p95 run</th>
+            <th>Median queued</th>
+            <th>Failed / timed out / dropped</th>
+        </tr>
+        @foreach (var command in Model.Commands)
+        {
+            <tr>
+                <td>@command.Command</td>
+                <td>@command.Priority</td>
+                <td>@command.Total</td>
+                <td>@command.SuccessRate.ToString("P1")</td>
+                <td>@command.MedianRunMs.ToString("F0") ms</td>
+                <td>@command.P95RunMs.ToString("F0") ms</td>
+                <td>@command.MedianQueuedMs.ToString("F0") ms</td>
+                <td>@command.Failed / @command.TimedOut / @command.Dropped</td>
+            </tr>
+        }
+    </table>
+
+    <h3>By worker</h3>
+    @if (!Model.Workers.Any())
+    {
+        <p>No job in this window reached a worker.</p>
+    }
+    else
+    {
+        <table>
+            <tr>
+                <th>Worker</th>
+                <th>Runs</th>
+                <th>Success</th>
+                <th>Median run</th>
+                <th>p95 run</th>
+                <th>Failed / timed out</th>
+            </tr>
+            @foreach (var worker in Model.Workers)
+            {
+                <tr>
+                    <td>@worker.WorkerName</td>
+                    <td>@worker.Total</td>
+                    <td>@worker.SuccessRate.ToString("P1")</td>
+                    <td>@worker.MedianRunMs.ToString("F0") ms</td>
+                    <td>@worker.P95RunMs.ToString("F0") ms</td>
+                    <td>@worker.Failed / @worker.TimedOut</td>
+                </tr>
+            }
+        </table>
+    }
+}
