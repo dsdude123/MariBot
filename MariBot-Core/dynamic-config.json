@@ -58,6 +58,7 @@
         "dalle",
         "dallehd",
         "flux",
+        "flux1",
         "grok",
         "grokimage",
         "grokvideo",
@@ -146,6 +147,7 @@
         "grokvideo",
         "grokedit",
         "flux",
+        "flux1",
         "dalle",
         "gptimage"
       ]

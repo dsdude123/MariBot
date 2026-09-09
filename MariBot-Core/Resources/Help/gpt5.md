@@ -1,6 +1,6 @@
 # gpt5
 
-Generate a text response using GPT-5.
+Generate a text response using GPT-5.6 terra.
 
 **Usage:** `z gpt5 <prompt>`
 
