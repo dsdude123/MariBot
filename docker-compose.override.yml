@@ -25,7 +25,6 @@ services:
     # self-update described in docker-compose.yml.
     volumes:
       - ./MariBot-Core/appsettings.json:/app/appsettings.json:ro
-      - ./MariBot-Core/worker-config.json:/app/worker-config.json:ro
 
   maribot-worker:
     build:

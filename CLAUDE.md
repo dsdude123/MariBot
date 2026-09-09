@@ -37,6 +37,10 @@ Paths in `MariBot.Worker` must go through `WorkerPaths`, and font and Haar casca
 locations through `FontCatalog` and `OpenCVHandler`'s configuration key. A literal
 `"\\"` or a `C:\` default is what kept the worker Windows-only.
 
+`WorkerGlobals.Job` is an `AsyncLocal`, not a plain static. A job that gets abandoned
+keeps running — Magick.NET and OpenCV calls are not cancellable — so a shared static
+would have it write its result over whatever job the worker picked up next.
+
 ## Solution Structure
 
 | Project | Purpose |
@@ -58,10 +62,23 @@ locations through `FontCatalog` and `OpenCVHandler`'s configuration key. A liter
 5. Result returned to Discord
 
 ### Worker System
-- Workers register via `worker-config.json` with HTTP endpoints
-- `WorkerManagerService` tracks worker status (Ready/Offline/Busy) with health checks
-- Job dispatch runs on a 1-second timer interval
-- REST API controllers: `WorkerController`, `WorkerJobController` (Core); `WorkerController` (Worker)
+- Workers register themselves at `POST /api/workers/register` with a pre-shared key
+  (`WorkerSettings:PreSharedKey`, same value on both sides) and heartbeat to stay
+  registered. There is no worker list in configuration; a worker that stops checking
+  in is marked Offline and then evicted
+- `WorkerRegistry` owns the pool — membership, hold/ready, capability routing, and a
+  per-worker `CircuitBreaker` (closed → open after repeated failures → half-open trial)
+- `JobQueue` holds two strictly ordered lanes; a command declares which one it uses in
+  `CommandRegistry`, alongside its capability and any per-command timeout
+- `WorkerManagerService` runs the 1-second dispatch loop: evict stale workers, abandon
+  jobs past their deadline, then place queued jobs high lane first
+- `JobMetricsService` records every finished job to LiteDB; `/metrics` and
+  `/metrics/json` report over a window
+- REST API controllers: `WorkerRegistrationController`, `WorkerJobController`,
+  `MetricsController`, `WorkerController` (Core); `WorkerController` (Worker)
+- Only transport failures and timeouts count against a worker's breaker. A job that
+  failed because the request was bad says nothing about the worker and must not take
+  it out of rotation
 
 ### Data Layer
 - **LiteDB** embedded NoSQL database (`data.db`) for Discord messages, chat history, static responses
@@ -77,9 +94,12 @@ locations through `FontCatalog` and `OpenCVHandler`'s configuration key. A liter
 - `StaticTextResponseService` — Configurable canned responses
 
 ### Configuration
-- `appsettings.json` — Discord token, API keys (Google, OpenAI, Wolfram Alpha, Twitter, etc.)
+- `appsettings.json` — Discord token, API keys (Google, OpenAI, Wolfram Alpha, Twitter, etc.),
+  and the `WorkerSettings` section (pre-shared key, heartbeat and eviction timings, job
+  timeout, circuit breaker thresholds, metrics retention)
 - `dynamic-config.json` — Runtime feature toggles (no restart needed)
-- `worker-config.json` — Worker endpoint configuration
+- The worker's own `WorkerSettings` section names the Core to register with, the address
+  to advertise, and the capabilities it claims
 
 ## Tech Stack Highlights
 - **Discord**: Discord.Net 3.x (Commands + Interactions/slash commands)
