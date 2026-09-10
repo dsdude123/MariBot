@@ -1,4 +1,4 @@
-using MariBot.Core.Models.Config;
+﻿using MariBot.Core.Models.Config;
 using MariBot.Core.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,14 +35,14 @@ namespace MariBot.Core.Tests
         public void GetGrokChatModel_NullConfig_ReturnsDefault()
         {
             var service = CreateServiceWithConfig(null);
-            Assert.Equal("grok-4-1-fast-reasoning", service.GetGrokChatModel());
+            Assert.Equal("grok-4.6", service.GetGrokChatModel());
         }
 
         [Fact]
         public void GetGrokChatModel_ConfigWithoutOverride_ReturnsDefault()
         {
             var service = CreateServiceWithConfig(new DynamicConfig());
-            Assert.Equal("grok-4-1-fast-reasoning", service.GetGrokChatModel());
+            Assert.Equal("grok-4.6", service.GetGrokChatModel());
         }
 
         [Fact]
@@ -58,14 +58,14 @@ namespace MariBot.Core.Tests
         public void GetGrokImageModel_NullConfig_ReturnsDefault()
         {
             var service = CreateServiceWithConfig(null);
-            Assert.Equal("grok-imagine-image", service.GetGrokImageModel());
+            Assert.Equal("grok-imagine-image-2.0", service.GetGrokImageModel());
         }
 
         [Fact]
         public void GetGrokImageModel_ConfigWithoutOverride_ReturnsDefault()
         {
             var service = CreateServiceWithConfig(new DynamicConfig());
-            Assert.Equal("grok-imagine-image", service.GetGrokImageModel());
+            Assert.Equal("grok-imagine-image-2.0", service.GetGrokImageModel());
         }
 
         [Fact]

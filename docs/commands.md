@@ -11,6 +11,21 @@ This is the list of currently supported commands by MariBot. All commands should
 `radar` - Gets the current radar animation for the Pacific Northwest.  
 `solve <equation>` - Try to solve an equation. Replace `<equation>` with your equation to be solved. Limited support. 
 
+### AI Commands
+Text, image, and video generation. Replace `<text>` with your prompt. Each of these calls a paid third-party API, so a server owner can turn any of them off; if a command does not answer, it is likely blocked for that server.
+
+`gpt <text>` - Answers a prompt with OpenAI GPT-5.6 terra. `gpt5` does the same thing.  
+`gpt4 <text>` - Answers a prompt with OpenAI GPT-4.1.  
+`gpt3 <text>` - ⚠**Retired**. OpenAI discontinued GPT-3.5. Warns, then answers on `gpt4`'s model instead.  
+`gptimage <text>` - Generates an image with OpenAI GPT Image 2.  
+`dalle <text>` - ⚠**Retired**. OpenAI discontinued DALL·E 3. Warns, then generates on `gptimage`'s model instead. `dallehd` does the same thing.  
+`flux <text>` - Generates an image with Black Forest Labs FLUX.2 [max].  
+`flux1 <text>` - Generates an image with Black Forest Labs FLUX 1.1 [pro], the previous generation. Not retired — it is still supported and cheaper, so it is kept as a choice.  
+`grok <text>` - Answers a prompt with xAI Grok 4.6.  
+`grokimage <text>` - Generates an image with xAI Grok Imagine Image 2.0.  
+`grokedit <text>` - Edits an image with xAI Grok. Attach up to two images, reply to a message containing them, put their URLs in `<text>`, or leave all of those out to use the last image posted in the channel.  
+`grokvideo <seconds> <text>` - 🔒 **Bot Owner Only** Generates a video with xAI Grok Imagine. Replace `<seconds>` with a duration from 1 to 10.  
+
 ### Audio Commands
 `tts <text>` - Speaks a string in the voice channel you currently are in using DecTalk. Replace `<text>` with your string.  
 `radio <text>` - Plays a specified radio station in the voice channel you currently are in. See [radio.md](radio.md) for list of default supported webcams.  
@@ -49,6 +64,9 @@ For all commands with `<url>` parameter, replace it with an image URL, mention a
 `9gag <url>` - Apply 9gag filter to an image.
 `adidas <url>` - Apply Adidas filter to an image.
 `adw <url>` - Apply Admin Walk filter to an image.   
+`ai-image <text>` - Generates an image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
+`ai-pokemon <text>` - Generates a Pokemon-style image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
+`ai-waifu <text>` - Generates a waifu-style image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
 `ajit <url>` - Apply Ajit Pai filter to an image.   
 `america <url>` - Apply America filter to an image.   
 `analysis <url>` - Apply Kolakowski Analysis filter to an image.   
@@ -64,7 +82,6 @@ For all commands with `<url>` parameter, replace it with an image URL, mention a
 `image <text>` - Performs a Google image search and returns the first result. Replace `<text>` with your keywords to search.  
 `nuke <url>` - Deepfry an image 10 times.   
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
-`waifu` - Generates a waifu using Waifu Labs.  
 `webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
 
 ### Static Text Response Commands

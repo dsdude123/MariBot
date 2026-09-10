@@ -1,4 +1,4 @@
-using MariBot.Core.Models.Config;
+﻿using MariBot.Core.Models.Config;
 using Newtonsoft.Json;
 using System.Net;
 using System.Timers;
@@ -106,7 +106,7 @@ namespace MariBot.Core.Services
         /// <returns>Model name string</returns>
         public string GetGrokChatModel()
         {
-            return dynamicConfig?.GrokChatModel ?? "grok-4-1-fast-reasoning";
+            return dynamicConfig?.GrokChatModel ?? "grok-4.6";
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace MariBot.Core.Services
         /// <returns>Model name string</returns>
         public string GetGrokImageModel()
         {
-            return dynamicConfig?.GrokImageModel ?? "grok-imagine-image";
+            return dynamicConfig?.GrokImageModel ?? "grok-imagine-image-2.0";
         }
 
         /// <summary>

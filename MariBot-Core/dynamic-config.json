@@ -58,10 +58,14 @@
         "dalle",
         "dallehd",
         "flux",
+        "flux1",
         "grok",
         "grokimage",
         "grokvideo",
-        "grokedit"
+        "grokedit",
+        "gpt5",
+        "gpt",
+        "gptimage"
       ]
     },
     {
@@ -146,8 +150,12 @@
         "grokvideo",
         "grokedit",
         "flux",
+        "flux1",
         "dalle",
-        "gptimage"
+        "gptimage",
+        "chatgpt",
+        "gpt",
+        "dallehd"
       ]
     }
   ]

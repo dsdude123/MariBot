@@ -25,14 +25,15 @@ namespace MariBot.Core.Services
         // Copying .env.example without filling it in is enough to hit that: it
         // ships the key blank, and compose passes a blank through as an empty
         // string rather than leaving it unset.
-        private readonly ChatClient? gpt3Client;
         private readonly ChatClient? gpt4Client;
         private readonly ChatClient? gpt5Client;
         private readonly ModerationClient? moderationClient;
-        private readonly ImageClient? dalleClient;
         private readonly ImageClient? gptImageClient;
         private readonly DataService dataService;
         private readonly ILogger<OpenAiService> logger;
+
+        /// <summary>For mocking in tests, matching DataService's seam.</summary>
+        protected OpenAiService() { logger = null!; dataService = null!; }
 
         public OpenAiService(IConfiguration configuration, ILogger<OpenAiService> logger, DataService dataService)
         {
@@ -60,18 +61,19 @@ namespace MariBot.Core.Services
 
                 // Built into locals and assigned together, so a throw part way
                 // through cannot leave this half-configured.
-                var gpt3 = new ChatClient("gpt-3.5-turbo-0125", apiKeyCredential, openAIClientOptions);
+                //
+                // Model ids are pinned here rather than left on a moving alias so
+                // that an upgrade is a reviewable change with a date on it. See
+                // https://developers.openai.com/api/docs/deprecations for what is
+                // scheduled to stop answering and when.
                 var gpt4 = new ChatClient("gpt-4.1", apiKeyCredential, openAIClientOptions);
-                var gpt5 = new ChatClient("gpt-5", apiKeyCredential, openAIClientOptions);
+                var gpt5 = new ChatClient("gpt-5.6-terra", apiKeyCredential, openAIClientOptions);
                 var moderation = new ModerationClient("omni-moderation-latest", apiKeyCredential, openAIClientOptions);
-                var dalle = new ImageClient("dall-e-3", apiKeyCredential, openAIClientOptions);
-                var gptImage = new ImageClient("gpt-image-1", apiKeyCredential, openAIClientOptions);
+                var gptImage = new ImageClient("gpt-image-2", apiKeyCredential, openAIClientOptions);
 
-                gpt3Client = gpt3;
                 gpt4Client = gpt4;
                 gpt5Client = gpt5;
                 moderationClient = moderation;
-                dalleClient = dalle;
                 gptImageClient = gptImage;
             }
             catch (Exception ex)
@@ -86,7 +88,7 @@ namespace MariBot.Core.Services
         /// Whether a usable API key was configured. False means every OpenAI
         /// command will refuse rather than call.
         /// </summary>
-        public bool IsConfigured => gpt3Client != null;
+        public bool IsConfigured => gpt4Client != null;
 
         private T Require<T>(T? client) where T : class =>
             client ?? throw new InvalidOperationException(
@@ -111,18 +113,14 @@ namespace MariBot.Core.Services
         /// <returns>Response text</returns>
         /// <exception cref="ArgumentException">Input fails safety checks</exception>
         /// <exception cref="ApplicationException">API error</exception>
-        public async Task<string> ExecuteGptQuery(string input, string userid, OpenAiModel model)
+        public virtual async Task<string> ExecuteGptQuery(string input, string userid, OpenAiModel model)
         {
             switch (model)
             {
-                case OpenAiModel.GPT3:
-                    return await ExecuteGenericGptQuery(Require(gpt3Client), input, userid);
                 case OpenAiModel.GPT4:
                     return await ExecuteGenericGptQuery(Require(gpt4Client), input, userid);
                 case OpenAiModel.GPT5:
                     return await ExecuteGenericGptQuery(Require(gpt5Client), input, userid);
-                case OpenAiModel.DALLE:
-                    return await ExecuteGenericImage(Require(dalleClient), input, userid);
                 case OpenAiModel.GPTIMAGE:
                     return await ExecuteGenericImage(Require(gptImageClient), input, userid);
                 default:

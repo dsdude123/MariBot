@@ -13,12 +13,12 @@
         /// <summary>
         /// Model to use for Grok chat completions.
         /// </summary>
-        public string GrokChatModel { get; set; } = "grok-4-1-fast-reasoning";
+        public string GrokChatModel { get; set; } = "grok-4.6";
 
         /// <summary>
         /// Model to use for Grok image generation.
         /// </summary>
-        public string GrokImageModel { get; set; } = "grok-imagine-image";
+        public string GrokImageModel { get; set; } = "grok-imagine-image-2.0";
 
         /// <summary>
         /// Model to use for Grok video generation.
