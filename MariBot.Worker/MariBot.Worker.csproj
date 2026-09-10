@@ -239,6 +239,9 @@
     <None Update="Python\Environments\SetupStableDiffusion.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Python\_paths.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Python\moderation.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

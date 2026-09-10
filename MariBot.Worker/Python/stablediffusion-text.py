@@ -1,31 +1,35 @@
-import torch
-import sys
 import re
-from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
+import sys
+
+import torch
+from diffusers import DPMSolverMultistepScheduler, StableDiffusionPipeline
+
+from _paths import model_cache, read_prompt
 
 model_id = "stabilityai/stable-diffusion-2-1"
 
-# Read parameters from command line
-request_guid = sys.argv[1]
-hf_token = sys.argv[2]
+prompt_path = sys.argv[1]
+output_path = sys.argv[2]
+hf_token = sys.argv[3] if len(sys.argv) > 3 else None
 
-# Load text prompt into file
-file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt","r",encoding='utf-8')
-prompt = file.read()
-file.close()
+prompt = read_prompt(prompt_path)
 
-negative_arr = re.findall("\(+.*?\)+", prompt)
-prompt = re.sub("\(+.*?\)+", "", prompt)
-prompt_negative = ' '.join(negative_arr).replace("(", "").replace(")", "")
+# Anything in parentheses is the negative prompt.
+negative_arr = re.findall(r"\(+.*?\)+", prompt)
+prompt = re.sub(r"\(+.*?\)+", "", prompt)
+prompt_negative = " ".join(negative_arr).replace("(", "").replace(")", "")
 
-print(f'Prompt is: {prompt}')
-print(f'Negative Prompt is: {prompt_negative}')
+print(f"Prompt is: {prompt}")
+print(f"Negative Prompt is: {prompt_negative}")
 
-# Use the DPMSolverMultistepScheduler (DPM-Solver++) scheduler here instead
-pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, use_auth_token=hf_token, cache_dir=".\cache")
+pipe = StableDiffusionPipeline.from_pretrained(
+    model_id,
+    torch_dtype=torch.float16,
+    use_auth_token=hf_token or None,
+    cache_dir=model_cache(),
+)
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 pipe = pipe.to("cuda")
 
 image = pipe(prompt, negative_prompt=prompt_negative).images[0]
-    
-image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')
+image.save(output_path)

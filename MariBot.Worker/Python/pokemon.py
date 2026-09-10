@@ -1,39 +1,45 @@
-import torch
 import os
 import sys
+
+import torch
 from diffusers import StableDiffusionPipeline
 from torch import autocast
 
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
+from _paths import model_cache, read_prompt
 
-pipe = StableDiffusionPipeline.from_pretrained("lambdalabs/sd-pokemon-diffusers", torch_dtype=torch.float16)  
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+
+prompt_path = sys.argv[1]
+output_path = sys.argv[2]
+
+pipe = StableDiffusionPipeline.from_pretrained(
+    "lambdalabs/sd-pokemon-diffusers",
+    torch_dtype=torch.float16,
+    cache_dir=model_cache(),
+)
 pipe = pipe.to("cuda")
 
-# Read parameters from command line
-request_guid = sys.argv[1]
-
-# Load text prompt into file
-file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt","r",encoding='utf-8')
-prompt = file.read()
-file.close()
+prompt = read_prompt(prompt_path)
 
 scale = 10
 n_samples = 1
 
-# Sometimes the nsfw checker is confused by the Pokémon images, you can disable
-# it at your own risk here
+# The NSFW checker mistakes Pokémon for its own trigger often enough to be
+# useless here; prompts are moderated before they reach this script.
 disable_safety = True
 
 print(f"Input prompt is {prompt}")
-print(f"Output directory is {outdir}")
+print(f"Output file is {output_path}")
 
 if disable_safety:
-  def null_safety(images, **kwargs):
-      return images, False
-  pipe.safety_checker = null_safety
+
+    def null_safety(images, **kwargs):
+        return images, False
+
+    pipe.safety_checker = null_safety
 
 with autocast("cuda"):
-  images = pipe(n_samples*[prompt], guidance_scale=scale).images
+    images = pipe(n_samples * [prompt], guidance_scale=scale).images
 
-for idx, im in enumerate(images):
-  im.save(f".{chr(92)}Python{chr(92)}{request_guid}.png")
+for image in images:
+    image.save(output_path)

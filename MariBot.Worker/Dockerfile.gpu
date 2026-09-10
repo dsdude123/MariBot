@@ -1,0 +1,125 @@
+# syntax=docker/dockerfile:1.7
+
+# The GPU worker: everything MariBot.Worker/Dockerfile builds, plus the Python
+# environment behind the OCR and image generation commands.
+#
+# Build context is the repo root, same as the CPU image:
+#   docker build -f MariBot.Worker/Dockerfile.gpu -t maribot-worker-gpu .
+#
+# This is a separate image rather than an option on the other one because torch
+# and the CUDA libraries it carries are an order of magnitude more image than
+# the CPU worker, and a deployment with no GPU should not pull any of that to
+# run overlay and deepfry.
+
+ARG DOTNET_VERSION=8.0-jammy
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
+WORKDIR /src
+
+COPY MariBot-Common/MariBot.Common.csproj MariBot-Common/
+COPY MariBot.Worker/MariBot.Worker.csproj MariBot.Worker/
+RUN dotnet restore MariBot.Worker/MariBot.Worker.csproj
+
+COPY MariBot-Common/ MariBot-Common/
+COPY MariBot.Worker/ MariBot.Worker/
+RUN dotnet publish MariBot.Worker/MariBot.Worker.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
+
+# The same runtime image as the CPU worker, and deliberately NOT an nvidia/cuda
+# one. Those images stamp NVIDIA_REQUIRE_CUDA=cuda>=<their version>, which
+# nvidia-container-cli enforces before the container starts: a host whose driver
+# reports an older CUDA refuses to run it at all, with "unsatisfied condition:
+# cuda>=12.6, please update your driver".
+#
+# Nothing here needs that base. torch's own wheels ship the CUDA runtime, cuBLAS
+# and cuDNN as nvidia-*-cu12 packages, so the only thing that has to come from
+# the host is the driver, which the container toolkit injects. That also keeps
+# Ubuntu 22.04 for the OpenCvSharp soname reason the CPU image documents, and
+# avoids carrying a second copy of the CUDA runtime.
+FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS runtime
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# The CPU image's list, unchanged and for the same reasons — `ldd` on
+# libOpenCvSharpExtern.so is the authority for the opencv half, libgomp1 is what
+# Magick.NET's OpenMP build loads — plus Python for the handlers that shell out
+# to it. Jammy's python3 is 3.10, which is what the pinned wheels below target.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        fonts-noto-cjk \
+        fonts-noto-core \
+        libavcodec58 \
+        libavformat58 \
+        libdc1394-25 \
+        libgomp1 \
+        libgtk2.0-0 \
+        libopenexr25 \
+        libopenjp2-7 \
+        libswscale5 \
+        libtesseract4 \
+        libtiff5 \
+        opencv-data \
+        python3 \
+        python3-pip \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# One virtualenv holding what the Windows worker keeps in three conda
+# environments. VirtualenvRunner looks for a directory per environment name
+# first and falls back to this one, so a deployment that hits a dependency
+# conflict can add /opt/maribot/venvs/ocr without a code change.
+ENV MARIBOT_PYTHON_ROOT=/opt/maribot/venvs
+RUN python3 -m venv ${MARIBOT_PYTHON_ROOT}/default
+ENV PATH=${MARIBOT_PYTHON_ROOT}/default/bin:$PATH
+
+# torch first and from PyTorch's CUDA index: the wheels of that name on PyPI are
+# CPU-only, and installing those here is the failure where the image builds, the
+# worker starts, and every job dies on .to("cuda"). These pull the CUDA runtime
+# and cuDNN along with them.
+#
+# cu126 needs a driver of 525.60.13 or newer — CUDA minor version compatibility
+# means it does NOT need a 12.6 driver, only a 12.x one. A host older than that
+# wants the cu118 index and the matching torch (2.7.1 is the last one built
+# against it) instead.
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu126 \
+        torch==2.14.0+cu126 \
+        torchvision==0.29.0+cu126
+
+COPY MariBot.Worker/Python/requirements-gpu.txt /tmp/requirements-gpu.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-gpu.txt \
+    && rm /tmp/requirements-gpu.txt
+
+COPY --from=build /app/publish/ ./
+
+# Without a CUDA base image these are nobody else's job to set, and the defaults
+# do not do what is needed: the container toolkit injects only the "utility"
+# capability unless told otherwise, which brings nvidia-smi but NOT libcuda.so,
+# so torch would find no GPU in a container that looks correctly configured.
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Weights are downloaded on first use and are several gigabytes per model, so
+# this wants to be a volume in any real deployment — a container recreate
+# otherwise re-downloads Stable Diffusion. The scripts and EasyOcrHandler both
+# read this variable; unset, they fall back to directories beside the worker,
+# which is where a Windows worker's existing downloads are.
+ENV MARIBOT_MODEL_CACHE=/app/model-cache
+RUN mkdir -p /app/logs /app/model-cache
+
+ENV ASPNETCORE_URLS=http://+:8092 \
+    ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    MariBot__LogPath=/app/logs/maribot.log
+
+EXPOSE 8092
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl --fail --silent http://localhost:8092/api/worker || exit 1
+
+ENTRYPOINT ["dotnet", "MariBot.Worker.dll"]

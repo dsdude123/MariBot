@@ -10,6 +10,7 @@ namespace MariBot.Worker.CommandHandlers
     {
         private readonly ILogger<StableDiffusionTextVariantHandler> logger;
         private readonly IConfiguration configuration;
+        private readonly IPythonRunner runner;
 
         private readonly string[] errorText = new string[]
             { "error", "exception", "traceback", "failed", "winerror", "not recognized", "NotFound" };
@@ -17,121 +18,69 @@ namespace MariBot.Worker.CommandHandlers
         private readonly string[] warnText = new string[] { "warn", "warning" };
         private readonly float moderationThreshold = 0.7f;
 
-        public StableDiffusionTextVariantHandler(ILogger<StableDiffusionTextVariantHandler> logger, IConfiguration configuration)
+        public StableDiffusionTextVariantHandler(ILogger<StableDiffusionTextVariantHandler> logger,
+            IConfiguration configuration, IPythonRunner runner)
         {
             this.logger = logger;
             this.configuration = configuration;
+            this.runner = runner;
         }
 
         public void ExecuteStableDiffusion(string provider)
         {
-            CondaShell.EnsureAvailable("Stable Diffusion");
+            var promptPath = WorkerPaths.Python($"{WorkerGlobals.Job.Id}.txt");
+            var moderationPath = WorkerPaths.Python($"{WorkerGlobals.Job.Id}-moderation.json");
+            var imagePath = WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png");
 
-            string consoleLogs = "";
+            File.WriteAllText(promptPath, $"{WorkerGlobals.Job.SourceText}");
 
-            File.WriteAllText(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.txt"), $"{WorkerGlobals.Job.SourceText}");
-
-            var contentModeration = Process.Start(CondaShell.StartInfo());
-
-            contentModeration.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            try
             {
-                if (!string.IsNullOrEmpty(e.Data))
+                var consoleLogs = runner.RunScript("detoxify", "moderation.py", promptPath, moderationPath);
+
+                var moderationResult =
+                    JsonConvert.DeserializeObject<ToxicityResult>(File.ReadAllText(moderationPath));
+
+                if (moderationResult.toxicity.Any(t => t >= moderationThreshold))
                 {
-                    consoleLogs += e.Data;
-                    if (!e.Data.EndsWith('\n'))
+                    LogAllConsoleText(consoleLogs);
+                    WorkerGlobals.Job.Result = new JobResult()
                     {
-                        consoleLogs += '\n';
-                    }
-                }
-            });
-            contentModeration.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    consoleLogs += e.Data;
-                    if (!e.Data.EndsWith('\n'))
-                    {
-                        consoleLogs += '\n';
-                    }
-                }
-            });
-            contentModeration.BeginOutputReadLine();
-            contentModeration.BeginErrorReadLine();
+                        Message = "Input prompt failed safety check."
+                    };
 
-            using (var sw = contentModeration.StandardInput)
-            {
-                if (sw.BaseStream.CanWrite)
-                {
-                    sw.WriteLine(CondaShell.ActivateScript);
-                    sw.WriteLine("activate detoxify");
-                    sw.WriteLine($"python .\\Python\\moderation.py \"{WorkerGlobals.Job.Id}\"");
-                }
-            }
-
-            contentModeration.WaitForExit();
-
-            var moderationResult = JsonConvert.DeserializeObject<ToxicityResult>(File.ReadAllText(WorkerPaths.Python($"{WorkerGlobals.Job.Id}-moderation.json")));
-
-            if (moderationResult.toxicity.Any(t => t >= moderationThreshold)) {
-                LogAllConsoleText(consoleLogs);
-                WorkerGlobals.Job.Result = new JobResult()
-                {
-                    Message = "Input prompt failed safety check."
-                };
-            } else
-            {
-                var generator = Process.Start(CondaShell.StartInfo());
-
-                generator.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        consoleLogs += e.Data;
-                        if (!e.Data.EndsWith('\n'))
-                        {
-                            consoleLogs += '\n';
-                        }
-                    }
-                });
-                generator.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        consoleLogs += e.Data;
-                        if (!e.Data.EndsWith('\n'))
-                        {
-                            consoleLogs += '\n';
-                        }
-                    }
-                });
-                generator.BeginOutputReadLine();
-                generator.BeginErrorReadLine();
-
-                using (var sw = generator.StandardInput)
-                {
-                    if (sw.BaseStream.CanWrite)
-                    {
-                        sw.WriteLine(CondaShell.ActivateScript);
-                        sw.WriteLine("activate ldm");
-                        sw.WriteLine($"python .\\Python\\{provider}.py \"{WorkerGlobals.Job.Id}\" \"{configuration["HuggingFaceToken"]}\"");
-                    }
+                    return;
                 }
 
-                generator.WaitForExit();
+                // The token is only meaningful to the two Stable Diffusion scripts,
+                // which take it as their third argument; the rest ignore it.
+                consoleLogs += runner.RunScript(
+                    "ldm", $"{provider}.py", promptPath, imagePath, configuration["HuggingFaceToken"] ?? string.Empty);
 
                 LogAllConsoleText(consoleLogs);
 
                 WorkerGlobals.Job.Result = new JobResult()
                 {
                     FileName = "result.png",
-                    Data = File.ReadAllBytes(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"))
+                    Data = File.ReadAllBytes(imagePath)
                 };
-
-                File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"));
             }
+            finally
+            {
+                // In a finally block because a job that fails partway used to leave
+                // its prompt and moderation verdict behind on the worker.
+                Delete(promptPath);
+                Delete(moderationPath);
+                Delete(imagePath);
+            }
+        }
 
-            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.txt"));
-            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}-moderation.json"));
+        private static void Delete(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
 
         public void LogAllConsoleText(string text)

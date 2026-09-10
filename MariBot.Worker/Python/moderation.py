@@ -1,23 +1,21 @@
-﻿import torch
-import sys
 import json
+import sys
+
+import torch
 from detoxify import Detoxify
 
-torch.hub.set_dir("./hub-cache")
-model = torch.hub.load('unitaryai/detoxify','multilingual_toxic_xlm_r')
+from _paths import model_cache, read_prompt
 
-# Read parameters from command line
-request_guid = sys.argv[1]
+# Arguments, in place of the guid this used to rebuild Windows paths from.
+prompt_path = sys.argv[1]
+output_path = sys.argv[2]
 
-# Load text prompt into file
-file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt","r",encoding='utf-8')
-prompt = file.read()
-file.close()
+torch.hub.set_dir(model_cache())
 
-results = Detoxify('multilingual', device='cuda').predict([prompt])
-print(results)
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-json_object = json.dumps(results)
-with open(f".{chr(92)}Python{chr(92)}{request_guid}-moderation.json", "w") as outfile:
-    outfile.write(json_object)
+results = Detoxify("multilingual", device=device).predict([read_prompt(prompt_path)])
 
+# The worker deserialises this into ToxcityResult, whose fields are arrays.
+with open(output_path, "w", encoding="utf-8") as outfile:
+    outfile.write(json.dumps(results))
