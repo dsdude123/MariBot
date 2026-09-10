@@ -64,6 +64,9 @@ For all commands with `<url>` parameter, replace it with an image URL, mention a
 `9gag <url>` - Apply 9gag filter to an image.
 `adidas <url>` - Apply Adidas filter to an image.
 `adw <url>` - Apply Admin Walk filter to an image.   
+`ai-image <text>` - Generates an image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
+`ai-pokemon <text>` - Generates a Pokemon-style image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
+`ai-waifu <text>` - Generates a waifu-style image from a text prompt using Stable Diffusion. Runs on the worker service, so it may take a moment.  
 `ajit <url>` - Apply Ajit Pai filter to an image.   
 `america <url>` - Apply America filter to an image.   
 `analysis <url>` - Apply Kolakowski Analysis filter to an image.   
@@ -79,7 +82,6 @@ For all commands with `<url>` parameter, replace it with an image URL, mention a
 `image <text>` - Performs a Google image search and returns the first result. Replace `<text>` with your keywords to search.  
 `nuke <url>` - Deepfry an image 10 times.   
 `sonicsays <text>` - Generates a Sonic Says image. Replace `<text>` with any text.  
-`waifu` - Generates a waifu using Waifu Labs.  
 `webcam <text>` - Displays a specified webcam. Replace `<text>` with your choice. See [webcams.md](webcams.md) for list of default supported webcams.  
 
 ### Static Text Response Commands
