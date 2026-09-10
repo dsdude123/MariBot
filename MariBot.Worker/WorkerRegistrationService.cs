@@ -49,8 +49,14 @@ namespace MariBot.Worker
         {
             if (!settings.IsRegistrationConfigured)
             {
+                // One placeholder, one argument. A message template's holes are
+                // positional even when they are named, so repeating {Section}
+                // asked for a second argument that was not there — and the
+                // FormatException came out of here, before the first await, which
+                // makes it a startup failure for the whole host rather than a
+                // warning about an optional feature.
                 logger.LogWarning(
-                    "{Section}:CoreEndpoint and {Section}:PreSharedKey are not both set; this worker will not register " +
+                    "Neither CoreEndpoint nor PreSharedKey is set under {Section}; this worker will not register " +
                     "with Core and will only run jobs posted to it directly.", WorkerSettings.SectionName);
                 return;
             }
