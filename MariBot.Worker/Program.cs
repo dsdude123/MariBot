@@ -16,6 +16,8 @@ builder.Services.AddSingleton<OpenCVHandler>();
 builder.Services.AddSingleton<StableDiffusionTextVariantHandler>();
 builder.Services.AddSingleton<EasyOcrHandler>();
 builder.Services.AddSingleton(x => new TraceExceptionLogger());
+// Anaconda on a Windows worker, virtualenvs in the GPU container image.
+builder.Services.AddSingleton(PythonRunner.ForThisPlatform());
 
 // Self-registration with Core. Bound once and shared so the registration loop
 // and the job deadline agree on the same settings.

@@ -28,7 +28,7 @@ jobs:
             // Every image docker.yml publishes a pr-<n> tag for. A package that
             // does not exist yet — a PR that never touched Docker files, or an
             // image added after this PR was opened — is not an error.
-            for (const packageName of ['maribot-core', 'maribot-worker']) {
+            for (const packageName of ['maribot-core', 'maribot-worker', 'maribot-worker-gpu']) {
               let versions;
               try {
                 versions = await github.paginate(

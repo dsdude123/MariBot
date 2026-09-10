@@ -10,74 +10,60 @@ namespace MariBot.Worker.CommandHandlers
     public class EasyOcrHandler
     {
         private readonly ILogger<EasyOcrHandler> logger;
+        private readonly IPythonRunner runner;
 
         private readonly string[] errorText = new string[]
             { "error", "exception", "traceback", "failed", "winerror", "not recognized", "NotFound" };
 
         private readonly string[] warnText = new string[] { "warn", "warning" };
 
-        public EasyOcrHandler(ILogger<EasyOcrHandler> logger)
+        public EasyOcrHandler(ILogger<EasyOcrHandler> logger, IPythonRunner runner)
         {
             this.logger = logger;
+            this.runner = runner;
         }
 
         public void ExecuteOcr()
         {
-            CondaShell.EnsureAvailable("OCR");
-
-            string consoleLogs = "";
-
             ConvertAndWriteImage();
 
-            var easyOcr = Process.Start(CondaShell.StartInfo());
+            var imagePath = WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png");
 
-            easyOcr.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            // --download_enabled=False: the recognition models are provisioned with
+            // the worker rather than fetched per job, so a missing one is a
+            // deployment problem to surface, not a download to wait on.
+            var arguments = new List<string>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    consoleLogs += e.Data;
-                    if (!e.Data.EndsWith('\n'))
-                    {
-                        consoleLogs += '\n';
-                    }
-                }
-            });
-            easyOcr.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    consoleLogs += e.Data;
-                    if (!e.Data.EndsWith('\n'))
-                    {
-                        consoleLogs += '\n';
-                    }
-                }
-            });
-            easyOcr.BeginOutputReadLine();
-            easyOcr.BeginErrorReadLine();
+                "--verbose=False",
+                "--download_enabled=False",
+                "--model_storage_directory", ModelStorageDirectory(),
+                "--output_format", "json",
+                "-f", imagePath,
+                "-l"
+            };
 
-            using (var sw = easyOcr.StandardInput)
-            {
-                if (sw.BaseStream.CanWrite)
-                {
-                    sw.WriteLine(CondaShell.ActivateScript);
-                    sw.WriteLine("set PYTHONIOENCODING=utf-8");
-                    sw.WriteLine("activate ocr");
-                    sw.WriteLine($"easyocr --verbose=False --download_enabled=False --model_storage_directory .\\ocr_cache --output_format json -f .\\Python\\{WorkerGlobals.Job.Id}.png -l {GetLanguageCombo()} > .\\Python\\{WorkerGlobals.Job.Id}.json ");
-                }
-            }
+            // -l takes a list, and each language is its own argument. It used to be
+            // one string only because a shell was splitting it on the way through.
+            arguments.AddRange(GetLanguageCombo().Split(' ', StringSplitOptions.RemoveEmptyEntries));
 
-            easyOcr.WaitForExit();
+            var consoleLogs = runner.RunTool("ocr", "easyocr", arguments.ToArray());
+
             LogAllConsoleText(consoleLogs);
 
+            // easyocr writes its JSON to stdout, one object per line. It used to be
+            // redirected to a file by the shell; there is no shell now, so the
+            // console text is the result.
             string output = "```\n";
-            foreach (var jsonLine in File.ReadAllLines(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.json")))
+            foreach (var jsonLine in consoleLogs.Split('\n'))
             {
                 try
                 {
                     var result = JsonConvert.DeserializeObject<OcrResult>(jsonLine);
-                    output += result.text;
-                    output += '\n';
+                    if (result?.text != null)
+                    {
+                        output += result.text;
+                        output += '\n';
+                    }
                 } catch { }
             }
 
@@ -88,8 +74,20 @@ namespace MariBot.Worker.CommandHandlers
                 Message = output
             };
 
-            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.png"));
-            File.Delete(WorkerPaths.Python($"{WorkerGlobals.Job.Id}.json"));
+            File.Delete(imagePath);
+        }
+
+        /// <summary>
+        /// Where easyocr's recognition models are kept. The container image points
+        /// this at the mounted model cache; a Windows worker keeps using the
+        /// ocr_cache directory beside the worker that already holds them.
+        /// </summary>
+        private static string ModelStorageDirectory()
+        {
+            var configured = Environment.GetEnvironmentVariable("MARIBOT_MODEL_CACHE");
+            return string.IsNullOrWhiteSpace(configured)
+                ? Path.Combine(WorkerPaths.Root, "ocr_cache")
+                : Path.Combine(configured, "easyocr");
         }
 
         public void ConvertAndWriteImage()

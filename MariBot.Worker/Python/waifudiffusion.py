@@ -1,26 +1,26 @@
 import os
 import sys
+
 import torch
+from diffusers import DDIMScheduler, StableDiffusionPipeline
 from torch import autocast
-from diffusers import StableDiffusionPipeline, DDIMScheduler
+
+from _paths import model_cache, read_prompt
 
 model_id = "hakurei/waifu-diffusion"
 device = "cuda"
 
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 
-# Read parameters from command line
-request_guid = sys.argv[1]
+prompt_path = sys.argv[1]
+output_path = sys.argv[2]
 
-# Load text prompt into file
-file = open(f".{chr(92)}Python{chr(92)}{request_guid}.txt","r",encoding='utf-8')
-prompt = file.read()
-file.close()
+prompt = read_prompt(prompt_path)
 
 pipe = StableDiffusionPipeline.from_pretrained(
     model_id,
     torch_dtype=torch.float16,
-    revision="fp16",
+    cache_dir=model_cache(),
     scheduler=DDIMScheduler(
         beta_start=0.00085,
         beta_end=0.012,
@@ -32,5 +32,5 @@ pipe = StableDiffusionPipeline.from_pretrained(
 pipe = pipe.to(device)
 
 with autocast("cuda"):
-	image = pipe(prompt).images[0]
-	image.save(f'.{chr(92)}Python{chr(92)}{request_guid}.png')
+    image = pipe(prompt).images[0]
+    image.save(output_path)

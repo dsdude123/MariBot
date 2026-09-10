@@ -1,0 +1,22 @@
+# The GPU worker image's Python environment: the three Anaconda environments a
+# Windows worker keeps apart (ocr, detoxify, ldm), resolved together into one.
+#
+# torch is installed separately in the Dockerfile, from PyTorch's own CUDA index
+# — the wheels on PyPI are CPU-only, and installing those into a GPU image is
+# the failure where everything works except that .to("cuda") raises.
+
+# OCR (easyocr also pulls opencv-python-headless, which is what we want in a
+# container: the plain package wants an X display).
+easyocr==1.7.2
+
+# Prompt moderation.
+detoxify==0.5.2
+
+# Image generation.
+diffusers==0.31.0
+transformers==4.46.3
+accelerate==1.1.1
+safetensors==0.4.5
+sentencepiece==0.2.0
+protobuf==5.28.3
+scipy==1.14.1

@@ -12,6 +12,7 @@ on:
       # the Dockerfiles are the thing this job actually exercises.
       - 'MariBot-Core/Dockerfile'
       - 'MariBot.Worker/Dockerfile'
+      - 'MariBot.Worker/Dockerfile.gpu'
       - 'MariBot-Core/**'
       - 'MariBot.Worker/**'
       - 'MariBot-Common/**'
@@ -34,9 +35,9 @@ jobs:
       contents: read
       packages: write
 
-    # Both images are built on every run rather than filtered by path: they
-    # share MariBot-Common, and a PR that changes it has to prove both still
-    # build. They are independent, so one failing should not cancel the other.
+    # Every image is built on every run rather than filtered by path: they share
+    # MariBot-Common, and a PR that changes it has to prove they all still build.
+    # They are independent, so one failing should not cancel the others.
     strategy:
       fail-fast: false
       matrix:
@@ -45,6 +46,8 @@ jobs:
             dockerfile: MariBot-Core/Dockerfile
           - image: maribot-worker
             dockerfile: MariBot.Worker/Dockerfile
+          - image: maribot-worker-gpu
+            dockerfile: MariBot.Worker/Dockerfile.gpu
 
     steps:
       - uses: actions/checkout@v4

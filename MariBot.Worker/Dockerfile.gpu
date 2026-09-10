@@ -1,0 +1,112 @@
+# syntax=docker/dockerfile:1.7
+
+# The GPU worker: everything MariBot.Worker/Dockerfile builds, plus the Python
+# environment behind the OCR and image generation commands.
+#
+# Build context is the repo root, same as the CPU image:
+#   docker build -f MariBot.Worker/Dockerfile.gpu -t maribot-worker-gpu .
+#
+# This is a separate image rather than an option on the other one because it is
+# an order of magnitude larger — CUDA, cuDNN and torch dominate it — and a
+# deployment with no GPU should not pull any of that to run overlay and deepfry.
+
+ARG DOTNET_VERSION=8.0-jammy
+# 12.6 for torch 2.14's cu126 wheels; ubuntu22.04 because OpenCvSharp's one
+# prebuilt libOpenCvSharpExtern.so is linked against Ubuntu-era sonames and
+# nothing newer carries them under those names. cudnn is not optional: torch
+# links it, and its absence surfaces as an import error, not a missing feature.
+ARG CUDA_IMAGE=nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
+WORKDIR /src
+
+COPY MariBot-Common/MariBot.Common.csproj MariBot-Common/
+COPY MariBot.Worker/MariBot.Worker.csproj MariBot.Worker/
+RUN dotnet restore MariBot.Worker/MariBot.Worker.csproj
+
+COPY MariBot-Common/ MariBot-Common/
+COPY MariBot.Worker/ MariBot.Worker/
+RUN dotnet publish MariBot.Worker/MariBot.Worker.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
+
+FROM ${CUDA_IMAGE} AS runtime
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Two sets of native dependencies in one layer:
+#   - the ASP.NET Core runtime, from Microsoft's own feed, since the CUDA image
+#     is a plain Ubuntu rather than a dotnet one
+#   - the same list MariBot.Worker/Dockerfile installs, for exactly the same
+#     reasons: `ldd` on libOpenCvSharpExtern.so is the authority for the opencv
+#     half of it, and libgomp1 is what Magick.NET's OpenMP build needs
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl wget \
+    && wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        aspnetcore-runtime-8.0 \
+        fonts-noto-cjk \
+        fonts-noto-core \
+        libavcodec58 \
+        libavformat58 \
+        libdc1394-25 \
+        libgomp1 \
+        libgtk2.0-0 \
+        libopenexr25 \
+        libopenjp2-7 \
+        libswscale5 \
+        libtesseract4 \
+        libtiff5 \
+        opencv-data \
+        python3 \
+        python3-pip \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# One virtualenv holding what the Windows worker keeps in three conda
+# environments. VirtualenvRunner looks for a directory per environment name
+# first and falls back to this one, so a deployment that hits a dependency
+# conflict can add /opt/maribot/venvs/ocr without a code change.
+ENV MARIBOT_PYTHON_ROOT=/opt/maribot/venvs
+RUN python3 -m venv ${MARIBOT_PYTHON_ROOT}/default
+ENV PATH=${MARIBOT_PYTHON_ROOT}/default/bin:$PATH
+
+# torch first and from PyTorch's CUDA index: the wheels of that name on PyPI are
+# CPU-only, and installing those here is the failure where the image builds, the
+# worker starts, and every job dies on .to("cuda"). Pinned with torchvision,
+# which easyocr requires and which is only compatible with its matching torch.
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu126 \
+        torch==2.14.0+cu126 \
+        torchvision==0.29.0+cu126
+
+COPY MariBot.Worker/Python/requirements-gpu.txt /tmp/requirements-gpu.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-gpu.txt \
+    && rm /tmp/requirements-gpu.txt
+
+COPY --from=build /app/publish/ ./
+
+# Weights are downloaded on first use and are several gigabytes per model, so
+# this wants to be a volume in any real deployment — a container recreate
+# otherwise re-downloads Stable Diffusion. The scripts and EasyOcrHandler both
+# read this variable; unset, they fall back to directories beside the worker,
+# which is where a Windows worker's existing downloads are.
+ENV MARIBOT_MODEL_CACHE=/app/model-cache
+RUN mkdir -p /app/logs /app/model-cache
+
+ENV ASPNETCORE_URLS=http://+:8092 \
+    ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    MariBot__LogPath=/app/logs/maribot.log
+
+EXPOSE 8092
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl --fail --silent http://localhost:8092/api/worker || exit 1
+
+ENTRYPOINT ["dotnet", "MariBot.Worker.dll"]
