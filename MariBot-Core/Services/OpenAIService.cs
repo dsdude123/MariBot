@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using MariBot.Core.Models;
+using MariBot.Core.Models.Config;
 using MariBot.Core.Models.ChatGPT;
 using OpenAI;
 using OpenAI.Chat;
@@ -17,12 +18,19 @@ namespace MariBot.Core.Services
     /// </summary>
     public class OpenAiService
     {
-        private readonly ChatClient gpt3Client;
-        private readonly ChatClient gpt4Client;
-        private readonly ChatClient gpt5Client;
-        private readonly ModerationClient moderationClient;
-        private readonly ImageClient dalleClient;
-        private readonly ImageClient gptImageClient;
+        // Null when no usable API key was configured. ApiKeyCredential rejects a
+        // null or empty key in its constructor, and Discord.Net resolves this
+        // service while building its command list at startup, so an unset key
+        // used to stop the whole bot rather than the commands that need it.
+        // Copying .env.example without filling it in is enough to hit that: it
+        // ships the key blank, and compose passes a blank through as an empty
+        // string rather than leaving it unset.
+        private readonly ChatClient? gpt3Client;
+        private readonly ChatClient? gpt4Client;
+        private readonly ChatClient? gpt5Client;
+        private readonly ModerationClient? moderationClient;
+        private readonly ImageClient? dalleClient;
+        private readonly ImageClient? gptImageClient;
         private readonly DataService dataService;
         private readonly ILogger<OpenAiService> logger;
 
@@ -33,21 +41,56 @@ namespace MariBot.Core.Services
             var apiKey = configuration["DiscordSettings:OpenAiApiKey"];
             var orgId = configuration["DiscordSettings:OpenAiOrganization"];
 
-            ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
-            OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions
+            if (ConfiguredValue.IsUnset(apiKey))
             {
-                OrganizationId = orgId
-            };
+                logger.LogWarning(
+                    "DiscordSettings:OpenAiApiKey is not set. OpenAI commands are disabled.");
+                return;
+            }
 
-            gpt3Client = new ChatClient("gpt-3.5-turbo-0125", apiKeyCredential, openAIClientOptions);
-            gpt4Client = new ChatClient("gpt-4.1", apiKeyCredential, openAIClientOptions);
-            gpt5Client = new ChatClient("gpt-5", apiKeyCredential, openAIClientOptions);
+            try
+            {
+                ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
+                OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions
+                {
+                    // The placeholder is not an organization, and sending it as
+                    // one turns a working key into a confusing 401.
+                    OrganizationId = ConfiguredValue.IsUnset(orgId) ? null : orgId
+                };
 
-            moderationClient = new ModerationClient("omni-moderation-latest", apiKeyCredential, openAIClientOptions);
+                // Built into locals and assigned together, so a throw part way
+                // through cannot leave this half-configured.
+                var gpt3 = new ChatClient("gpt-3.5-turbo-0125", apiKeyCredential, openAIClientOptions);
+                var gpt4 = new ChatClient("gpt-4.1", apiKeyCredential, openAIClientOptions);
+                var gpt5 = new ChatClient("gpt-5", apiKeyCredential, openAIClientOptions);
+                var moderation = new ModerationClient("omni-moderation-latest", apiKeyCredential, openAIClientOptions);
+                var dalle = new ImageClient("dall-e-3", apiKeyCredential, openAIClientOptions);
+                var gptImage = new ImageClient("gpt-image-1", apiKeyCredential, openAIClientOptions);
 
-            dalleClient = new ImageClient("dall-e-3", apiKeyCredential, openAIClientOptions);
-            gptImageClient = new ImageClient("gpt-image-1", apiKeyCredential, openAIClientOptions);
+                gpt3Client = gpt3;
+                gpt4Client = gpt4;
+                gpt5Client = gpt5;
+                moderationClient = moderation;
+                dalleClient = dalle;
+                gptImageClient = gptImage;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    "DiscordSettings:OpenAiApiKey was rejected: {Message}. OpenAI commands are disabled.",
+                    ex.Message);
+            }
         }
+
+        /// <summary>
+        /// Whether a usable API key was configured. False means every OpenAI
+        /// command will refuse rather than call.
+        /// </summary>
+        public bool IsConfigured => gpt3Client != null;
+
+        private T Require<T>(T? client) where T : class =>
+            client ?? throw new InvalidOperationException(
+                "OpenAI is not configured. Set DiscordSettings:OpenAiApiKey.");
 
         /// <summary>
         /// Checks if a Chat GPT message history exists
@@ -73,15 +116,15 @@ namespace MariBot.Core.Services
             switch (model)
             {
                 case OpenAiModel.GPT3:
-                    return await ExecuteGenericGptQuery(gpt3Client, input, userid);
+                    return await ExecuteGenericGptQuery(Require(gpt3Client), input, userid);
                 case OpenAiModel.GPT4:
-                    return await ExecuteGenericGptQuery(gpt4Client, input, userid);
+                    return await ExecuteGenericGptQuery(Require(gpt4Client), input, userid);
                 case OpenAiModel.GPT5:
-                    return await ExecuteGenericGptQuery(gpt5Client, input, userid);
+                    return await ExecuteGenericGptQuery(Require(gpt5Client), input, userid);
                 case OpenAiModel.DALLE:
-                    return await ExecuteGenericImage(dalleClient, input, userid);
+                    return await ExecuteGenericImage(Require(dalleClient), input, userid);
                 case OpenAiModel.GPTIMAGE:
-                    return await ExecuteGenericImage(gptImageClient, input, userid);
+                    return await ExecuteGenericImage(Require(gptImageClient), input, userid);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(model));
             }
@@ -209,7 +252,7 @@ namespace MariBot.Core.Services
         {
             try
             {
-                var moderationResult = moderationClient.ClassifyText(input);
+                var moderationResult = Require(moderationClient).ClassifyText(input);
 
                 if (moderationResult.Value.Flagged)
                 {
@@ -241,7 +284,7 @@ namespace MariBot.Core.Services
         {
             try
             {
-                var moderationResult = await moderationClient.ClassifyTextAsync(input);
+                var moderationResult = await Require(moderationClient).ClassifyTextAsync(input);
 
                 if (moderationResult.Value.Flagged)
                 {
