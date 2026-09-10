@@ -11,8 +11,8 @@ namespace MariBot.Worker
     /// given one: those commands are mapped to a GPU capability in
     /// CommandCapabilityMapping, and the container image registers as a
     /// CPU-only worker, so Core never dispatches them to it. The guard here is
-    /// for the case where a worker-config.json entry claims a capability its
-    /// worker does not have — an operator gets a sentence they can act on
+    /// for the case where a worker registers with a capability it does not
+    /// actually have — an operator gets a sentence they can act on
     /// rather than a Win32Exception about a missing cmd.exe.
     /// </remarks>
     public static class CondaShell
@@ -25,7 +25,7 @@ namespace MariBot.Worker
             {
                 throw new PlatformNotSupportedException(
                     $"{command} runs in an Anaconda environment on a Windows worker, and this " +
-                    "worker is not one. List only the CPU capability for it in worker-config.json.");
+                    "worker is not one. Register it with the CPU capability only.");
             }
         }
 

@@ -73,7 +73,7 @@ COPY --from=build /app/publish/ ./
 # first two ship with the build and the third is per-job scratch.
 RUN mkdir -p /app/logs
 
-# 8092 is the port MariBot-Core's worker-config.json addresses workers on.
+# 8092 is the port the worker advertises to Core when it registers.
 # Results travel the other way to port 8091 on whatever address the worker saw
 # the request arrive from, which is Core's own address, so nothing here has to
 # know where Core is.

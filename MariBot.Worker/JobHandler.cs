@@ -12,16 +12,86 @@ namespace MariBot.Worker
         private readonly StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler;
         private readonly MagickImageHandler magickImageHandler;
         private readonly EasyOcrHandler ocrHandler;
+        private readonly WorkerSettings settings;
 
-        public JobHandler(ILogger<JobHandler> logger, StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler, MagickImageHandler magickImageHandler, EasyOcrHandler ocrHandler)
+        public JobHandler(ILogger<JobHandler> logger, StableDiffusionTextVariantHandler stableDiffusionTextVariantHandler, MagickImageHandler magickImageHandler, EasyOcrHandler ocrHandler, WorkerSettings settings)
         {
             this.logger = logger;
             this.stableDiffusionTextVariantHandler = stableDiffusionTextVariantHandler;
             this.magickImageHandler = magickImageHandler;
             this.ocrHandler = ocrHandler;
+            this.settings = settings;
         }
 
+        /// <summary>
+        /// Runs the job this call context is carrying, then returns its result
+        /// to Core and frees the worker.
+        /// </summary>
+        /// <remarks>
+        /// The command runs on its own task so that a deadline can be enforced.
+        /// Nothing here can actually stop it — a Magick.NET or OpenCV call in
+        /// progress is not cancellable — so exceeding the deadline means giving
+        /// up on the result and freeing the worker while the old work runs itself
+        /// out in the background. That is the difference between one wedged job
+        /// costing a job and costing the worker.
+        /// </remarks>
         public void HandleJob()
+        {
+            var job = WorkerGlobals.Job;
+            var timeout = job.TimeoutSeconds > 0
+                ? TimeSpan.FromSeconds(job.TimeoutSeconds)
+                : TimeSpan.FromSeconds(Math.Max(1, settings.DefaultJobTimeoutSeconds));
+
+            // Task.Run copies the ambient job into the new context, so the work
+            // still reads and writes WorkerGlobals.Job as it always has.
+            var work = Task.Run(RunCommand);
+
+            if (!work.Wait(timeout))
+            {
+                logger.LogError("Job {} passed its {}s deadline; abandoning it and freeing the worker.",
+                    job.Id, timeout.TotalSeconds);
+
+                job.Result = new JobResult
+                {
+                    Message = $"Your request hit its {timeout.TotalSeconds:F0}s time limit and was given up on."
+                };
+            }
+
+            ReturnJob(job);
+        }
+
+        /// <summary>
+        /// Posts a finished job back to Core and releases the worker, unless the
+        /// job was abandoned while it ran — in which case Core has already
+        /// apologised for it and the worker belongs to something else now.
+        /// </summary>
+        private void ReturnJob(WorkerJob job)
+        {
+            if (!WorkerGlobals.StillOwns(job.Id))
+            {
+                logger.LogWarning("Job {} was abandoned while it ran; discarding its result.", job.Id);
+                return;
+            }
+
+            try
+            {
+                logger.LogInformation("Ready to return job {} to {}", job.Id, job.ReturnHost);
+                var http = new HttpClient();
+                var returnAddress = new UriBuilder("http", job.ReturnHost, 8091);
+                http.BaseAddress = returnAddress.Uri;
+                var json = JsonConvert.SerializeObject(job);
+                http.PostAsync("/job", new StringContent(json, Encoding.UTF8, "application/json"));
+                logger.LogInformation("Processing of job {} is complete.", job.Id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to deliver job {}.", job.Id);
+            }
+
+            WorkerGlobals.Release(job.Id);
+        }
+
+        private void RunCommand()
         {
             try
             {
@@ -330,24 +400,6 @@ namespace MariBot.Worker
                 };
                 logger.LogError(ex, "Failed to process job {}.", WorkerGlobals.Job.Id);
             }
-
-            try
-            {
-                logger.LogInformation("Ready to return job {} to {}", WorkerGlobals.Job.Id, WorkerGlobals.Job.ReturnHost);
-                var http = new HttpClient();
-                var returnAddress = new UriBuilder("http", WorkerGlobals.Job.ReturnHost, 8091);
-                http.BaseAddress = returnAddress.Uri;
-                var json = JsonConvert.SerializeObject(WorkerGlobals.Job);
-                http.PostAsync("/job", new StringContent(json, Encoding.UTF8, "application/json"));
-                logger.LogInformation("Processing of job {} is complete.", WorkerGlobals.Job.Id);
-            }
-            catch ( Exception ex )
-            {
-                logger.LogError(ex, "Failed to deliver job {}.", WorkerGlobals.Job.Id);
-            }
-
-            WorkerGlobals.WorkerStatus = WorkerStatus.Ready;
-
         }
 
         public void HandleRandomOverlay(List<Tuple<string, int[]>> files)

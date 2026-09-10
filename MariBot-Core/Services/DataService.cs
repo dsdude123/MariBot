@@ -9,6 +9,7 @@ using MariBot.Core.Models;
 using MariBot.Core.Models.ChatGPT;
 using Discord;
 using MariBot.Core.Models.Election;
+using MariBot.Common.Model.GpuWorker;
 
 namespace MariBot.Core.Services
 {
@@ -47,6 +48,12 @@ namespace MariBot.Core.Services
 
             var sleeperCol = db.GetCollection<SleeperSubscription>("sleeperSubscriptions");
             sleeperCol.EnsureIndex(x => x.Id);
+
+            var jobMetricsCol = db.GetCollection<JobMetric>("workerJobMetrics");
+            jobMetricsCol.EnsureIndex(x => x.Id);
+            // Both queries this collection serves are time-bounded: the metrics
+            // page reads a window, and pruning deletes everything older than one.
+            jobMetricsCol.EnsureIndex(x => x.CompletedAt);
 
         }
 
@@ -607,6 +614,65 @@ namespace MariBot.Core.Services
             {
                 logger.LogCritical("Failed to write to DB. {}", ex.Message);
                 return false;
+            }
+        }
+
+        // Worker Job Metrics Methods
+
+        /// <summary>
+        /// Records one finished job.
+        /// </summary>
+        /// <remarks>
+        /// Metrics are never worth failing a job over, so this swallows and logs
+        /// rather than throwing back into the dispatcher.
+        /// </remarks>
+        public virtual bool WriteJobMetric(JobMetric metric)
+        {
+            try
+            {
+                db.GetCollection<JobMetric>("workerJobMetrics").Insert(metric);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Failed to record job metric. {}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finished jobs completed at or after <paramref name="since"/>, newest first.
+        /// </summary>
+        public virtual IReadOnlyList<JobMetric> GetJobMetrics(DateTimeOffset since)
+        {
+            try
+            {
+                return db.GetCollection<JobMetric>("workerJobMetrics")
+                    .Find(x => x.CompletedAt >= since)
+                    .OrderByDescending(x => x.CompletedAt)
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Failed to read job metrics. {}", ex.Message);
+                return Array.Empty<JobMetric>();
+            }
+        }
+
+        /// <summary>
+        /// Drops metrics older than <paramref name="before"/>.
+        /// </summary>
+        /// <returns>Rows removed.</returns>
+        public virtual int PruneJobMetrics(DateTimeOffset before)
+        {
+            try
+            {
+                return db.GetCollection<JobMetric>("workerJobMetrics").DeleteMany(x => x.CompletedAt < before);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Failed to prune job metrics. {}", ex.Message);
+                return 0;
             }
         }
 

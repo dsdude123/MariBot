@@ -40,9 +40,14 @@ services:
       - DiscordSettings__IGDBClientSecret
       - DiscordSettings__YahooFantasyClientId
       - DiscordSettings__YahooFantasyClientSecret
+      # Shared secret workers present to register. Unset means no worker can
+      # register at all, which is the safe direction to fail but does mean the
+      # bot answers every image command with "no workers are available".
+      - WorkerSettings__PreSharedKey=${MARIBOT_WORKER_KEY:?set MARIBOT_WORKER_KEY}
 
-    # appsettings.json, worker-config.json, webcams.json and dynamic-config.json
-    # all ship inside the image — none of them need to be supplied here.
+    # appsettings.json, webcams.json and dynamic-config.json all ship inside the
+    # image — none of them need to be supplied here. There is no worker list to
+    # supply either: workers register themselves.
     #
     # dynamic-config.json in particular must NOT be bind-mounted: the bot
     # refreshes it from GitHub on a timer and replaces the file on disk, and a
@@ -57,9 +62,7 @@ services:
     #   - /srv/maribot/config:/app/config
     # Mount the directory rather than individual files: Docker creates a missing
     # directory, whereas a single-file mount whose source doesn't exist silently
-    # becomes an empty directory instead. You can then drop your own
-    # worker-config.json in there and mount it over the image's copy:
-    #   - /srv/maribot/config/worker-config.json:/app/worker-config.json:ro
+    # becomes an empty directory instead.
     volumes:
       - maribot-config:/app/config
       - maribot-data:/app/data
@@ -70,26 +73,37 @@ services:
   # with a GPU, most likely, since this image is CPU-only: OCR and Stable
   # Diffusion drive Anaconda environments that exist only there.
   #
-  # Core does not discover it. Point a worker-config.json entry at it and mount
-  # that over the image's copy, as described above:
-  #   [{ "Endpoint": "http://maribot-worker:8092", "Capabilities": ["CPU"] }]
-  # Listing a GPU capability it does not have only means those jobs get
-  # dispatched here and fail.
+  # Nothing on the Core side needs to know about it. The worker registers itself
+  # on startup with the shared key below and heartbeats to stay registered, and
+  # Core drops it when it stops checking in. Workers elsewhere join the same way:
+  # give them CoreEndpoint, the same key, and an AdvertisedEndpoint this Core can
+  # actually reach.
   maribot-worker:
     image: ghcr.io/dsdude123/maribot-worker:${MARIBOT_IMAGE_TAG:-latest}
     container_name: maribot-worker
     restart: unless-stopped
 
-    # Deliberately not published to the host. Core reaches the worker by service
-    # name on the compose network, and finished jobs travel back to port 8091 on
-    # whatever address the worker saw the request arrive from — Core's own
-    # address on that same network. Publish 8092 only for a worker that has to
-    # serve a Core running outside this stack.
+    # Deliberately not published to the host. Core reaches the worker by the
+    # address it registered under, on the compose network, and finished jobs
+    # travel back to port 8091 on whatever address the worker saw the request
+    # arrive from — Core's own address on that same network. Publish 8092 only
+    # for a worker that has to serve a Core running outside this stack.
     expose:
       - "8092"
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      # Where to register, and the key to do it with. The key has to match
+      # Core's.
+      - WorkerSettings__CoreEndpoint=http://maribot-core:8091
+      - WorkerSettings__PreSharedKey=${MARIBOT_WORKER_KEY:?set MARIBOT_WORKER_KEY}
+      # The address Core should post jobs to. On a compose network that is the
+      # service name; a worker behind NAT needs whatever address Core can reach.
+      - WorkerSettings__AdvertisedEndpoint=http://maribot-worker:8092
+      # CPU only: the GPU commands need Anaconda environments this image has no
+      # way to provide, and claiming a capability it cannot serve just routes
+      # those jobs here to fail.
+      - WorkerSettings__Capabilities__0=CPU
 
     # Everything the worker reads — Content, the Python scripts, appsettings.json
     # — ships in the image, so this is only about keeping the log file across a

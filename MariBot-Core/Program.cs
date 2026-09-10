@@ -1,9 +1,10 @@
-using System.Web.Http.ExceptionHandling;
+﻿using System.Web.Http.ExceptionHandling;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using MariBot.Core;
+using MariBot.Core.Models.Config;
 using MariBot.Core.Services;
 using MariBot.Services;
 using OpenAI;
@@ -52,6 +53,19 @@ builder.Services.AddSingleton<TwitterService>();
 builder.Services.AddSingleton<UrbanDictionaryService>();
 builder.Services.AddSingleton<WikipediaService>();
 builder.Services.AddSingleton<WolframAlphaService>();
+
+// Worker pipeline. WorkerSettings is bound once and shared, so the registry,
+// the breaker and the metrics pruner all agree on the same numbers.
+var workerSettings = builder.Configuration.GetSection(WorkerSettings.SectionName).Get<WorkerSettings>()
+                     ?? new WorkerSettings();
+builder.Services.AddSingleton(workerSettings);
+builder.Services.AddSingleton<WorkerAuthenticator>();
+builder.Services.AddSingleton<WorkerRegistry>();
+builder.Services.AddSingleton<JobQueue>();
+builder.Services.AddSingleton<JobMetricsService>();
+// Pooled handlers rather than a new HttpClient per dispatch, which used to
+// leak a socket for every job.
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<WorkerManagerService>();
 builder.Services.AddSingleton<YouTubeDlService>();
 builder.Services.AddSingleton<YahooFantasyService>();
