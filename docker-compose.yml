@@ -31,6 +31,7 @@ services:
       - DiscordSettings__GoogleCustomSearchId
       - DiscordSettings__OpenAiApiKey
       - DiscordSettings__OpenAiOrganization
+      - DiscordSettings__OpenAiProject
       - DiscordSettings__WolframAlphaAppId
       - DiscordSettings__TwitterApiKey
       - DiscordSettings__TwitterApiKeySecret

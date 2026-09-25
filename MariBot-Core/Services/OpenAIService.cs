@@ -31,12 +31,16 @@ namespace MariBot.Core.Services
             this.logger = logger;
             this.dataService = dataService;
             var apiKey = configuration["DiscordSettings:OpenAiApiKey"];
-            var orgId = configuration["DiscordSettings:OpenAiOrganization"];
+            // Organization and project are optional. Project API keys (sk-proj-...) are already scoped to a
+            // project, and sending a header that doesn't match the key's org/project makes the API reject the request.
+            var orgId = GetOptionalSetting(configuration, "DiscordSettings:OpenAiOrganization");
+            var projectId = GetOptionalSetting(configuration, "DiscordSettings:OpenAiProject");
 
             ApiKeyCredential apiKeyCredential = new ApiKeyCredential(apiKey);
             OpenAIClientOptions openAIClientOptions = new OpenAIClientOptions
             {
-                OrganizationId = orgId
+                OrganizationId = orgId,
+                ProjectId = projectId
             };
 
             gpt3Client = new ChatClient("gpt-3.5-turbo-0125", apiKeyCredential, openAIClientOptions);
@@ -47,6 +51,15 @@ namespace MariBot.Core.Services
 
             dalleClient = new ImageClient("dall-e-3", apiKeyCredential, openAIClientOptions);
             gptImageClient = new ImageClient("gpt-image-1", apiKeyCredential, openAIClientOptions);
+        }
+
+        /// <summary>
+        /// Reads an optional setting, treating blank values and the "SET-ME" placeholder as unset
+        /// </summary>
+        private static string? GetOptionalSetting(IConfiguration configuration, string key)
+        {
+            var value = configuration[key];
+            return string.IsNullOrWhiteSpace(value) || value == "SET-ME" ? null : value;
         }
 
         /// <summary>
