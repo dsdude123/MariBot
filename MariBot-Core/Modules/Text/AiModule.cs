@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
+using MariBot.Core.Models.Grok;
 using MariBot.Core.Services;
 using MariBot.Core.Utils;
 using RestSharp.Extensions;
@@ -205,6 +206,10 @@ namespace MariBot.Core.Modules.Text
                 var result = await grokService.GetGrokResponseAsync(input);
                 await SendCodeBlockResponse(result);
             }
+            catch (GrokContentBlockedException ex)
+            {
+                await HandleBlockedContent(ex);
+            }
             catch (Exception ex)
             {
                 await HandleUnexpectedException(ex);
@@ -224,6 +229,10 @@ namespace MariBot.Core.Modules.Text
                 var stream = await imageService.GetWebResource(result);
                 await Context.Channel.SendFileAsync(stream, "grok_image.png",
                     messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (GrokContentBlockedException ex)
+            {
+                await HandleBlockedContent(ex);
             }
             catch (Exception ex)
             {
@@ -253,6 +262,10 @@ namespace MariBot.Core.Modules.Text
                 var stream = await imageService.GetWebResource(result);
                 await Context.Channel.SendFileAsync(stream, "grok_video.mp4",
                     messageReference: new MessageReference(Context.Message.Id));
+            }
+            catch (GrokContentBlockedException ex)
+            {
+                await HandleBlockedContent(ex);
             }
             catch (Exception ex)
             {
@@ -343,6 +356,10 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendFileAsync(stream, "grok_edit.png",
                     messageReference: new MessageReference(Context.Message.Id));
             }
+            catch (GrokContentBlockedException ex)
+            {
+                await HandleBlockedContent(ex);
+            }
             catch (Exception ex)
             {
                 await HandleUnexpectedException(ex);
@@ -357,6 +374,13 @@ namespace MariBot.Core.Modules.Text
                 await Context.Channel.SendMessageAsync($"```\n{chunk}\n```",
                     messageReference: new MessageReference(Context.Message.Id));
             }
+        }
+
+        private async Task HandleBlockedContent(GrokContentBlockedException ex)
+        {
+            logger.LogWarning(ex, "Grok blocked a request in AiModule");
+            await Context.Channel.SendMessageAsync(ex.Message,
+                messageReference: new MessageReference(Context.Message.Id));
         }
 
         private async Task HandleUnexpectedException(Exception ex)

@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using MariBot.Core.Models.Grok;
 using MariBot.Core.Modules.Text;
 using MariBot.Core.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -182,6 +183,25 @@ namespace MariBot.Core.Tests
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
                 Times.Once);
         }
+        [Fact]
+        public async Task GrokImageGeneration_ContentBlocked_SendsBlockedMessageWithoutDownloading()
+        {
+            mockGrokService.Setup(s => s.GetGrokImageAsync(It.IsAny<string>()))
+                .ThrowsAsync(new GrokContentBlockedException(
+                    "Grok blocked this image generation because the result did not pass its content moderation rules."));
+
+            await module.GrokImageGeneration("test prompt");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s == "Grok blocked this image generation because the result did not pass its content moderation rules."),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+            mockImageService.Verify(s => s.GetWebResource(It.IsAny<string>()), Times.Never);
+        }
+
         // --- GrokImageEdit ---
 
         private AiModule CreateModuleWithAttachments(params IAttachment[] attachments)
@@ -337,6 +357,28 @@ namespace MariBot.Core.Tests
                 It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
                 It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task GrokImageEdit_ContentBlocked_SendsBlockedMessageWithoutDownloading()
+        {
+            var attachment = CreateMockAttachment("https://example.com/photo.png", "image/png");
+            var mod = CreateModuleWithAttachments(attachment);
+
+            mockGrokService.Setup(s => s.GetGrokImageEditAsync(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .ThrowsAsync(new GrokContentBlockedException(
+                    "Grok blocked this image edit because the result did not pass its content moderation rules."));
+
+            await mod.GrokImageEdit("make it blue");
+
+            mockChannel.Verify(c => c.SendMessageAsync(
+                It.Is<string>(s => s == "Grok blocked this image edit because the result did not pass its content moderation rules."),
+                It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+                It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(),
+                It.IsAny<Embed[]>(), It.IsAny<MessageFlags>(), It.IsAny<PollProperties>()),
+                Times.Once);
+            mockImageService.Verify(s => s.GetWebResource(It.IsAny<string>()), Times.Never);
         }
 
         // --- GrokVideoGeneration ---
